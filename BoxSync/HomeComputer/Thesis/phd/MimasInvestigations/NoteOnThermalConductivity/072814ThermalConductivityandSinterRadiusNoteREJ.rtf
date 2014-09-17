@@ -1,0 +1,1203 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\froman\fcharset0 TimesNewRomanPSMT;\f1\fnil\fcharset0 CambriaMath;\f2\froman\fcharset0 Times-Roman;
+\f3\fswiss\fcharset0 Helvetica;\f4\fmodern\fcharset0 CourierNewPSMT;}
+{\colortbl;\red255\green255\blue255;\red191\green191\blue191;}
+{\info
+{\title Original file was 072814ThermalConductivityandSinterRadiusNote.tex}
+{\doccomm Created using latex2rtf 2.3.7 r1239 (released Apr 04 2014) on Mon Aug 11 17:04:09 2014}}\paperw12280\paperh15900\margl1445\margr1445\margb1445\margt1445\vieww22580\viewh12720\viewkind1\viewscale160
+\deftab720
+\pard\pardeftab720\ri0\sb240\sa240\qc
+
+\f0\b\fs36 \cf0 The Mimas Leading Edge Anomaly: Thermal conductivity and grain cementation radius!\
+\pard\pardeftab720\fi569\ri0\sa120\qc
+
+\b0\fs22 \cf0 M.J. Schaible, R.Johnson, L. Zhigilei\
+8/11/2014\
+\pard\pardeftab720\ri0\sb240\sa120\ql\qnatural
+
+\b\fs32 \cf0 1  Abstract\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Goals: \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	!Derive! the thermal conductivity differences between inside/outside anomalous region on Mimas and Tethys \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Can the thermal conductivity differences be explained in terms of structural differences in the regolith?  \
+\'95	How does the thermal conductivity depend on grain contact, linear or quadratic?  \
+\'95	Is Hertzian analysis sufficient to determine effective contact areas between grains?  \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Estimate effects of >1MeV electrons on grain cementation properties \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	What is the deposition profile of the electrons in the regolith?  \
+\'95	!I think the depth profile is sufficient!\
+\'95	What is the heating effect on 
+\f1 \uc0\u8764 
+\f0 50
+\f2 \uc0\u956 
+\f0 m grains for each interaction?  \
+\'95	Are molecules desorbed from the pore surfaces?  Can we determine an average per interaction?  ! we know some will - but whether it is thermal do to the thermal discussed above or nonthermal desorption due to a near surface electronic excitation is the issue--I think the latter-- the spike model could help here-- we can discuss! \
+\'95	Is internal diffusion enhanced?  ! I think all we can say is it will be but probably not the quantitate here--unles we go the the Hayley the simulations!\
+\'95	Is the crystal structure at the grain boundary affected?  How is thermal conductivity changed?  ! again can only comment --nothing quatitative!\
+\'95	Does the average number of molecules desorbed/diffused vary with depth in the regolith or proximity to pore surface? ! I think we do not do this--the above discusses desorption from a grain surface ein response to a near surface excitation--that is sufficient--and with your energy deposition and a W value we can estimate the probability of such excitations! \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Estimate time-scale for cementation increase to explain increased cementation \
+\'95	Estimate gardening rate due to micrometeorite bombardment to counteract the sintering process ! we can not make this estimate--will have to find a ref!\
+\pard\pardeftab720\fi569\ri0\sb60\qj
+\cf0 Thermal ! models have been developed to !simulate the! heat transport in planetary and cometary surfaces. These models depend on the thermal conductivity of the bulk material making up the !grains in the! regolith (), !on the regolith! porosity (
+\f2 \uc0\u966 
+\f0 ) and on geometric factors that !describe! the packing of grains. For the case of an icy regolith on an airless body in the outer solar system, contributions to thermal conductivity other than conduction through grains (i.e. radiative, convective, latent heat) can be shown to be negligible.\
+\pard\pardeftab720\ri0\sb240\sa120\ql\qnatural
+
+\b\fs32 \cf0 2  Introduction\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Analysis of Cassini photometry data revealed an anomalous region present on the leading edge of the Saturnian icy moons Mimas and Tethys. That such a feature would exist was first suggested during the Voyager-era when a dark equatorial band across the leading hemisphere of Tethys was identified. A lens shaped feature symmetric with respect to the center of the leading hemisphere and the equator on both Mimas and Tethys !(Enceladus is probably too controversial--drop)! was seen clearly by the ISS (Imaging Science Subsystem) on Cassini as a low IR/UV ratio compared to the remainder of the leading hemisphere [Shenk et al 2011]. The feature extends !over! the entire width of the leading hemisphere and 
+\f1 \uc0\u8764 
+\f0 \'b140\'b0 and 
+\f1 \uc0\u8764 
+\f0 \'b120\'b0 to the north and south at the center of the lens for Mimas and Tethys respectively, though it narrows to within a few degrees at the edges of the hemisphere for both moons. The feature !is! dark in the IR (0.930 
+\f2 \uc0\u956 
+\f0 m) and Green (0.568 
+\i mu
+\i0 m) ! bands but bright in the UV (0.338 
+\f2 \uc0\u956 
+\f0 m) as shown by albedo maps [Elder et al2007; Shenk et al2011]. The smaller IR/UV ratio in the anomalous region !as compared to the neighboring regions! was explained as increased scattering at UV wavelengths due to a higher concentration of light scattering defects in the icy regolith grains, possibly caused by preferential energetic !electron! bombardment in that region.\
+\pard\pardeftab720\fi569\ri0\qj
+\cf0 The CIRS (Cassini InfraRed Spectrometer) instrument which measured ! the thermal emission in ! the mid-IR regime subsequently showed that surface temperature variations during the day and night cycle !! were greater ! in the anomalous region! than !in! the surrounding area ! This indicated a greater thermal conductivity of the material in the lens shaped region with a shape consistent with that identified in by the color maps! [Howett et al 2011]. The location of the anomaly was !also! shown to closely match the expected deposition profile of high energy (
+\fs11  
+\fs22 \uc0\u8776 1 MeV) electrons rapidly moving along the magnetic field lines perpendicular to the rotational plane of the moons [Paranicasetal2012]. The electrons move with a high bounce frequency such that they !precipitate!out as soon as the magnetic field line crosses the surface and, unlike the thermal plasma, travel with their net guiding center of motion opposite the rotation direction of the Mimas and Tethys and thereby deposit energy preferentially on the leading edge of these bodies. It was hypothesized that !these! electrons could create scattering centers in the icy regolith, leading to the observed IR/UV discolorations. Furthermore, the surfaces of the moons are composed almost entirely of crystalline water ice, while essentially free of organic species [Filacchioneetal2010], and the energy deposition due to these electrons could cause sintering of the icy regolith grains leading to increased heat transfer !! thus explaining the anomalous thermal inertia.\
+A good deal of thermal modeling has been done to understand the structure of comets and the thermal inertia of other bodies such as the Moon and Mars. However, the Saturnian moons are composed of water ice as opposed to a rocky regolith and lack the dark organic layer which found on the surface of comets. Also, since the moons lack an atmosphere the thermal conductivity is dominated by intergrain contacts while the thermal conductivity due to gas convection in the regolith is negligible. The purpose of this note is to quantitatively estimate the expected relative contact area or grain sintering radius based on the measured parameters of thermal inertia and grain size. The estimate assumes that both the ice grains and the cementation volume is entirely crystalline. Although amorphous ice could be present, the effect on thermal conductivity of the crystalline to amorphous transition is shown to be a much smaller effect than the increase in surface area. The structure of the ice will be discussed in more detail later in this note. \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 2.1  Thermal Inertia (
+\i I
+\i0 ) and Skin Depth (
+\f2 \uc0\u948 
+\f0 )\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Using measured surface thermal emission excursions values for thermal inertia  were extracted by Howett et al. (2011, 2012). Using these values and assuming a porosity of 
+\f2 \uc0\u966 
+\f0 =50%, the thermal conductivity and the skin depths  inside and outside the anomalies were determined and are given in Table 1. ! The  skin depths were calculate assuming! the conductivity is that of porous, crystalline ice regolith using the density of grains as 0.934 g/cm^3 with a specific heat of 0.82 MKS and the known values of the angular velocity of rotation.! However, the contact area between grains formed by sintering could have different conductivity. \
+\pard\pardeftab720\ri0\sb240\qc
+\cf0 \
+ \
+\pard\pardeftab720\ri0\sb120\qc
+\cf0 \
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Body\cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Location\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Thermal Inertia\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Skin Depth\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Thermal Conductivity\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 [cm]\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0  Mimas\cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Inside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 66 \'b123\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 2.01 \'b10.7\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 1.13  10\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Outside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 <16\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 < 0.49\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 < 6.7 \'d7 10)\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0  Tethys\cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Inside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 25 \'b13\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.76 \'b10.09\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 1.63 (\'b10.4)\'d7 10\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Anomaly boundary\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 11 \'b11\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.34 \'b10.03\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 3.16 (\'b10.6)\'d7 10\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth739\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1728
+\clvertalt \clshdrawnil \clwWidth1961\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3456
+\clvertalt \clshdrawnil \clwWidth1530\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx5184
+\clvertalt \clshdrawnil \clwWidth1260\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6912
+\clvertalt \clshdrawnil \clwWidth2520\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Outside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 5 \'b11\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.15 \'b10.03\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 6.53  10\cell \lastrow\row
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs16 \cf0 Table 1: Calculated thermodynamic values for the surface materials of Mimas and Tethys. Values of thermal inertia were taken from Howett et al. (2011, 2012) and basic equations were used to calculate the remaining quantities.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs22 \cf0 The average path length traveled by 1\uc0\u8722 10
+\i MeV
+\i0  electrons impacting on water, calculated with the ESTAR !(Did you define ESTAR acronym?)! program using the continuous-slowing-down-approximation (CSDA)! ! for 50% porous water ice gives 0.85\uc0\u8722 10.6
+\i cm
+\i0  total path length [NIST, e-star]. !(don't the program give the projected range also?)! The depth of penetration into the material !is! less than the total path length, but due to efficient scattering effects from electron-nucleus and electron-electron interactions, the electrons have a distribution of path lengths! For light materials such as water ice, the maximum depth is expected to be on the order of the CSDA range [Attix, 2008]. 
+\i The program PENELOPE was developed to simulate the implantation of electrons into materials and was used to generate a plot of the electronic stopping power and range of electrons into water (
+\f3 \uc0\u771 
+\f0 reffig:ewater). I don\'92t actually plan to leave these images in. They are just placeholders while I am working on simulations using the PENELOPE program to simulate MeV electron irradiation of water. I will update when I have more progress. \
+\
+
+\i0 !Micah what we want in detail is energy deposition per unit depth--penetration depths good only for discussion -- the energy deposition--which these program should give can be divided by W, the average energy per excitation, to get the excitations per unit depth and then by Wd the average energy per defect productions to get the defect density. !\
+\pard\pardeftab720\ri0\sb300\qc
+\cf0 \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 Figure 1: Electron range and stopping power calculated for pure water.\
+\pard\pardeftab720\fi569\ri0\sb240\qj
+
+\fs22 \cf0 The similarity in the penetration depths of the electrons and the skin depth of the thermal anomaly suggest that the electrons could be responsible for the increased thermal conductivity. Here we consider that a possible explanation for the thermal conductivity differences !is! sintering between adjacent regolith grains driven by energy deposited in electronic excitations of the water molecules either !near! the surface or in the bulk of the ice grains. The deposited energy can mobilize water molecules, causing them to migrate along the grain surface, through the bulk, or desorb from the surface and reabsorb in the intergrain region. This can lead to grain growth and, more importantly, growth in the size of the contact regions between grains and improved thermal contact across the grain boundaries.\
+\pard\pardeftab720\fi569\ri0\qj
+\cf0 As discussed below the same energy deposition that mobilizes the water at the grain boundaries can cause defects in the bulk. Whereas sintering increases the effective thermal conductivity, such defects, which we assume to be the principal cause of the increase in the IR/UV ratio[ref], can cause a decrease in thermal conductivity. !! Below we will also show that the density of bulk defects produced at a level consistent with the sintering are sufficient enough to affect the UV scattering but not to significantly decrease the thermal conductivity.\
+\pard\pardeftab720\ri0\sb240\sa120\ql\qnatural
+
+\b\fs32 \cf0 3  Contributions to the effective thermal conductivity of an icy porous regolith\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 In general, the effective thermal conductivity of a granular, uncemented sample under vacuum can be separated into a conductive component which describes heat flow through the bulk and a radiative term which describes heat flow through the void space [Watson, 1964]. \
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(1)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 The first term depends on both grain size and porosity and is due to radiation as discussed further below. The second factor was given by Watson (1964) as  for  and is a function of the bulk conductivity of the grain material () and the contact area (
+\i S
+\i0 ) between grains. For cold, porous regoliths typical of airless solar system bodies in the outer solar system, heat flow is limited by the amount of intergrain contact.\
+In general,  and  can depend on factors such as grain size, porosity, temperature, packing structure etc. Additionally, molecular desorption and feedback heating can raise the gas pressure in the pore space giving an additional convective path for heat transfer between grains (). Thermal conductivity measurements and modeling using either a spherical grain approximation or continuum techniques can be used to parameterize the variables for analytical expressions. However, much work has been done to constrain the various parameters that affect the thermal conductivity, and those possibly relevant to Mimas and Tethys will be outlined and their usefulness for describing the effective thermal conductivities reported by Howett et al., (2011, 2012) is discussed below.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 3.1  Radiative contribution to thermal conductivity\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 The contribution to the effective thermal conductivity from radiative heat emission from the grain/pore surfaces, , can be estimated as [Kasparek and Vortmeyer, 1976]\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(2)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where  is the particle diameter, 
+\i T
+\i0  is the temperature, 
+\f2 \uc0\u963 
+\f0  is the Stephan Boltzmann constant, and 
+\f2 \uc0\u968 
+\f0  is a heat transport coefficient defined by\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(3)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 for which F is a \'92radiative constant\'92 equal to \uc0\u8776  0.08 and 
+\f2 \uc0\u949 
+\f0 ' is related to the emissivity 
+\f2 \uc0\u949 
+\f0  of the material by . Taking , and 
+\f2 \uc0\u949 
+\f0 =1, then the radiative contribution to the thermal conductivity can be estimated as .\
+Thus we see that the radiative contribution at approximate Mimas temperatures can account for only \uc0\u8776 1/3000th of the total thermal conductivity as measured for the anomalous region on Mimas. Though it could account for as much as 1/10th of the thermal conductivity outside of the anomalous region on Tethys, it is typically on the order <1% contribution to the total thermal conductivity and will be neglected in the remainder of our analysis.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 3.2  Latent heat contribution to thermal conductivity\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 An additional mechanism not considered by !Watson! (1964) in Eq.1 is heat transfer due to molecular desorption and re-absorption within pores, i.e. sublimation, the expectation being that there is a higher rate of sublimation on the high temperature side of the pore and thus heat conductivity across the void space. We can model the !contribution from the ! sublimation process using the Hertz-Knudsen formula [ref]:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(4)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where 
+\i m
+\i0  is the molar mass of the gas molecule,  is the Boltzmann constant, 
+\i L
+\i0  is the latent heat of sublimation per unit mass and  is the average pore size dimension where 
+\f2 \uc0\u966 
+\f0  is the porosity and  the average particle diameter. The vapor pressure 
+\i P
+\i0  of the gas of interest is given by the Clausius-Clapeyron equation:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(5)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where 
+\i a
+\i0  and 
+\i b
+\i0  are experimentally determined parameters for water vapor over ice given by Fanale et al. (1984) as  and 
+\i b
+\i0 =6141.667
+\i K
+\i0 . Taking the latent heat of sublimation to be  and again using a temperature of 80 K, the contribution to thermal conductivity from the latent heat is . Though at low temperatures this effect is negligible, Steiner and K\'f6mle (1991) showed that it should be included at temperatures above \'a0170K. At the temperatures considered here the net thermal conductivity of the grains is controlled 'by' the second term in Eq.1 and is modeled as due to solid state heat transfer.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 3.3  Solid state heat transport models for a porous icy regolith\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 There are several methods in the literature for estimating solid state heat transfer in a grainy regolith that take into account grain size, porosity, and a cementation or contact area between adjacent grains. For cold grainy regoliths, heat flow is limited by the intergrain contact area which in turn depends on the crystalline and defect structures of the cementation region or grain boundaries. In the following we will review several approaches to modeling the thermal conductivity of an icy regolith including cementation between grains. All of the thermal conductivity models considered here incorporate an effective contact radius into equations for the effective thermal conductivity. The contact radius is either obtained directly through Hertzian analysis (discussed below) or through use of a proxy \'92Hertz-factor\'92. Taking the measurements of effective thermal conductivity for the moon surfaces and making reasonable assumptions about packing structure and porosity, grain size, thermal conductivity of the grain materials, the effective contact area between grains for the areas inside and outside the anomalous regions can be compared for the various models. Then it can be determined if the energy deposition from the MeV electrons is sufficient to explain the larger relative contact area within the anomalous region.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs24 \cf0 3.3.1  Hertz-factor description of grain contact area\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 In modeling of thermal conductivity of grainy and porous materials, a common approximate technique is to consider a mono- or polydisperse \'92bed\'92 of elastic spheres. The requirement for the spheres to be elastic and not a perfect hard sphere stems from physical considerations, since the contact point of hard spheres is infinitesimal, through which no heat can flow, meaning that the spheres must deform slightly at the contact point so there is some finite area across which heat can flow. At the atomic scale, the heat transfer through dissimilar spheres with no rigid bonding is due predominantly to the van der Waals interactions which mediate the phonon transfer, while for cemented grains heat is !transferred! directly through lattice vibrations. Deformation between curved, elastic surfaces in contact was first studied by Heinrich Hertz in 1882, and Hertzian analysis can be used to determine the intergranular contact area and indentation depth of the surfaces. The radius of the contact between two spheres depends on the material properties and is related to an applied load 
+\i F
+\i0  by:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(6)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where 
+\f2 \uc0\u957 
+\f0  and 
+\i E
+\i0 (
+\i T
+\i0 ) are Poisson\'92s ratio and Young\'92s modulus of the material, respectively. The applied load determines how strongly adjacent particles are bonded and, for a loose regolith, the weight of the grains can be used to determine the force and thus the contact area. However, gravitational forces in the near surface region are negligible as compared to van der Waals bonding which provides orders of magnitude greater adhesive interactions. The adhesive force is effectively the tensile load at the point where the spheres are separated and can be calculated by JKR theory [Johnson et al., 1971].\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(7)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where  is the specific surface energy of the material. Hertzian analysis can be used in thermal conductivity expressions for non-cemented grains to describe the effective radius of the intergranular contact and make comparisons for otherwise identical regoliths to determine the relative area through which heat can flow. A larger contact radius corresponds to greater interparticle contact, thereby allowing a greater heat flux and a higher thermal conductivity. It should be noted here that these expressions may not be applicable for cemented grains where the intergrain boundary may have some degree of crystalline bonding. Instead, thermal conductivity in these instances can be modeled by taking into account of cementation area which will continue to be the limiting factor in heat transfer through the regolith grains. \
+By taking the Hertzian contact radius to be the ratio of the effective and bulk thermal conductivities  and assuming other materials parameters as well as the packing structure are the same inside and outside the anomaly, the ratio of the grain size inside and outside the anomaly necessary to determine the measured thermal conductivity differences can be determined. At lower temperatures where radiative heat transfer is negligible, the thermal conductivity  and will increase with decreasing particle size, possibly due to the increased number of interparticle contacts. Taking the ratio of the grain sizes inside and outside the anomaly on Mimas, we find\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(8)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 This comparison estimates that the particle size within the anomaly is \'a04 orders of magnitude smaller than the particle size outside the anomaly, while comparisons of the !actual! grain size based on reflectance observations (ref)! yield at most a factor of eight difference! between the anomalous regions and the surrounding region!. Therefore, we conclude !, in agreement with Howlett et al (),!  that the !observed ! variation in thermal conductivities !is not due to significant  differences in grain size!.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs24 \cf0 3.3.2  Continuum Modeling\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Intergrain heat conduction was studied by Piqueux and Christensen (2009) using a finite element code and assuming a pendular cementation region connecting grains. Though they were primarily concerned with the effect of gas pressure in the voids between grains, !! their results also considered low gas conductivities () which approach the thermal conductivity of a regolith in a vacuum.\
+\pard\pardeftab720\ri0\sb300\qc
+\cf0 \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 Figure 2: Thermal conductivity as a function of % volume cementation for a 33% porous regolith (excluding volume occupied by cementation material). The thermal conductivity of the cementation and grain material was taken to be 6 MKS and 0.937 MKS, typical of crystalline ice and silica/basaltic glass respectively. Data taken from Piqueux and Christensen (2009) ! explain in caption the red line; also the right hand fig not explained !\
+\pard\pardeftab720\fi569\ri0\sb240\qj
+
+\fs22 \cf0 The plot on the left shows that the thermal conductivity of the anomalous region on Mimas ( MKS) falls well below the minimum cement volume fraction !displayed?!. However, it can be seen that, for vanishing gas conductivity, the relationship between the cement volume fraction and thermal conductivity can be approximated by  which yields a the volume fraction, 
+\f2 \uc0\u967 
+\f0 , of cement inside the anomaly as .\
+\pard\pardeftab720\fi569\ri0\qj
+\cf0 It should be noted that the grain thermal conductivity used was 0.937 MKS while the cement thermal conductivity was 6 MKS, and the packing structures investigated were all cubic regular packings. It was shown that for very low cement volume fractions the cement thermal conductivity is negligible and the effective thermal conductivity, for the ranges of % volume cementation evaluated, approaches a single value dependent on grain size and pore gas pressure. Though the effect of varying the grain thermal conductivity was not discussed in the paper, it can be assumed to be negligible given that heat transfer between grains is limited by the point of contact. Since small cementation volume fractions of the order estimated by extrapolation were not considered, we cannot use this model for small cementation volumes due to electron heating of grains that are expected due to the low thermal !conductivities! of Mimas and Tethys.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs24 \cf0 3.3.3  Maxwellian effective conductivity\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Wood (2011, 2013) developed a heat transfer model for grainy porous regolith based on the Maxwell equation for effective conductivity of an isotropic, heterogeneuos media. Although originally developed for electrical conductivity, the equation applies equally to thermal conductivity where the thermal paths - solid state conduction, convection through gas filled pores, and radiation from grain surfaces across pores - can be taken as acting in parallel as in 1. The conductive term takes into account both solid and gas phase heat transfer and is limited depending on which phase forms a continuous path throughout the material, the lower limit corresponding to a continuous gas phase and the upper limit to a continuous solid phase. Since the lower limit is strictly valid only when the solid particles are not in contact, a non-physical situation for a regolith material, the degree of solid phase continuity is taken into account by introducing a multiplicative factor. Taking the radiative term to be negligible as discussed above, the effective thermal conductivity is given as\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(9)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 For the low pressure environments of Mimas and Tethys the lower thermal conductivity limit can be taken to be zero. The upper limit depends on the thermal conductivity of the grain material , the porosity 
+\f2 \uc0\u966 
+\f0 , the volume percent and thermal conductivity of cementation region, 
+\f2 \uc0\u967 
+\f0  and  respectively, and the fractional continuity of the solid phase . Assuming that the cementation and bulk grains are both crystalline ice () and that the volume percent cementation is much less than the grains (
+\f2 \uc0\u967 
+\f0 <<1\uc0\u8722 
+\f2 \uc0\u966 
+\f0 ), the effective thermal conductivity becomes: \
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(10)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 The  factor represents the effect of interparticle contact and/or cementation and is a measure of the efficiency of contact between adjacent grains. The factor contains both geometrical and contact area considerations and, for uncemented soils, is given in terms of the size and number of contacts per particle, where contact size is determined by Hertzian analysis and cohesive surface forces (JKR theory).\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(11)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where R is the radius of the contact area, r is the grain radius, N is the coordination number, Y is a factor determined by fitting to experimental data, and Z determines how the heat flux varies with contact radius between particles. Batchelor and O\'92Brien (1977) showed that the length scale for significant surface and bulk temperature variations is \
+ \
+where \
+\
+When , most of the heat flux is concentrated on the perimeter of the contact area and the effective thermal conductivity depends only linearly on the contact radius () [Piqueux and Christensen, 2009]. However, when  the heat flux density is constant across the contact area !then!and the total heat flux increases as the square of the contact radius (). For the case considered here, the gas and radiative thermal conductivities are quite small meaning that  is large and . This differs from other thermal conductivity models considered below where the thermal conductivity is assumed to depend on the square of the contact radius. \
+The coordination number can be calculated exactly for regular packings of monodisperse spheres, with N = 6 for simple cubic packing which has a porosity of 47.64%, similar to the porosity used here. For !polydispersed! mixtures of randomly packed particles the coordination number cannot be known exactly, but for small, cohesive, nearly spherical particles Yang et al (2000) gave a functional relationship between coordination number and porosity which closely matches measured and modeled random packings, especially at porosities \uc0\u8805 40%. \
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(12)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Using a porosity of 50%, we find the coordination number is N = 4.99. We note that for non-spherical particles the shape, orientation, and roughness of a particle can have an effect on the number of contacts and thus the porosity is less strongly coupled to the coordination number. The equilibrium contact radius between two elastic spheres of the same radius R under a mechanical load can be calculated from JKR theory (Johnson et al., 1991) and is discussed in more detail for non-spherical particles by Wood (2013). An averaged best fit value of Y = 0.09 with a mean standard deviation of 13.6% was found by fitting thermal conductivity data a variety of glass bead samples of various size distributions. Using these values and assuming a mean particle size of 50
+\f2 \uc0\u956 
+\f0 m, we can determine the solid continuity factor and the contact radius. These values are given in table 2. \
+Taking the ratio of the contact radius values obtained from the Wood analysis, we find  for Mimas, while for Tethys we find . Interestingly, if we take the square root of these values, we find they match closely with the values obtained below.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs24 \cf0 3.3.4  Analytical solutions of the heat transfer equation\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Solutions of the heat transfer equation for spherical geometry are complicated by radiation-conduction coupling and complex packing geometries. Chan and Tien (1973) solved the equations analytically and derived explicit functional relationships between the thermal conductance of regularly packed spheres under vacuum and fundamental system parameters. This approach was adopted by Gundlach and Blum (2012) to describe thermal conductivity of granular regoliths and compared the theoretical results with experimental data. The effective thermal conductivity was given as a function of the thermal conductivity of the solid grains, the contact radius between particles, and the packing arrangement of particles in the bulk.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(13)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where H is the \'92Hertz-factor\'92 used to take into account the reduction of the thermal conductivity in porous materials and the packing structure of the material and the number of interparticle contacts is taken into account by\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(14)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Here, 
+\i S
+\i0 (
+\f2 \uc0\u966 
+\f0 ) is a \'92model parameter\'92 that depends on the packing structure, and  and  are the number of particles per unit area and unit length respectively. Applying JKR theory we can define the Hertz-factor as the ratio of the effective and bulk thermal conductivities which is slightly different than the Hertz factor described in the next section. The constants used in the packing structure dependence were only given for regular packing arrangements, and thus could not be used to the random packing considered here. Thus, the analysis of Gundlach and Blum is excluded from further analysis. \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 3.4  Equivalent conductance modeling\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Another method of determining the effective thermal conductivity of a porous regolith is to consider a unit cell representative of the entire particle bed and and postulating parallel heat flux through the entire cell [Zehner, 1972; Bauer, 1976; Bauer and Schl\'fcnder, 1978; Tsostas and Martin, 1987]. Although this is a simplification of realistic beds, it allows for inclusion of detailed parameters representing radiation and gas thermal conductivity, particle flattening, shape, and size distribution without sacrificing ease of calculation. Taking equations presented in Tsostas and Martin (1987) and, assuming low pressure (high Knudsen numbers), the effective thermal conductivity can be written\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(15)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where is the thermal conductivity across the void region due to a combination of radiative heat transfer and the latent heat of sublimation,  is the thermal conductivity of bulk ice, and 
+\i H
+\i0  is the \'92Hertz-factor\'92 used to describe particle flattening at the point of contact. The deformation factor 
+\i B
+\i0  controls the shape of the solid particle portion of the unit cell and can be related to porosity by:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(16)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Taking the thermal conductivity of the void region to be negligible as discussed above, we can simplify the effective thermal conductivity to depend only on the Hertz factor and the porosity of the regolith.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(17)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Using the effective thermal conductivities obtained above for a 50% porous regolith both inside and outside the anomalies and taking the thermal conductivity of water ice at 80Kto be  MKS [Kossacki et al., (1994)], we can solve for the Hertz-factor (Table 1). In this instance, the Hertz-factor was taken as an empirical parameter that was determined by fitting to experimental data, and values obtained previously to describe sand particles [Tsostas and Martin, 1987] and a porous icy cometary nucleus [Steiner and K\'f6mle, 1991] are on the order of  [SteinerKomle1991] compare favorably with the values obtained for the icy regoliths considered here. Kossacki et al. (1994), using the same analysis, assumed that the Hertz-factor was related to the square of the particle contact radius so that\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(18)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 from which we find that  Mimas and 5 for Tethys, meaning the effective radius of contact is greater inside the anomalies than outside and of the same order for the two bodies.\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 3.5  Effective Medium Theory approach\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Thermal conductivity in porous granular regoliths has several similarities to percolation of electricity through mixed media of differing conductivities, and similar mathematical approaches can be used to study both. Below a certain volume percentage of conductive material the effective conductivity of the mixture is effectively zero, while once a certain critical concentration is reached the conductivity increases sharply and continues to increase with increasing volume percent of conductive material. The material can be viewed as an effective-medium to estimate the effective thermal conductivity for a random network of spherical grains arranged on a regular lattice [Sirono and Yamamoto, 1997; Kirkpatrick, 1973]. Integrating the probability distribution of 
+\i k
+\i0  multiplied by the 1-D heat flux to obtain the effective heat flux and taking the thermal conductivity of the void space to be zero, the effective thermal conductivity is given by\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(19)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where the probability of a lattice site being occupied or packing fraction is 
+\i p
+\i0  and  is the percolation threshold which defines the minimum packing fraction for a continuous thermal path to exist across the material. However, this expression does not consider the limitation of heat flow due to reduced area at the grain contacts. This effect can be taken into account by multiplying by a factor dependent on packing structure, grain size and effective contact radius similar to that found by Hertzian analysis.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(20)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where 
+\i g
+\i0  is a geometrical factor dependent on the packing structure and 
+\i g
+\i0 =4 for a cubic lattice. Assuming a simple cubic packing structure of the grains, the relation between porosity and the packing fraction is\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+	(21)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 and the critical packing fraction . The contact radii calculated using this method are given in table 1, and the ratio of the contact radius inside and outside the anomaly is  for Mimas and 5.0 for Tethys. This is in very close argreement with the value obtained from the analysis of Kossacki et al.\
+\pard\pardeftab720\ri0\sb240\qc
+\cf0  \
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth2610\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2610\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clmgf \clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clmrg \clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clmrg \clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Authors\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Howett (2011, 2012)\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 Wood (2013)\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 S&K (1991)\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 S&Y (1997)\cell 
+\pard\intbl\itap1\cell 
+\pard\intbl\itap1\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Location\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 H [cm]\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 S []\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0  Mimas\cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Inside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.354\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 17.1\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw15\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Outside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 .021\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 1.00\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0  Tethys\cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Inside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.051\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 3.25 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 2.47\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Anomaly boundary\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.028\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 6.30 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.48\cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \trwWidth9450\trftsWidth3 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalt \clshdrawnil \clwWidth667\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw20\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx1234
+\clvertalt \clshdrawnil \clwWidth1943\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx2468
+\clvertalt \clshdrawnil \clwWidth2070\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx3702
+\clvertalt \clshdrawnil \clwWidth1440\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx4937
+\clvertalt \clshdrawnil \clwWidth1170\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx6171
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw15\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx7405
+\clvertalt \clshdrawnil \clwWidth1080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf2 \clbrdrl\brdrs\brdrw15\brdrcf2 \clbrdrb\brdrs\brdrw20\brdrcf2 \clbrdrr\brdrs\brdrw20\brdrcf2 \clpadl100 \clpadr100 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\ql\qnatural
+\cf0 Outside anomaly\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.006\cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 1.30 \cell 
+\pard\intbl\itap1\pardeftab720\ri0\qc
+\cf0 0.01\cell \lastrow\row
+\pard\pardeftab720\ri0\sb240\ql\qnatural
+
+\fs16 \cf0 Table 2: Contact radii calculated !also H and S ! using the various thermal conductivity theories presented above. For all analyses, we see that the contact area inside the anomalous region is greater than without, which is in agreement with the increased thermal conductivity for all other factors being constant.\
+
+\b\fs32 \
+\pard\pardeftab720\ri0\sb480\sa120\ql\qnatural
+\cf0 4  Energy deposition due to >1 MeV electrons and Ice Grain Sintering\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Steiner and K\'f6mle (1993) gave the energy balance at the surface of an uncovered, porous water ice regolith as\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(22)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where 
+\f2 \uc0\u934 
+\f0  is the energy flux incident on the surface of the regolith,  is the free sublimation rate of water ice given by the Hertz-Knudsen formula,  is the latent heat of water ice, and 
+\f2 \uc0\u949 
+\f0  is the IR emissivity. The Hertz-Knudsen formula gives the rate of phase change (i.e. rate of molecular desorption) for a given interface which, for a low pressure solid/vapor boundary such as that considered here, was estimated by Tschudin (1946) as\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(23)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where  is the saturation vapor pressure and M is the molecular weight.\
+\pard\pardeftab720\fi569\ri0\qj
+
+\i \cf0 What is the expected heating rate/area per electron interaction with the ice?  How close does the interaction have to be to the surface to desorb a water molecule?  Can we obtain an average desorption rate due to electronic interactions? 
+\i0 \
+Paranicas et al (2012) estimated the energy flux of electrons deposited on the leading hemispheres of Mimas and Tethys to be  and  respectively. However, not all of the energy is deposited in the surface region as the electrons penetrate up to cm depths into the sample. Therefore, the energy loss occurs as a function of depth in the materials and is !deposited in! the ice grains as ionizations or excitations of the constituent atoms which in turn can create defects in the crystal structure and heat the grains. !The production of excitations! changes as a function of energy. The deposition of energy into the ice grains can lead to sintering of the grains by enhanced diffusion of atoms through the bulk or along the surface of the grain and desorption of atoms or molecules at the surface which are subsequently redeposited with some probability in the neck region. A total of six such mechanisms (Fig.\'a03) were identified by Swinkels and Ashby (1981) which can be further classified into densifying and non-densifying mechanisms.\
+\pard\pardeftab720\ri0\sb300\qc
+\cf0 \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 Figure 3: !Pictorial! description of the six sintering mechanisms defined by Swinkels and Ashby (1981) who estimated that the defining equations for the various mechanisms (defined below) were !accurate! to within a factor of 2.\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 !Micah the figure is good-- but in the paper you should just comment on the ones not eliminated--clearly summation can be neglected so do not have to give the equation, et.c!\
+\'95	Non-densifying Mechanism \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 1.	Surface diffusion from a surface source \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 2.	Lattice diffusion from a surface source \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 3.	Vapour transport from a surface source \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Densifying Mechanism \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 1.	Grain boundary diffusion from a bourdary source \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 2.	Lattice diffusion from a boundary source \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 3.	Lattice diffusion from dislocation sources \
+\pard\tx283\pardeftab720\li1200\ri0\sa120\ql\qnatural
+\cf0  \
+\pard\pardeftab720\fi569\ri0\sb100\qj
+\cf0 where\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	 = neck curvature radius (
+\i cm
+\i0 ) \
+\'95	 = "curvatures" defined for specific geometry () \
+\'95	 =  \
+\'95	 = effective surface thickness (
+\i cm
+\i0 ) \
+\'95	 = effective grain boundary thicknesss (
+\i cm
+\i0 ) \
+\'95	 = surface diffusion coefficient () \
+\'95	 = lattice diffusion coefficient () \
+\'95	 = grain boundary diffusion coefficient () \
+\'95	 = surface free energy () \
+\'95	 = grain boundary free energy () \
+\'95	 = bulk density () \
+\'95	
+\f2 \uc0\u937 
+\f0  = molar volume () \
+\'95	
+\f2 \uc0\u956 
+\f0  = molar mass (
+\i g
+\i0 ) \
+\'95	
+\f2 \uc0\u964 
+\f0  = shear modulus () \
+\'95	
+\i N
+\i0  = dislocation density () \
+\pard\pardeftab720\fi569\ri0\sb60\qj
+\cf0 The rate of growth of the neck region between grains is thus a function of the energy deposition rate and by extension by the various diffusion and desorption rates of atoms and molecules into the contact region.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(24)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Kossacki et al (1994) gave an estimate for the neck growth rate due to vapor transport driven by thermal desorption from the grain surface. Vapor desorption and redeposition is likely the dominant sintering mechanism at 
+\f1 \uc0\u8764 
+\f0 200K, though it may not be relevant at Mimas surface temperatures.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(25)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 The pressure 
+\i p
+\i0  due to sublimation of molecules from the pore surfaces can be calculated using the Clausius-Clapeyron equation given earlier (Eq.5), and the the neck surface area is given by\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(26)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 where  and \uc0\u1009  are defined by\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(27)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 and\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(28)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\i\fs22 \cf0 I think the goal here should be to relate the warming of the grain due to a electron !interaction! with the regolith to a average desorption rate. I am imagining this as the number of !electrons! interactions per surface area per time, multiplied by an average number of desorbed molecules per event to give number of desorbed molecules per area per time.\
+\
+! One thing you can show quickly  is--I think Swinkel and Ashby probably do steady that things. Therefore you can divide an estimate of the energy flux from Paranicas by the penetration depth Rp to get an average heating rate per unit time which I think the effect will be pretty small--rather the time scales very large  -this is not a large amount of heat--compared to what the sun deposits--or maybe simply point that out. Therefore our idea is, it is the individual excitations causing the sintering. Each excitations e can think of as producing a small heat spike randomly in the grain and cussing surface molecule sot be mobile.  First we presuming the heat transients in the grain decay rapidly compared to the time the next electron hits that grain---I am sure that is a good assumption. Therefore we would like to use an energy deposition profile--first to determine the grain heating - dE/dz in to the material at each depth z -- assuming all the energy deposited stays in the grain--that would be an upper limit--then the energy density deposited is heats the grain to a T determine by (rho C T)  ~ (dE/z)/pi r^2, assuming a fresh surface--no irradiation-- that T decays due to thermal conductivity in the out side region and one can estimate the amount of sublimation. Think about this and comment!\
+\
+\pard\pardeftab720\fi569\ri0\qj
+
+\i0 \cf0 The electronic structure of ice at the interface of large porous cavities in amorphous ice may resemble that of the free surface interface, and therefore it might be expected that ESD processes would occur there with similar mechanisms. The total ESD neutral product yields are generally much higher from amorphous ice than from crystalline. This is attributed to increased defect density and an increase in excitation localization due to disruption of long range order in the matrix [Sieger and Orlando, Surf. Sci. 451(2000) 97].\
+\pard\pardeftab720\ri0\sb240\sa120\ql\qnatural
+
+\b\fs32 \cf0 5  Regolith gardening rate\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\b0 \cf0 ! I do not think this is a section it will be a number obtained from the literature -- which we will compare to the sintering rate estimated above--and see if the growth in radius is approximately right?? ! 
+\b \
+\pard\pardeftab720\ri0\sb300\sa120\ql\qnatural
+\cf0 6  Appendiux 1: Review of measured Parameters\
+\pard\pardeftab720\ri0\sb180\sa120\ql\qnatural
+\cf0 6.1  Thermal Inertia (I) - Howett et al. (2011)\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b0\fs24 \cf0 		(29)\
+\pard\pardeftab720\fi569\ri0\qj
+
+\fs22 \cf0 Where \
+\pard\pardeftab720\li600\fi-300\ri0\sb60\qj
+\cf0 [leftmargin=3cm] \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	k = thermal conductivity  \
+\'95	c = specific heat  \
+\'95	\uc0\u1009  = density  \
+\pard\pardeftab720\fi569\ri0\sb60\qj
+\cf0 The thermal inertial measured by Cassini CIRS was reported by Howett et al. (2011, 2012) \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	For Mimas: \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Within anomaly:  \
+\'95	Outside anomaly:  \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	For Tethys: \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Within anomaly: 25\'b13 MKS \
+\'95	Anomaly boundary: 11\'b11 MKS \
+\'95	Outside anomaly: 5\'b11 MKS \
+\pard\pardeftab720\li600\ri0\sb60\qj
+\cf0  \
+\pard\pardeftab720\fi569\ri0\sb60\qj
+
+\i \cf0 Depth of penetration for CIRS wavelength light? 
+\i0 \
+\pard\pardeftab720\fi569\ri0\qj
+\cf0 \
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 6.2  Temperature ranges - Howett et al. (2011)\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Estimated Mimas daytime temperatures: 40-95 K\
+\pard\pardeftab720\ri0\sb120\sa120\ql\qnatural
+
+\b\fs32 \cf0 6.3  Average Particle Size\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Particle size (diameter) measured using the Cassini observations and, assuming pure water ice regoliths, comparing the water ice absorption band depths at 2.0
+\f2 \uc0\u956 
+\f0\i m
+\i0  and 1.52
+\f2 \uc0\u956 
+\f0\i m
+\i0  to a model correlating absorption depth to grain size developed by Clark and Lucey (1984).\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Mimas: (Hendrix et al, 2012) \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Leading hemisphere: 20-80 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Trailing hemisphere: 10-50 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Herschel crater: 50-100 
+\f2 \uc0\u956 
+\f0 m \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Tethys: (Fillachione et al, 2012) \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Average: 30 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Pure HO ice: 22 - 880 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Mixed grains: 69 
+\f2 \uc0\u956 
+\f0 m \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Dione (assuming pure water ice): (Newman et al, 2009) \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Whispy region: 6-28 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Dark area: 1-8 
+\f2 \uc0\u956 
+\f0 m \
+\'95	Background: 7-28 
+\f2 \uc0\u956 
+\f0 m \
+\pard\pardeftab720\ri0\sb220\sa120\ql\qnatural
+
+\b\fs32 \cf0 6.4  Porosity\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 The density of a porous medium is given by  where  is the density of the bulk substance. \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	For Enceladus - Verbischer et al (2005): \'a050\uc0\u8722 70% \
+\'95	For Tethy\'92s - Caravano et al. (2007): >90% \
+\'95	Model parameter (ansatz) Leliwa-Kopystynski (2000): \'a050% \
+\pard\pardeftab720\ri0\sb180\sa120\ql\qnatural
+
+\b\fs32 \cf0 6.5  Density\
+\pard\pardeftab720\ri0\sb300\sa120\ql\qnatural
+\cf0 7  List of Variables\
+\pard\pardeftab720\ri0\sb300\sa120\ql\qnatural
+
+\f2 \cf0 \uc0\u966 
+\f0  = porosity 
+\f2 \uc0\u967 
+\f0  = cementation volume fraction  = solid volume fraction\
+\pard\pardeftab720\ri0\sb240\sa120\ql\qnatural
+\cf0 8  Tabulated Literature Parameters\
+\pard\pardeftab720\ri0\sb180\sa120\ql\qnatural
+\cf0 8.1  Thermal Conductivity\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Low temperature thermal conductivity\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Water Ice \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Ellsworty and Schubert (1983):  \
+\'95	Haruyama et al (1993) via. Sirono and Yamamoto (1997): \
+\pard\tx283\pardeftab720\li1800\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Amorphous:  where  \
+\'95	Crystalline:  where  \
+\pard\tx283\pardeftab720\li1200\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Kossacki et al. (1994):  \
+\'95	Klinger (1975):  (amorphous) \
+\pard\pardeftab720\ri0\sb220\sa120\ql\qnatural
+
+\b\fs32 \cf0 8.2  Specific and Latent Heat\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Low temperature specific heat:\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Ramirez et al. (2012):  \
+\'95	NBS Monograph 21 ():  \
+\'95	Gutierrez et al. (2001):   \
+\pard\pardeftab720\fi569\ri0\sb60\qj
+\cf0 Latent heat of sublimation:\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Gutierrez et al. (2001):  \
+\pard\pardeftab720\ri0\sb300\sa120\ql\qnatural
+
+\b\fs32 \cf0 9  Appendix 2: Calculations\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\b0\fs22 \cf0 \'95	Skin Depth (calculated for Mimas - outside anomaly) \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{split\} ... \\end\{split\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(30)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Radiative thermal conductivity \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{split\} ... \\end\{split\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(31)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Sublimation Heat Transfer \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{split\} ... \\end\{split\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(32)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Wood 2011 simplification \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{gathered\} ... \\end\{gathered\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(33)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Steiner and K:omle 1991 simplification \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{gathered\} ... \\end\{gathered\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(34)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Sirono and Yamamoto 1997 expression variations \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{gathered\} ... \\end\{gathered\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(35)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Sirono and Yamamoto Contact Area \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{gathered\} ... \\end\{gathered\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(36)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Grain radius simplification \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{split\} ... \\end\{split\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(37)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Gundlach and Blum 2012 extension of Hertz analysis to aggregates This thermal conductivity equation can be modified to describe a porous regolith layer composed not simply of spherical grains, but of grain aggregates which themsleves are composed of ice grains and which have their own unique materials parameters such as volume filling factor, Poisson\'92s ratio, Young\'92s modulus, and specific surface energy. Taking the volume filling factor (V) of the layer to be the product of the volume filling factors of the aggregates themselves and the volume filling factor of the aggregate structure (), we can write the effective thermal conductivity of the layer as:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+\pard\pardeftab720\li600\ri0\qc
+
+\fs22 \cf0 [Sorry. Ignored 
+\f4\fs24 \\begin\{split\} ... \\end\{split\}
+\f0\fs22 ]\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	(38)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 where 
+\i R
+\i0 , , and  are the radius, Young\'92s modulus, and Poisson\'92s ratio of the aggregates, respectively. Taking  to be the grain radius (the size of the grains that make up the aggregate), the specific surface energy of the aggregates can be calculated by:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(39)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 The thermal conductivity of the aggregates can be calculated as before:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(40)\
+\pard\pardeftab720\ri0\sb340\sa120\ql\qnatural
+
+\b\fs32 \cf0 10  Appendix 3: Summary of thermal conductivity models\
+\pard\pardeftab720\ri0\sb60\qj
+
+\b0\fs22 \cf0 Conductivity through grains is limited by the contact area between adjacent grains. Several models are discussed in the following and summarized here for ease of comparison.\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Wood (2013) \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 	\
+	(41)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 where 
+\f2 \uc0\u967 
+\f0  is the volume fraction of cement. Taking 
+\f2 \uc0\u966 
+\f0 =0.5 and assuming 
+\f2 \uc0\u967 
+\f0 <<
+\f2 \uc0\u966 
+\f0  this equation simplifies to . The solid continuity factor  is a measure of the efficiency of heat transfer through contacts between adjacent grains and is dependent on geometrical packing and contact area, determined by Hertzian analysis and cohesive surface forces (JKR theory), between adjacent grains.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(42)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 Here, R is the radius of the contact area, r is the particle radius, N is the coordination number, Z depends on the ratio of solid to void thermal conductivities and, in the case considered here of low temperature and pressure, can be taken to be 1, and the  factor is a fit to experimental data. \
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Steiner and K\'f6mle (1991) \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(43)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 Where H is the Hertz factor which determines the contact area between touching grains. Taking 
+\f2 \uc0\u966 
+\f0 =0.5, we can simplify this equation to . The  factor of the Steiner and K\'f6mle model is the only term used to account for the structure of the material.\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+\cf0 \'95	Gundlach and Blum (2010) The Gundlach and Blum model was developed using a mathematical analysis by Chan and Tien (1973) for regularly packed spheres whose contact area is described by Hertzian analysis and where the cohesive forces between spheres are described by JKR theory.\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(44)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 The factors S, N, and N depend on the specific packing arrangement and can be computed explicitly for regular packing arrangements and H is the Hertz factor. \
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(45)\
+\pard\tx283\pardeftab720\li600\fi-300\ri0\sb50\sa120\ql\qnatural
+
+\fs22 \cf0 \'95	Sirono and Yamamoto (1997) \
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(46)\
+\pard\pardeftab720\li600\ri0\qj
+
+\fs22 \cf0 Where R is the grain contact radius as defined by Hertzian analysis and 
+\i p
+\i0  is related to the volume filling factor and dependent on the packing. More specifically, 
+\i p
+\i0  is the probability that a lattice site is occupied with a regolith grain. The Hertz factor used by Sirono and Yamamoto is slightly different than that of Gundlach and Blum:\
+\
+\pard\tqc\tx3450\tqr\tx6900\pardeftab720\li600\ri0\sb120\sa120\ql\qnatural
+
+\fs24 \cf0 		(47)\
+}

@@ -293,6 +293,11 @@ dVdt_therm = np.zeros((len(dt), len(T)))
 n = 1
 Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(dt, Rconjkr, n)
 print "One time"
+with open('Rconjkr.csv', 'rb') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow('Rconjkr', 'dVdt_rad', 'dVdt_therm')
+    for i in range(0, len(dt)):
+        spamwriter.writerow(Rcon_new[i,20]
 
 # ----- Set initial contact radius as Wood/quadratic -----
 n = 2

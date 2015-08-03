@@ -106,14 +106,14 @@ def fix_coeff(T):
 
     return tempSij
 
-def calc_Rcon(dt, Rcon, n):
+def calc_Rcon(Rcon, n, dzswitch):
     invRcon = 1/Rcon
     K3 = 2/rg
     A = Dgb*delta_gb/(Dsurf*delta_surf)
     dt_prev = 0
     Rconmin = Rcon
 
-    if n == 3:
+    if n  > 2:
         Rconmax = Rconmaxlin
     else:
         Rconmax = Rconmaxquad
@@ -131,8 +131,10 @@ def calc_Rcon(dt, Rcon, n):
         for i in range(len(T)):
             getcontext().prec = 20
             DKK1pos = Decimal(3*A[i]*Rnc[i]*invRcon[i])+Decimal(0)
-            DKK1neg = Decimal(3*(A[i]*Rnc[i]*invRcon[i])**2 + 4*A[i]*Rnc[i]*invRcon[i]+1).sqrt()
-            DKK1 = abs(Decimal(DKK1pos)+Decimal('1.5')-Decimal('1.5')*Decimal(DKK1neg))
+            ARR = A[i]*Rnc[i]*invRcon[i]
+            DKK1mid = Decimal(DKK1pos*DKK1pos)-Decimal(6.75*ARR*ARR)-Decimal(9*ARR)
+            DKK1 = np.sqrt(DKK1mid+Decimal('4.5'))
+#            DKK1 = Decimal(DKK1pos)+Decimal('1.5')-Decimal('1.5')*Decimal(DKK1neg)
             K1[i] = Decimal(Km[i])/np.sqrt(1 + Decimal(DKK1))
             K2[i] = Decimal(K1[i])*(1 + Decimal(DKK1))
             d2[i] = Decimal(Rnc[i])/(1 + np.sqrt(Decimal(4/3)*(Decimal(K2[i])-Decimal(K1[i]))/Decimal(K2[i])))
@@ -152,8 +154,10 @@ def calc_Rcon(dt, Rcon, n):
         # ----- Calculate radiation induced diffusion coefficients ----
         Veff_surf = 4*pi*delta_surf*Rcon*Dz
         Veff_lat = 4*pi*Rcon*Dz*Dz
-        Veff_sput = Dz*rg*rg*(0.25-0.125*(np.sqrt(rg*rg-Rcon*Rcon)+rg)/rg)
-            
+        Veff_sput = Dz*rg*rg*(0.25-0.125*(np.sqrt(rg*rg-Rcon*Rcon)+rg)/rg)            
+
+#        print dt[j], Rcon[45], Veff_sput[45]
+
         inv_tau_surf = radconst*Veff_surf
         inv_tau_lat = radconst*Veff_lat
         inv_tau_sput = radconst*Veff_sput
@@ -182,36 +186,54 @@ def calc_Rcon(dt, Rcon, n):
         
         if round(abs(Rcon[20]-Rconmax[20]), 7) == 0:
             print dt[j]
-        
-    fig = plt.figure(1)
-    ax1 = fig.add_subplot(1, 3, n)
-    ax1.semilogy(T,Rconmin*1E4, linewidth=2, color='red', label = 'Rcon, out')
-    ax1.semilogy(T,Rcon_new[len(dt)/10000,:]*1e4, label= 't=1 kyr')
-    ax1.semilogy(T,Rcon_new[len(dt)/100,:]*1e4, label= 't=100 kyr')
-    ax1.semilogy(T,Rcon_new[len(dt)/10,:]*1e4, label= 't=1 Myr')
-    ax1.semilogy(T,Rcon_new[len(dt)-1,:]*1e4, label= 't=10 Myr')
-    ax1.semilogy(T,Rconmax*1e4, linewidth=2, color='blue', label= 'Rcon, in')
-    ax1.set_xlim(60,105)
-    major_ticks=np.arange(60,101,10)
-    ax1.set_xticks(major_ticks)
-    box = ax1.get_position()
-    ax1.set_position([box.x0,box.y0+0.05,box.width,box.height*0.95])
-    if n == 1:        
-        ax1.set_title('Hertzian')
-        ax1.set_ylabel('Contact Radius [um]')
-        ax1.set_ylim(1e-1,10)
-    if n == 2:
-        ax1.set_title('Wood Quadratic')
-        plt.setp(ax1.get_yticklabels(), visible=False)
-        ax1.set_xlabel('Temperature[K]')
-        ax1.set_ylim(1e-1,10)
+    
+    if dzswitch == 1:
+        lineT = '-'
+    if dzswitch == 2:
+        lineT = '--'
+    if n < 4:
+        col = n
+    else:
+        col = 3
+
     if n == 3:
-        ax1.set_title('Wood Linear')
-        ax1.yaxis.tick_right()
-        ax1.set_ylim(1e-2,1)
- #       plt.setp(ax1.get_yticklabels(), visible=False)
-        plt.legend(loc = 'upper center', bbox_to_anchor=(-.8,-0.1), ncol=6, prop={'size':10})
-    plt.savefig('./Rcon_vs_t.png',dpi=600) 
+        print "timestep = %d" % dt[j]/3.154e7
+    elif n == 4:
+        print "timestep = %d" % dt[j]/3,154e7
+    else:
+        fig = plt.figure(1)
+        ax1 = fig.add_subplot(1, 3, col)
+        ax1.semilogy(T,Rconmin*1E4, linewidth=2, color='red', label = 'Rcon, out', linestyle = '-')
+        ax1.semilogy(T,Rcon_new[len(dt)/1e5,:]*1e4, label= 't=1 kyr', linestyle = lineT, color='k')
+        ax1.semilogy(T,Rcon_new[len(dt)/1e4,:]*1e4, label= 't=100 kyr', linestyle = lineT, color='g')
+        ax1.semilogy(T,Rcon_new[len(dt)/1e3,:]*1e4, label= 't=1 Myr', linestyle = lineT, color='b')
+        ax1.semilogy(T,Rcon_new[len(dt)-1,:]*1e4, label= 't=10 Myr', linestyle = lineT,color='m')
+        ax1.semilogy(T,Rconmax*1e4, linewidth=2, color='blue', label= 'Rcon, in', linestyle = '-')
+        ax1.set_xlim(60,105)
+        major_ticks=np.arange(60,101,10)
+        ax1.set_xticks(major_ticks)
+        if n < 4:
+            box = ax1.get_position()
+            ax1.set_position([box.x0,box.y0+0.05,box.width,box.height*0.95])
+        if dzswitch == 1:
+            if n == 1:        
+                ax1.set_title('Hertzian')
+                ax1.set_ylabel('Contact Radius [um]')
+                ax1.set_ylim(1e-1,10)
+            if n == 2:
+                ax1.set_title('Wood Quadratic')
+                plt.setp(ax1.get_yticklabels(), visible=False)
+                ax1.set_xlabel('Temperature[K]')
+                ax1.set_ylim(1e-1,10)
+            if n == 5:
+                ax1.set_title('Wood Linear')
+                ax1.yaxis.tick_right()
+                ax1.set_ylim(1e-2,10)
+         #       plt.setp(ax1.get_yticklabels(), visible=False)
+                ax1.legend(loc = 'upper center', bbox_to_anchor=(-.8,-0.1), ncol=6, prop={'size':10})
+        if dzswitch == 2:
+            plt.savefig('./Rcon_vs_t.png',dpi=600) 
+
     return Rcon_new, dVdt_rad, dVdt_therm
 
 # ----------- Begin main program -------------------------------------------
@@ -280,43 +302,76 @@ plt.axis([60,110,8e-3,5e-1])
 plt.legend() '''
 # dt determines the time step for the simulation. This can be log or linear scaled.
 # for log scaling (num=1e4), Tlin = 4.4E10s, Tquad=1.58E14s, Thertz=1.59E14s
-#dt = np.logspace(3,15,num=1e2)*3.171
-# for lin scaling (num=1e5), Tlin = s, Tquad = 1.58E14s, Thertz=1.59E14s
-dt = np.linspace(1e6,1e15,num=1e5)*3.171
-#print dt/3.171e8
-print dt[len(dt)/10000]/3.171e8, dt[len(dt)/100]/3.171e8, dt[len(dt)/10]/3.171e8, dt[len(dt)-1]/3.171e8
+#dt = np.logspace(3,15,num=1e2)
+# for lin scaling (num=1e5), Tlin = 1.59e14s, Tquad = 1.58E14s, Thertz=1.59E14s
+# for Dz = 20nm, Tlin = 3.45E13s, Tquad = 3.43E13s, Thertz=3.45E13s
+dt = np.linspace(0,3.154e14,num=1e6)
+#print dt[1]-dt[0], dt[607]-dt[606]
+print dt[100]/3.171e7, dt[1e4]/3.171e7, dt[1e5]/3.171e7, dt[1e5-1]/3.171e7
 Rcon_new = np.zeros((len(dt), len(T)))
 dVdt_rad = np.zeros((len(dt), len(T)))
 dVdt_therm = np.zeros((len(dt), len(T)))
 
-# ----- Set initial contact radius as Hertzian (JKR) -----
-n = 1
-Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(dt, Rconjkr, n)
-print "One time"
-with open('Rconjkr.csv', 'rb') as csvfile:
-    spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow('Rconjkr', 'dVdt_rad', 'dVdt_therm')
-    for i in range(0, len(dt)):
-        spamwriter.writerow(Rcon_new[i,20]
+switches = [1,2]
+for dzswitch in switches:
+    dtstart = 0
+    if dzswitch == 2:
+        Dz = 2.0e-7
 
-# ----- Set initial contact radius as Wood/quadratic -----
-n = 2
-Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(dt, Rconminquad, n)
-print "Two time"
+    print "The interaction length scale being used is ", Dz
+    # ----- Set initial contact radius as Hertzian (JKR) -----
+    n = 1
+    Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconjkr, n, dzswitch)
+    print "One time"
+    '''    with open('Rconjkr.csv', 'rb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow('Rconjkr', 'dVdt_rad', 'dVdt_therm')
+        for i in range(0, len(dt)):
+            spamwriter.writerow(Rcon_new[i,20]
+    '''
+    # ----- Set initial contact radius as Wood/quadratic -----
+    n = 2
+    Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconminquad, n, dzswitch)
+    print "Two time"
 
-# ----- Set initial contact radius as Wood/linear -----
-n = 3
-dtl = np.linspace(1e4,1e8,num=7e4)*3.171
-dt = np.linspace(1e8,1e15,num=3e4)*3.171
-dt=np.append(dtl,dt)
-print dt[len(dt)/20000]/3.171e8, dt[len(dt)/200]/3.171e8, dt[len(dt)/20]/3.171e8, dt[len(dt)-1]/3.171e8
-Rcon_new = np.zeros((len(dt), len(T)))
-dVdt_rad = np.zeros((len(dt), len(T)))
-dVdt_therm = np.zeros((len(dt), len(T)))
+    # ----- Set initial contact radius as Wood/linear -----
+    n = 3
+    dt = np.linspace(3.154,3.154e4,num=1e5)
+#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
+#    dt=np.append(dtl,dt)
+    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    Rcon_new = np.zeros((len(dt), len(T)))
+    dVdt_rad = np.zeros((len(dt), len(T)))
+    dVdt_therm = np.zeros((len(dt), len(T)))
+    Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconminlin, n, dzswitch)
+    dtstart=len(dt)-1
+    Rconfinal=Rcon_new[dtstart,:]
+    print "Three time"
 
-Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(dt, Rconminlin, n)
+    n = 4
+    dt = np.linspace(3.154e4,3.154e8,num=1e5)
+#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
+#    dt=np.append(dtl,dt)
+    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    Rcon_new = np.zeros((len(dt), len(T)))
+    dVdt_rad = np.zeros((len(dt), len(T)))
+    dVdt_therm = np.zeros((len(dt), len(T)))
+    Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconfinal, n, dzswitch)
+    dtstart=len(dt)-1
+    Rconfinal=Rcon_new[dtstart,:]
+    print "Three time"
 
-print "Three time"
+    n = 5
+    dt = np.linspace(3.154e8,3.154e14,num=1e6)
+#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
+#    dt=np.append(dtl,dt)
+    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    Rcon_new = np.zeros((len(dt), len(T)))
+    dVdt_rad = np.zeros((len(dt), len(T)))
+    dVdt_therm = np.zeros((len(dt), len(T)))
+    Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconfinal, n, dzswitch)
+    print "Three time"
+
 
 #    print dVdtsurf[20], dVdtlat[20], dVdtvap[20]
 #    print
@@ -371,50 +426,60 @@ dRdt_therm = dVdttherm_tot/Vol_to_rad
 
 # ----- Calculate radiation induced diffusion coefficients ----
 
-Veff_surf = 4*pi*delta_surf*Rcon_var*Dz
-Veff_lat = 4*pi*Rcon_var*Dz*Dz
-Veff_sput = Dz*rg*rg*(0.25-0.125*(np.sqrt(rg*rg-Rcon_var*Rcon_var)+rg)/rg)
+for dzswitch in switches:
+   if dzswitch == 1:
+        lineT = '-'
+        Dz = 1.25e-7
+   if dzswitch == 2:
+        lineT = '--'
+        Dz = 2.0e-7
 
-inv_tau_surf = radconst*Veff_surf
-inv_tau_lat = radconst*Veff_lat
-inv_tau_sput = radconst*Veff_sput
+   Veff_surf = 4*pi*delta_surf*Rcon_var*Dz
+   Veff_lat = 4*pi*Rcon_var*Dz*Dz
+   Veff_sput = Dz*rg*rg*(0.25-0.125*(np.sqrt(rg*rg-Rcon_var*Rcon_var)+rg)/rg)
 
-Dradsurf = Dz*Dz*inv_tau_surf
-Dradlat = Dz*Dz*inv_tau_lat
-Dradsput = Dz*Dz*inv_tau_sput
-dVdtradsurf = 3*pi*Rcon_var*Dradsurf*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invT[20]/d2
-dVdtradlat = 3*pi*Rcon_var*Dradlat*gamma_sv*Omega*(K3-Km)*invkb*invT[20]
-dVdtradsput = 2*pi*Rcon_var*Dradsput*gamma_sv*Omega*invkb*invT[20]*(K3-Km)
+   inv_tau_surf = radconst*Veff_surf
+   inv_tau_lat = radconst*Veff_lat
+   inv_tau_sput = radconst*Veff_sput
 
-dVdtrad_tot = dVdtradsurf + dVdtradlat + dVdtradsput 
-dRdt_rad = dVdtrad_tot/Vol_to_rad
+   Dradsurf = Dz*Dz*inv_tau_surf
+   Dradlat = Dz*Dz*inv_tau_lat
+   Dradsput = Dz*Dz*inv_tau_sput
+   dVdtradsurf = 3*pi*Rcon_var*Dradsurf*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invT[20]/d2
+   dVdtradlat = 3*pi*Rcon_var*Dradlat*gamma_sv*Omega*(K3-Km)*invkb*invT[20]
+   dVdtradsput = 2*pi*Rcon_var*Dradsput*gamma_sv*Omega*invkb*invT[20]*(K3-Km)
+   
+   dVdtrad_tot = dVdtradsurf + dVdtradlat + dVdtradsput 
+   dRdt_rad = dVdtrad_tot/Vol_to_rad
 
-fig = plt.figure(2)
-ax2 = fig.add_subplot(2,1,2)
-ax2.loglog(Rcon_var*1e4,dVdttherm_tot, linewidth=2, color='r', label = 'Thermal total')
-ax2.loglog(Rcon_var*1e4,dVdtrad_tot, linewidth=2, color='b', label = 'Radiation total')
-ax2.loglog(Rcon_var*1e4,dVdtradsurf, color='m', label = 'Rad. surface')
-ax2.loglog(Rcon_var*1e4,dVdtradlat, color = 'g', label = 'Rad. lattice')
-ax2.loglog(Rcon_var*1e4,dVdtradsput, color='c', label = 'Rad. sputter')
-box = ax2.get_position()
-ax2.set_position([box.x0,box.y0,box.width,box.height*1.9])
-ax2.set_xlabel('Contact Radius [um]')
-ax2.set_ylabel('Volume Flow Rate [cm^3/s]')
-ax2.legend(loc = 3, prop={'size':10})
+   fig = plt.figure(2)
+   ax2 = fig.add_subplot(2,1,2)
+   ax2.loglog(Rcon_var*1e4,dVdtrad_tot, linewidth=2, color='b', label = 'Rad. total', linestyle = lineT)
+   ax2.loglog(Rcon_var*1e4,dVdtradsurf, color='m', label = 'Rad. surface', linestyle = lineT)
+   ax2.loglog(Rcon_var*1e4,dVdtradlat, color = 'g', label = 'Rad. lattice', linestyle = lineT)
+   ax2.loglog(Rcon_var*1e4,dVdtradsput, color='c', label = 'Rad. sputter', linestyle = lineT)
+   if dzswitch == 1:
+       box = ax2.get_position()
+       ax2.set_position([box.x0,box.y0,box.width,box.height*1.9])
+       ax2.set_xlabel('Contact Radius [um]')
+       ax2.set_ylabel('Volume Flow Rate [cm^3/s]')
+       ax2.loglog(Rcon_var*1e4,dVdttherm_tot, linewidth=2, color='r', label = 'Therm. tot.', linestyle = '-')
+       ax2.legend(loc = 3, prop={'size':10})
 
-ax3 = fig.add_subplot(2,1,1)
-ax3.semilogx([Rconminlin[20]*1e4,Rconminlin[20]*1e4],[1e-34,1e-24], linestyle='--', color='blue', label= 'Rcon, out (Zsc=1)', linewidth=2)
-ax3.semilogx([Rconmaxlin[20]*1e4,Rconmaxlin[20]*1e4],[1e-34,1e-24], linestyle=':', color='blue', label= 'Rcon, in (Zsc=1)', linewidth=2)
-ax3.semilogx([Rconminquad[20]*1e4,Rconminquad[20]*1e4],[1e-34,1e-24], linestyle='--', color='green', label= 'Rcon, out (Zsc=2)', linewidth=2)
-ax3.semilogx([Rconmaxquad[20]*1e4,Rconmaxquad[20]*1e4],[1e-34,1e-24], linestyle=':', color='green', label= 'Rcon, in (Zsc=2)', linewidth=2)
-ax3.semilogx([Rconjkr[20]*1e4,Rconjkr[20]*1e4],[1e-34,1e-24], linestyle='--', color='red', label= 'Rcon,Hertzian', linewidth=2)
-box = ax3.get_position()
-ax3.set_position([box.x0,box.y0+0.275,box.width,box.height*0.2])
-ax3.legend(prop={'size':8},ncol=5, bbox_to_anchor=(-0.1,2),loc=6)
-plt.setp(ax3.get_yticklabels(), visible=False)
-ax3.xaxis.tick_top()
-
-plt.savefig('./Vol_Sint_Rates.png',dpi=600) 
+       ax3 = fig.add_subplot(2,1,1)
+       ax3.semilogx([Rconminlin[20]*1e4,Rconminlin[20]*1e4],[0,1], linestyle='--', color='blue', label= 'Rcon, out (Zsc=1)', linewidth=2)
+       ax3.semilogx([Rconmaxlin[20]*1e4,Rconmaxlin[20]*1e4],[0,1], linestyle=':', color='blue', label= 'Rcon, in (Zsc=1)', linewidth=2)
+       ax3.semilogx([Rconminquad[20]*1e4,Rconminquad[20]*1e4],[0,1], linestyle='--', color='green', label= 'Rcon, out (Zsc=2)', linewidth=2)
+       ax3.semilogx([Rconmaxquad[20]*1e4,Rconmaxquad[20]*1e4],[0,1], linestyle=':', color='green', label= 'Rcon, in (Zsc=2)', linewidth=2)
+       ax3.semilogx([Rconjkr[20]*1e4,Rconjkr[20]*1e4],[0,1], linestyle='--', color='red', label= 'Rcon,Hertzian', linewidth=2)
+       box = ax3.get_position()
+       ax3.set_position([box.x0,box.y0+0.275,box.width,box.height*0.2])
+       ax3.legend(prop={'size':8},ncol=5, bbox_to_anchor=(-0.1,2),loc=6)
+       plt.setp(ax3.get_yticklabels(), visible=False)
+       ax3.xaxis.tick_top()
+    
+   if dzswitch == 2:
+       plt.savefig('./Vol_Sint_Rates.png',dpi=600) 
 
 #plt.show()
 

@@ -15,10 +15,25 @@ Escale = 1e6 # Convert bar to erg/cm^3 (for mechanical constants)
 # Define several global (moon=Mimas) parameters
 kMout = 69 # erg/cm/s/K, Effective TC at Mimas outside the anomaly
 kMin = 1170 # erg/cm/s/K, Effective TC at Mimas inside the anomaly
-rg = 25E-4 # cm, approximate grain radius (25 um)
-phi = 0.5 # Assume 50% porosity for now
-Phi_elec = 2e3 # elec/cm^2/s, approximate incident electron flux
-dEdz = (1e6)*1.602e-12 # (eV)erg/cm, energy deposition rate
+kTout = 6.53 # erg/cm/s/K, Effective TC at Tethys outside the anomaly
+kTin = 163 # erg/cm/s/K, Effective TC at Tethys inside the anomaly
+kDtrail = 17.1 # erg/cm/s/K, Effective TC at Dione on the trailing hemisphere
+kDlead = 32.4 # erg/cm/s/K, Effective TC at Dione on the leading hemisphere
+
+rg = 25E-4 # cm, approximate grain radius (25 um) (all bodies)
+phi = 0.5 # Assume 50% porosity for now (all bodies)
+Phi_elec_Mimas = 8.2e3 # elec/cm^2/s, incident electron flux at Mimas
+Phi_elec_Tethys = 2.1e2 # elec/cm^2/s, incident electron flux at Tethys
+Phi_elec_Dione = 2.8e2 # elec/cm^2/s, incident electron flux at Dione
+
+# For now assume an average energy loss for all depths
+# Should eventually use Penelope results to give vs. depth
+dEdz = (1e6)*1.602e-12 # (eV)erg/cm, energy deposition rate at Mimas
+
+# Perform calculations for which body?
+kin = kDlead	
+kout = kDtrail
+Phi_elec = Phi_elec_Dione
 
 # Define water ice parameters
 gamma_ss = 65 # erg/cm^2, ice/ice (grain boundary) surface energy
@@ -47,6 +62,12 @@ Rconminquad = 0 # 'lin' and 'quad' assume linear and quadratic dependence
 #Determine the Wood TC eqn pre-factor
 Apflin = (1/(Ysc*Nc))*(2*np.sqrt(Nc-1)*rg/Nc)**(Zsc1)
 Apfquad = (1/(Ysc*Nc))*(2*np.sqrt(Nc-1)*rg/Nc)**(Zsc2)
+
+# ------ Define Sirono and Yamamoto model parameters ------
+g = 4
+pc = 0.333
+p = 6*(1-phi)/pi
+SYpf = ((1-pc)/(p-pc))*g*rg*rg/pi
 
 # generate a logrithmically scaled array where the initial values (integers) are scaled more rapidly than the later
 def gen_log_space(limit, n):
@@ -115,8 +136,18 @@ def calc_Rcon(Rcon, n, dzswitch):
 
     if n  > 2:
         Rconmax = Rconmaxlin
+        prec = 8
+        kyr1 = len(dt)*1e-4
+        kyr100 = len(dt)*1e-2
+        Myr1 = len(dt)*1e-1
     else:
         Rconmax = Rconmaxquad
+        prec = 9
+        kyr1 = 1.01e4
+        kyr100 = 2e4
+        Myr1 = 1.1e5
+    Myr10 = len(dt)-1
+
 
     for j in range(len(dt)):
         Rnc = Rcon**2/(2*(rg-Rcon))
@@ -184,7 +215,7 @@ def calc_Rcon(Rcon, n, dzswitch):
         dt_prev = dt[j]
         invRcon = 1/Rcon
         
-        if round(abs(Rcon[20]-Rconmax[20]), 7) == 0:
+        if round(abs(Rcon[20]-Rconmax[20]), prec) == 0:
             print dt[j]
     
     if dzswitch == 1:
@@ -196,43 +227,45 @@ def calc_Rcon(Rcon, n, dzswitch):
     else:
         col = 3
 
+    if n==5:
+        Rconmin=Rconminlin
+
     if n == 3:
-        print "timestep = %d" % dt[j]/3.154e7
+        print "timestep = %d" % (dt[j]/3.154e7)
     elif n == 4:
-        print "timestep = %d" % dt[j]/3,154e7
+        print "timestep = %d" % (dt[j]/3.154e7)
     else:
         fig = plt.figure(1)
         ax1 = fig.add_subplot(1, 3, col)
-        ax1.semilogy(T,Rconmin*1E4, linewidth=2, color='red', label = 'Rcon, out', linestyle = '-')
-        ax1.semilogy(T,Rcon_new[len(dt)/1e5,:]*1e4, label= 't=1 kyr', linestyle = lineT, color='k')
-        ax1.semilogy(T,Rcon_new[len(dt)/1e4,:]*1e4, label= 't=100 kyr', linestyle = lineT, color='g')
-        ax1.semilogy(T,Rcon_new[len(dt)/1e3,:]*1e4, label= 't=1 Myr', linestyle = lineT, color='b')
-        ax1.semilogy(T,Rcon_new[len(dt)-1,:]*1e4, label= 't=10 Myr', linestyle = lineT,color='m')
-        ax1.semilogy(T,Rconmax*1e4, linewidth=2, color='blue', label= 'Rcon, in', linestyle = '-')
+        ax1.semilogy(T,Rconmin*1E4, linewidth=2, color='k', label = 'Rcon, out', linestyle = '-')
+        ax1.semilogy(T,Rcon_new[kyr1,:]*1e4, label= 't=1 kyr', linestyle = lineT, color='b')
+        ax1.semilogy(T,Rcon_new[kyr100,:]*1e4, label= 't=100 kyr', linestyle = lineT, color='c')
+        ax1.semilogy(T,Rcon_new[Myr1,:]*1e4, label= 't=1 Myr', linestyle = lineT, color='g')
+        ax1.semilogy(T,Rcon_new[Myr10,:]*1e4, label= 't=10 Myr', linestyle = lineT,color='m')
+        ax1.semilogy(T,Rconmax*1e4, linewidth=2, color='r', label= 'Rcon, in', linestyle = '-')
         ax1.set_xlim(60,105)
         major_ticks=np.arange(60,101,10)
         ax1.set_xticks(major_ticks)
-        if n < 4:
+        if dzswitch == 1:
             box = ax1.get_position()
             ax1.set_position([box.x0,box.y0+0.05,box.width,box.height*0.95])
-        if dzswitch == 1:
             if n == 1:        
                 ax1.set_title('Hertzian')
                 ax1.set_ylabel('Contact Radius [um]')
-                ax1.set_ylim(1e-1,10)
+                ax1.set_ylim(1e-2,10)
             if n == 2:
                 ax1.set_title('Wood Quadratic')
                 plt.setp(ax1.get_yticklabels(), visible=False)
                 ax1.set_xlabel('Temperature[K]')
-                ax1.set_ylim(1e-1,10)
+                ax1.set_ylim(1e-2,10)
             if n == 5:
                 ax1.set_title('Wood Linear')
                 ax1.yaxis.tick_right()
                 ax1.set_ylim(1e-2,10)
          #       plt.setp(ax1.get_yticklabels(), visible=False)
                 ax1.legend(loc = 'upper center', bbox_to_anchor=(-.8,-0.1), ncol=6, prop={'size':10})
-        if dzswitch == 2:
-            plt.savefig('./Rcon_vs_t.png',dpi=600) 
+#        if dzswitch == 2:
+                plt.savefig('./Rcon_vs_t.png',dpi=600) 
 
     return Rcon_new, dVdt_rad, dVdt_therm
 
@@ -279,15 +312,21 @@ for i in range(len(T)):
     Rconjkr[i] = ((0.75*(1-Prat[i]*Prat[i])*rg*Fjkr)/Ymod[i])**(jkrpow)
 
 # ----- Calculate linear and quadratic minimum contact radius from the Wood model -----
-Rconminlin = (Apflin*.5*kMout*(2+phi)/(kxice*(1-phi)))
-Rconmaxlin = (Apflin*.5*kMin*(2+phi)/(kxice*(1-phi)))
-Rconminquad = np.sqrt(Apfquad*.5*kMout*(2+phi)/(kxice*(1-phi)))
-Rconmaxquad = np.sqrt(Apfquad*.5*kMin*(2+phi)/(kxice*(1-phi)))
+Rconminlin = (Apflin*.5*kout*(2+phi)/(kxice*(1-phi)))
+Rconmaxlin = (Apflin*.5*kin*(2+phi)/(kxice*(1-phi)))
+Rconminquad = np.sqrt(Apfquad*.5*kout*(2+phi)/(kxice*(1-phi)))
+Rconmaxquad = np.sqrt(Apfquad*.5*kin*(2+phi)/(kxice*(1-phi)))
+RconminSY = np.sqrt((kout/kxice)*SYpf)
+RconmaxSY = np.sqrt((kin/kxice)*SYpf)
 chiminlin = (Rconminlin/(rg*0.4739))**4
 chiminquad = (Rconminquad/(rg*.4739))**4
 
 print "Rconminlin = %.2e" % (Rconminlin[20]*1E4), " um"
+print "Rconmaxlin = %.2e" % (Rconmaxlin[20]*1e4), " um"
 print "Rconminquad = %.2e" % (Rconminquad[20]*1E4), " um"
+print "Rconmaxquad = %.2e" % (Rconmaxquad[20]*1e4), " um"
+print "RconSYmax = %.2e" % (RconmaxSY[20]*1e4), " um"
+print "RconSYmin = %.2e" % (RconminSY[20]*1e4), " um"
 print "Rconjkr = %.2e" % (Rconjkr[20]*1e4), " um"
 '''print "Chiminlin = %.3e" % (chiminlin[1]/100), " um"
 print "Chiminquad = %.3e" % (chiminquad[1]/100), " um" 
@@ -303,16 +342,20 @@ plt.legend() '''
 # dt determines the time step for the simulation. This can be log or linear scaled.
 # for log scaling (num=1e4), Tlin = 4.4E10s, Tquad=1.58E14s, Thertz=1.59E14s
 #dt = np.logspace(3,15,num=1e2)
-# for lin scaling (num=1e5), Tlin = 1.59e14s, Tquad = 1.58E14s, Thertz=1.59E14s
-# for Dz = 20nm, Tlin = 3.45E13s, Tquad = 3.43E13s, Thertz=3.45E13s
-dt = np.linspace(0,3.154e14,num=1e6)
-#print dt[1]-dt[0], dt[607]-dt[606]
-print dt[100]/3.171e7, dt[1e4]/3.171e7, dt[1e5]/3.171e7, dt[1e5-1]/3.171e7
+# Mimas (lin num=1e5): Tlin = 8E9s, Tquad = 3.85E13s, Thertz = 3.885E13s
+# Tethys: Tlin = 1.9E7s, Tquad = 5.33E13s, Thertz = 5.33E13s
+# Dione: Tlin = 188s, Tquad = 1.49E12s , Thertz = 1.49E12s
+
+# for Dz = 20nm, Tlin = s, Tquad = s, Thertz = s
+dtl = np.linspace(0,3.154e8,num=1e4)
+dt = np.linspace(3.154e8,3.154e14,num=9.9e5)
+dt=np.append(dtl,dt)   
+print dt[1.01e4]/3.171e7, dt[2e4]/3.171e7, dt[1.1e5]/3.171e7, dt[1e6-1]/3.171e7
 Rcon_new = np.zeros((len(dt), len(T)))
 dVdt_rad = np.zeros((len(dt), len(T)))
 dVdt_therm = np.zeros((len(dt), len(T)))
 
-switches = [1,2]
+switches = [1]
 for dzswitch in switches:
     dtstart = 0
     if dzswitch == 2:
@@ -336,10 +379,8 @@ for dzswitch in switches:
 
     # ----- Set initial contact radius as Wood/linear -----
     n = 3
-    dt = np.linspace(3.154,3.154e4,num=1e5)
-#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
-#    dt=np.append(dtl,dt)
-    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    dt = np.linspace(0,3.154e4,num=1e5)
+    print dt[len(dt)-1]/3.171e7, dt[len(dt)*1e-1]/3.171e7, dt[len(dt)*1e-2]/3.171e7, dt[len(dt)*1e-4]/3.171e7
     Rcon_new = np.zeros((len(dt), len(T)))
     dVdt_rad = np.zeros((len(dt), len(T)))
     dVdt_therm = np.zeros((len(dt), len(T)))
@@ -349,10 +390,8 @@ for dzswitch in switches:
     print "Three time"
 
     n = 4
-    dt = np.linspace(3.154e4,3.154e8,num=1e5)
-#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
-#    dt=np.append(dtl,dt)
-    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    dt = np.linspace(3.154e4,3.154e9,num=1e5)
+    print dt[len(dt)-1]/3.171e7, dt[len(dt)*1e-1]/3.171e7, dt[len(dt)*1e-2]/3.171e7, dt[len(dt)*1e-4]/3.171e7
     Rcon_new = np.zeros((len(dt), len(T)))
     dVdt_rad = np.zeros((len(dt), len(T)))
     dVdt_therm = np.zeros((len(dt), len(T)))
@@ -362,10 +401,8 @@ for dzswitch in switches:
     print "Three time"
 
     n = 5
-    dt = np.linspace(3.154e8,3.154e14,num=1e6)
-#    dt = np.linspace(1e8,1e15,num=3e5)*3.171
-#    dt=np.append(dtl,dt)
-    print dt[len(dt)-1]/3.171e8, dt[len(dt)*1e-1]/3.171e8, dt[len(dt)*1e-2]/3.171e8, dt[len(dt)*1e-4]/3.171e8
+    dt = np.linspace(3.154e9,3.154e14,num=1e6)
+    print dt[len(dt)-1]/3.171e7, dt[len(dt)*1e-1]/3.171e7, dt[len(dt)*1e-2]/3.171e7, dt[len(dt)*1e-4]/3.171e7
     Rcon_new = np.zeros((len(dt), len(T)))
     dVdt_rad = np.zeros((len(dt), len(T)))
     dVdt_therm = np.zeros((len(dt), len(T)))
@@ -425,7 +462,7 @@ dVdttherm_tot = dVdtsurf + dVdtlat + dVdtvap
 dRdt_therm = dVdttherm_tot/Vol_to_rad
 
 # ----- Calculate radiation induced diffusion coefficients ----
-
+switches = [1,2]
 for dzswitch in switches:
    if dzswitch == 1:
         lineT = '-'

@@ -31,11 +31,6 @@ Phi_elec_Dione = 2.8e2 # elec/cm^2/s, incident electron flux at Dione
 # Should eventually use Penelope results to give vs. depth
 dEdz = (1e6)*1.602e-12 # (eV)erg/cm, energy deposition rate at Mimas
 
-# Perform calculations for which body?
-kin = kMin
-kout = kMout
-Phi_elec = Phi_elec_Mimas
-
 # Define water ice parameters
 gamma_ss = 65 # erg/cm^2, ice/ice (grain boundary) surface energy
 gamma_sv = 109 # erg/cm^2, ice/vapor (free surface) surface energy
@@ -44,8 +39,6 @@ delta_surf = 3.19e-8 # cm, effective surface (atomic layer) thickness (cube root
 Omega = 3.25e-23 # cm^3, molar volume
 rho_ice = 0.934 # g/cm^3, density of water ice @ 80K
 WH2O = (27)*1.602e-12 # (eV)erg, average energy deposited in an excitation event
-
-radconst = dEdz*Phi_elec/WH2O
 
 # Calculate the approximate length scale of an electron excitation event
 Ei = 5 # eV, heating energy to lattice
@@ -138,14 +131,14 @@ def calc_Rcon(Rcon, n, dzswitch):
         Rconmax = Rconmaxlin
         Rconmin = Rconminlin
         prec = 7
-    elif n == 1:
+    if n == 1:
         Rconmax = Rconmaxquad
         Rconmin = Rconjkr
         prec = 6
-    else:
-        Rconmax = Rconmaxquad
-        Rconmin = Rconminquad
-        prec = 6
+#    if n == 2:
+    Rconmax = Rconmaxquad
+    Rconmin = Rconminquad
+    prec = 7
 
     kyr1 = 10
     kyr10 = len(dt)*1e-2
@@ -218,12 +211,10 @@ def calc_Rcon(Rcon, n, dzswitch):
         if round(abs(Rcon[20]-Rconmax[20]), prec) == 0:
             print 'The max contact radius was reached in %.3e seconds' % dt[j]
 
-    if dzswitch == 1:
-        lineT = '-'
-    if dzswitch == 2:
-        lineT = '--'
+    lineT = '-'
+    
     if n < 4:
-        col = n
+        col = dzswitch
     else:
         col = 3
 
@@ -245,29 +236,27 @@ def calc_Rcon(Rcon, n, dzswitch):
         ax1.set_xlim(60,105)
         major_ticks=np.arange(60,101,10)
         ax1.set_xticks(major_ticks)
+        box = ax1.get_position()
+        ax1.set_position([box.x0,box.y0+0.05,box.width,box.height*0.95])
         if dzswitch == 1:
-            box = ax1.get_position()
-            ax1.set_position([box.x0,box.y0+0.05,box.width,box.height*0.95])
-            if n == 1:
-                ax1.set_title('Hertzian')
-                ax1.set_ylabel('Contact Radius [um]')
-                ax1.set_ylim(1e-1,10)
-            if n == 2:
-                ax1.set_title('Wood Quadratic')
-                plt.setp(ax1.get_yticklabels(), visible=False)
-                ax1.set_xlabel('Temperature[K]')
-                ax1.set_ylim(1e-1,10)
-            if n == 5:
-                ax1.set_title('Wood Linear')
-                ax1.yaxis.tick_right()
-                ax1.set_ylim(1e-2,10)
+            ax1.set_title('Mimas')
+            ax1.set_ylabel('Contact Radius [um]')
+#            ax1.set_ylim(1e-1,10)
+        if dzswitch == 2:
+            ax1.set_title('Tethys')
+            plt.setp(ax1.get_yticklabels(), visible=False)
+            ax1.set_xlabel('Temperature[K]')
+#            ax1.set_ylim(1e-1,10)
+        if dzswitch == 3:
+            ax1.set_title('Dione')
+            ax1.yaxis.tick_right()
+#            ax1.set_ylim(1e-2,10)
          #       plt.setp(ax1.get_yticklabels(), visible=False)
-                ax1.legend(loc = 'upper center', bbox_to_anchor=(-.8,-0.1), ncol=6, prop={'size':10})
-                #        if dzswitch == 2:
+            ax1.legend(loc = 'upper center', bbox_to_anchor=(-.8,-0.1), ncol=6, prop={'size':10})
+
             plt.savefig('./Rcon_vs_t.png',dpi=600)
 
     return Rcon_new, dVdt_rad, dVdt_therm
-
 
 
 # ----------- Begin main program -------------------------------------------
@@ -312,24 +301,6 @@ for i in range(len(T)):
     Prat[i] = -ltSij[0,1,i]/ltSij[0,0,i]
     Rconjkr[i] = ((0.75*(1-Prat[i]*Prat[i])*rg*Fjkr)/Ymod[i])**(jkrpow)
 
-# ----- Calculate linear and quadratic minimum contact radius from the Wood model -----
-Rconminlin = (Apflin*kout*(1+0.5*phi)/(kxice*(1-phi)))
-Rconmaxlin = (Apflin*kin*(1+0.5*phi)/(kxice*(1-phi)))
-Rconminquad = np.sqrt(Apfquad*kout*(1+0.5*phi)/(kxice*(1-phi)))
-Rconmaxquad = np.sqrt(Apfquad*kin*(1+0.5*phi)/(kxice*(1-phi)))
-RconminSY = np.sqrt((kout/kxice)*SYpf)
-RconmaxSY = np.sqrt((kin/kxice)*SYpf)
-chiminlin = (Rconminlin/(rg*0.4739))**4
-chiminquad = (Rconminquad/(rg*.4739))**4
-
-print "Rconminlin = %.2e" % (Rconminlin[20]*1E4), " um"
-print "Rconmaxlin = %.2e" % (Rconmaxlin[20]*1e4), " um"
-print "Rconminquad = %.2e" % (Rconminquad[20]*1E4), " um"
-print "Rconmaxquad = %.2e" % (Rconmaxquad[20]*1e4), " um"
-print "RconSYmax = %.2e" % (RconmaxSY[20]*1e4), " um"
-print "RconSYmin = %.2e" % (RconminSY[20]*1e4), " um"
-print "Rconjkr = %.2e" % (Rconjkr[20]*1e4), " um"
-
 # dt determines the time step for the simulation. This can be log or linear scaled.
 
 #dt = np.logspace(3,15,num=1e2)
@@ -342,14 +313,47 @@ Rcon_new = np.zeros((len(dt), len(T)))
 dVdt_rad = np.zeros((len(dt), len(T)))
 dVdt_therm = np.zeros((len(dt), len(T)))
 
-switches = [1]
+switches = [1,2,3]
 for dzswitch in switches:
     dtstart = 0
+    if dzswitch == 1:
+    # Perform calculations for which body?
+        kin = kMin
+        kout = kMout
+        Phi_elec = Phi_elec_Mimas
     if dzswitch == 2:
-        Dz = 2.0e-7
+        kin = kTin
+        kout = kTout
+        Phi_elec = Phi_elec_Tethys
+    if dzswitch == 3:
+        kin = kDlead
+        kout = kDtrail
+        Phi_elec = Phi_elec_Dione
+
+    radconst = dEdz*Phi_elec/WH2O
+
+# ----- Calculate linear and quadratic minimum contact radius from the Wood model -----
+    Rconminlin = (Apflin*kout*(1+0.5*phi)/(kxice*(1-phi)))
+    Rconmaxlin = (Apflin*kin*(1+0.5*phi)/(kxice*(1-phi)))
+    Rconminquad = np.sqrt(Apfquad*kout*(1+0.5*phi)/(kxice*(1-phi)))
+    Rconmaxquad = np.sqrt(Apfquad*kin*(1+0.5*phi)/(kxice*(1-phi)))
+    RconminSY = np.sqrt((kout/kxice)*SYpf)
+    RconmaxSY = np.sqrt((kin/kxice)*SYpf)
+    chiminlin = (Rconminlin/(rg*0.4739))**4
+    chiminquad = (Rconminquad/(rg*.4739))**4
+    
+    print "Rconminlin = %.2e" % (Rconminlin[20]*1E4), " um"
+    print "Rconmaxlin = %.2e" % (Rconmaxlin[20]*1e4), " um"
+    print "Rconminquad = %.2e" % (Rconminquad[20]*1E4), " um"
+    print "Rconmaxquad = %.2e" % (Rconmaxquad[20]*1e4), " um"
+    print "RconSYmax = %.2e" % (RconmaxSY[20]*1e4), " um"
+    print "RconSYmin = %.2e" % (RconminSY[20]*1e4), " um"
+    print "Rconjkr = %.2e" % (Rconjkr[20]*1e4), " um"
 
     print "The interaction length scale being used is ", Dz
-    # ----- Set initial contact radius as Hertzian (JKR) -----
+
+# ----- Set initial contact radius as Hertzian (JKR) -----
+    '''
     n = 0
     dt = np.linspace(0,3.154e9,num=1e4)
     Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconjkr, n, dzswitch)
@@ -361,12 +365,13 @@ for dzswitch in switches:
 
     Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconfinal, n, dzswitch)
     print "One time"
-    '''    with open('Rconjkr.csv', 'rb') as csvfile:
+    with open('Rconjkr.csv', 'rb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow('Rconjkr', 'dVdt_rad', 'dVdt_therm')
         for i in range(0, len(dt)):
             spamwriter.writerow(Rcon_new[i,20]
     '''
+
     # ----- Set initial contact radius as Wood/quadratic -----
     n = 0
     dt = np.linspace(0,3.154e9,num=1e4)
@@ -380,6 +385,7 @@ for dzswitch in switches:
     print "Two time"
 
     # ----- Set initial contact radius as Wood/linear -----
+    '''
     n = 3
     dt = np.linspace(0,3.154e5,num=1e4)
     Rcon_new = np.zeros((len(dt), len(T)))
@@ -406,4 +412,4 @@ for dzswitch in switches:
     dVdt_rad = np.zeros((len(dt), len(T)))
     dVdt_therm = np.zeros((len(dt), len(T)))
     Rcon_new, dVdt_rad, dVdt_therm = calc_Rcon(Rconfinal, n, dzswitch)
-    print "Three time"
+    print "Three time" '''

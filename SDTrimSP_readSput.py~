@@ -8,37 +8,29 @@ def read_exptfile(fn):
         line = lines.split(',')
         if 'Energies' in lines:
             Header = line
-            exptName = Header[2]
 #            print Header
         elif line[2] == '':
             continue
         else:
             energies.append(float(line[0]))
             exptFlux_HeSiO2.append(float(line[2]))
+            elemName = Header[2]
 #            print energies
 
-    return exptName, energies, exptFlux_HeSiO2
+    return elemName, energies, exptFlux_HeSiO2
             
 def read_logfile(fn):
     import numpy as np
     with open(fn,'r') as logfile:
         contents = logfile.read()
-    logfile.close()
 
     lines = contents.split('\n')
     count = 1
-    e_set = 0
     readData = 0
     energline = 0
-    potline = 0
     fluline = 0
     sysLine = 0
-    targetline = 0
     elemName = []
-    Ecutoff=[]
-    Edispl=[]
-    Ebulkb=[]
-    Esurfb=[]
     elementNum=[]
     incidentF=[]
     reflectedF=[]
@@ -49,6 +41,8 @@ def read_logfile(fn):
     for line in lines:
         if 'SDTrimSP' in line:
             version = line # Read in the version of SDTrimSP being used
+        if '->' in line:
+            descrip = line
         if ' CPT          E0      AlPHA0       INEL0' in line:
             energline = count
         if energline > 0 and count == energline + 1:
@@ -58,37 +52,15 @@ def read_logfile(fn):
             fluline = count
         if fluline > 0 and count == fluline + 1:
             columns = line.split()
-            fluence = columns[0] # x10^16 ions/cm^2/s
-        if 'SYMBOL A-Z  A-MASS' in line:
+            fluence = columns[0]
+        if 'CPT  SYMBOL A-Z  A-MASS        DNS0         RHO' in line:
             sysLine = count
         if sysLine > 0 and count in range(sysLine+1, sysLine+4):
             columns = line.split()
             elemName.append(columns[1])
-        if 'CPT    E_CUTOFF     E_DISPL     E_BULKB     E_SURFB' in line:
-            e_set = count
-        if e_set > 0 and count in range(e_set+1, e_set+4):    
-            columns=line.split()
-            if line.strip()=='':
-                for i in range(3):
-                    Ecutoff.append(0)
-                    Edispl.append(0)
-                    Ebulkb.append(0)
-                    Esurfb.append(0)
-                e_set=0
-            else:
-                Ecutoff.append(float(columns[1]))
-                Edispl.append(float(columns[2]))
-                Ebulkb.append(float(columns[3]))
-                Esurfb.append(float(columns[4]))
-        if 'NH  NR-PPROJ       NCP     IDREL      SFIN      IPOT' in line:
-            potline = count
-        if potline > 0 and count == potline + 1:
-            columns = line.split()
-            nh = columns[0]
-            nr_proj = columns[1]
-            ipot = columns[5]
         if 'cpt    incident   reflected   reemitted   sputtered   deposited' in line:
             readData = count
+#            print "The sputter data starts on line ", readData+1
         if readData > 0 and count in range(readData+1, readData+4):
             columns = line.split()
             elementNum.append(int(columns[0]))
@@ -97,25 +69,18 @@ def read_logfile(fn):
             reemittedF.append(float(columns[3]))
             sputteredF.append(float(columns[4]))
             depositedF.append(float(columns[5]))
-        if 'composit.   mol.mass    rhom  atoms/A**3   deltahf' in line:
-            targetline = count
-        if targetline > 0 and count == targetline + 1:
-            columns = line.split()
-            target = columns[0]
-            mdens = columns[2]
-            adens = columns[3]
-            deltahf = columns[4]
+#            print "Line ", count, ", Sputter Flux = ", columns[4]
+        
         count +=1
     
-    simName = '{}->{}, ipot = {}'.format(elemName[0],target,ipot) #Edispl[1]
+#    print "The incident ion energy is " + name
 
-    return simName, fluence, energy, elemName, sputteredF
+    return fluence, energy, elemName, sputteredF
 
 def read_sputfile(fn):
     import numpy as np
     with open(fn,'r') as sputfile:
         contents = sputfile.read()
-    sputfile.close()
 
     lines = contents.split('\n')
     num=1
@@ -136,8 +101,7 @@ def read_sputfile(fn):
         if 'SDTrimSP' in line:
             version = line # Read in the version of SDTrimSP being used
         if '->' in line:
-            descrip = line.split()
-            target = line[4]
+            descrip = line
         if 'nh     idout       ncp   fluence' in line:
             paramLabel = line.split(None)
             pn = num
@@ -170,7 +134,10 @@ def read_sputfile(fn):
                 sputdat3.append(row[2])
         num += 1
 
+    sputfile.close()
+
     numSteps = len(fsteps)
+
     specFlu1 = []
     specFlu2 = []
     specFlu3 = []
@@ -192,7 +159,7 @@ def read_sputfile(fn):
  #   print len(fsteps), len(specFlu1), len(specFlu2), len(specFlu3), numSteps
  #   print fsteps[numSteps-1], specFlu1[numSteps-1], specFlu2[numSteps-1], specFlu3[numSteps-1]
 
-    return species, fsteps, specFlu1, specFlu2, specFlu3
+    return descrip, species, fsteps, specFlu1, specFlu2, specFlu3
 
 
 def movingaverage(interval, window_size):

@@ -36,10 +36,10 @@ def plot_sputYld(elemName, energies, Flux1, Flux2, Flux3, sC):
     totFlu = [x+y for x,y in zip(Flux2,Flux3)]
     if sC % 2 ==0:
         LT = '-'
-        ax1.loglog(energies,totFlu, label="{0}".format(elemName[1]), linestyle = LT)
+        ax1.semilogx(energies,totFlu, label="{0}".format(elemName[1]), linestyle = LT)
     else:
         LT = '-.'
-        ax1.loglog(energies,totFlu, linestyle = LT)
+        ax1.semilogx(energies,totFlu, linestyle = LT)
     #ax1.plot(energies,Flux3, c='b', label="{0}".format(elemName[2]))    
     leg = ax1.legend()
 

@@ -216,7 +216,7 @@ print "Vmaxquad = %.3e" % (Vmaxquad[20]*1e4**3), "um^3"
 #Dradlat = Dz*Dz*inv_tau_lat
 inv_tau_vac = Nvac*radconst
 Drad_eff = lat_const*lat_const*inv_tau_vac/6
-phi_sput = c_geo*Dz*radconst # sputtered flux divided by the molecular number density
+phi_sput = c_geo*Dz*radconst*nH2O # sputtered flux divided by the molecular number density
 
 '''
 fig1 = plt.figure(1)
@@ -325,22 +325,10 @@ for dzswitch in switches:
     dRdttherm_tot = dVdttherm_tot/Vol_to_rad
 
 # ----- Calculate radiation induced diffusion coefficients ----
-#    Veff_surf = 4*pi*delta_surf*Rcon_var*Dz
-#    Veff_lat = 2*pi*Rcon_var*Rcon_var*Dz
-#    Veff_sput = Dz*rg*rg*(0.25-0.125*(np.sqrt(rg*rg-Rcon_var*Rcon_var)+rg)/rg)
-
-#    inv_tau_surf = radconst*Veff_surf
-#    inv_tau_lat = radconst*Veff_lat
-#    inv_tau_sput = radconst*Veff_sput
-    
-#    Dradsurf = Dz*Dz*inv_tau_surf
-#    Dradlat = Dz*Dz*inv_tau_lat
-#    Dradsput = Dz*Dz*inv_tau_sput
-
     dVdtradsurf = 3*pi*Rcon_var*Drad_eff*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invTc/d2
     dVdtradlat = 3*pi*Rcon_var*Drad_eff*gamma_sv*Omega*(K3-Km)*invkb*invTc
     dVdtradsput = 2*pi*Rcon_var*theta*Rnc*phi_sput*gamma_sv*Omega*invkb*invTc*(K3-Km)
-#    dVdtradsput = 2*pi*Rcon_var*Dradsput*gamma_sv*Omega*invkb*invTc*(K3-Km)
+#    dVdtradsput = 2*pi*Rcon_var*theta*Dradsput*gamma_sv*Omega*invkb*invTc*(K3-Km)
 
     dRdtradsurf=dVdtradsurf/Vol_to_rad
     dRdtradlat=dVdtradlat/Vol_to_rad

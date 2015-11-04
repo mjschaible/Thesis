@@ -103,11 +103,12 @@ kaice = 7.1e2*T # [erg/cm/s/K], TC of amorphous water ice
 # ----- Calculate thermal diffusion coefficients for ice -----
 invR = 1/8.314 # [R] = [J/mol K], gas constant
 DsurfIc = 1.74e5 * np.exp(-38.2e3*invR*invT) # cm^2/s, from Kouchi 1994
-#Dsurf = 3e2 * np.exp(-44.13e3*invR*invT) # cm^2/s, from Maeno and Ebinume, 1983
-Dsurf = 1.4e-4*np.exp(-23.2e3*invR*invT)  # cm^2/s, from Nasello et al 1994
+Dsurf = 3e2 * np.exp(-44.13e3*invR*invT) # cm^2/s, from Maeno and Ebinume, 1983
+#Dsurf = 1.4e-4*np.exp(-23.2e3*invR*invT)  # cm^2/s, from Nasello et al 1994
 DlatLDA = 7e-6*np.exp(-15e3*invR*invT) # from Ghesquiere 2015
 DlatIh = 1e-10*np.exp(-9e3*invR*invT) # from Ghesquiere 2015
 DlatB = 4.2e8*np.exp(-71.1e3*invR*invT) # from Livingston 1998
+Dlat = 1.5e-11*np.exp(-59.8e3*invR*invT)  # cm^2/s, from Nasello et al 1994
 Dvac = 1e-3*np.exp(-0.62*invT/8.62e-5) # from Hobbs, 1974
 Dgb = 8.4*np.exp(-49e3*invR*invT) # from ....
 
@@ -125,23 +126,23 @@ Ea_bulk_min = (0.6)*1.602e-12 # (eV) erg, min bulk activation energy
 Ea_bulk_max = (0.75)*1.602e-12 # (eV) erg, max bulk activation energy 
 
 Ea_surf_min = (0.2)*1.602e-12 # (eV) erg, min surface diffusion activation energy
-Ea_surf_min = (0.5)*1.602e-12 # (eV) erg, max surface diffusion activation energy
+Ea_surf_max = (0.5)*1.602e-12 # (eV) erg, max surface diffusion activation energy
 
 Nmob_surf_max = beta * DeltaE / (Ea_surf_max) # number of surface molecules mobilized per ionization
-Nmob_surf_max = beta * DeltaE / (Ea_surf_max) # number of surface molecules mobilized per ionization
+Nmob_surf_min = beta * DeltaE / (Ea_surf_min) # number of surface molecules mobilized per ionization
 
 Nmob_bulk_max = beta * DeltaE / (Ea_bulk_max) # number of surface molecules mobilized per ionization
-Nmob_bulk_max = beta * DeltaE / (Ea_bulk_max) # number of surface molecules mobilized per ionization
+Nmob_bulk_min = beta * DeltaE / (Ea_bulk_min) # number of surface molecules mobilized per ionization
 
-N_FP = 0.8*DeltaE/(2 U)
+N_FP = 0.8*DeltaE/(2*UH2O)
 
 Deff_mc_surf_min = Nmob_surf_min*Dz_min*Dz_min *invtau/4
 Deff_mc_surf_max = Nmob_surf_max*Dz_max*Dz_max *invtau/4
 Deff_mc_bulk_min = Nmob_bulk_min*Dz_min*Dz_min *invtau/6
 Deff_mc_bulk_max = Nmob_bulk_max*Dz_max*Dz_max *invtau/6
 
-Deff_esd_mid = 2*alpha_v*d_vac*d_vac*Nmob_bulk*invtau 
-Deff_esd_low = (alpha_v*Nmob_bulk*Dvac*invtau/(pi*nH2O*R_iv))**0.5
+Deff_esd_mid = 2*alpha_v*d_vac*d_vac*N_FP*invtau 
+Deff_esd_low = (alpha_v*N_FP*Dvac*invtau/(pi*nH2O*R_iv))**0.5
 
 Deff_surf_min = Deff_mc_surf_min + Deff_esd_mid + Deff_esd_low
 Deff_bulk_min = Deff_mc_bulk_min + Deff_esd_mid + Deff_esd_low
@@ -211,7 +212,7 @@ for dzswitch in switches:
         Rmax2=Rconmaxquad[0]
         Dsurfc=Dsurf[0]
         Dgbc=Dgb[0]
-        DlatBc=DlatB[0]
+        Dlatc=Dlat[0]
         invTc=invT[0]
         Tc=T[0]
         Pevc=Pev[0]
@@ -224,11 +225,13 @@ for dzswitch in switches:
         Rmax2=Rconmaxquad[20]
         Dsurfc=Dsurf[20]
         Dgbc=Dgb[20]
-        DlatBc=DlatB[20]
+        Dlatc=Dlat[20]
         DlatIhc=DlatIh[20]
         Dvacc=Dvac[20]
-        Deff_bulkc = Deff_bulk[20]
-        Deff_surfc = Deff_surf[20]
+        Deff_bulk_minc = Deff_bulk_min[20]
+        Deff_surf_minc = Deff_surf_min[20]
+        Deff_bulk_maxc = Deff_bulk_max[20]
+        Deff_surf_maxc = Deff_surf_max[20]
         invTc=invT[20]
         Tc=T[20]
         Pevc=Pev[20]
@@ -241,7 +244,7 @@ for dzswitch in switches:
         Rmax2=Rconmaxquad[40]
         Dsurfc=Dsurf[40]
         Dgbc=Dgb[40]
-        DlatBc=DlatB[40]
+        Dlatc=Dlat[40]
         DlatIhc=DlatIh[40]
         Dvacc=Dvac[40]
         Deff_bulkc = Deff_bulk[40]
@@ -269,85 +272,91 @@ for dzswitch in switches:
         K2[i] = Decimal(K1[i])*(1 + Decimal(DKK1))
         d2[i] = Decimal(Rnc[i])/(1 + np.sqrt(Decimal(4/3)*(Decimal((K2[i]-K1[i])/K2[i]))))
         d1[i] = Decimal(Rnc[i]) - Decimal(d2[i])
-        
+
     Vol_to_rad = 2*pi*theta*Rcon_var*Rnc
 # ----- Calculate the thermal volumetric sintering rates -----
     dVdtsurf = 3*pi*Rcon_var*Dsurfc*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invTc/d2
-    dVdtlat = 3*pi*Rcon_var*DlatBc*gamma_sv*Omega*(K3-Km)*invkb*invTc
+    dVdtlat = 3*pi*Rcon_var*Dlatc*gamma_sv*Omega*(K3-Km)*invkb*invTc
     vapDiff = Pevc*Rnc*theta*np.sqrt(Omega*invkb*invTc/(2*pi*rho_ice))
     dVdtvap = 2*pi*Rcon_var*vapDiff*gamma_sv*Omega*invkb*invTc*(K3-Km)
 
     dVdttherm_tot = dVdtsurf + dVdtlat + dVdtvap
     dRdttherm_tot = dVdttherm_tot/Vol_to_rad
-
-    dVdtradsurf = 3*pi*Rcon_var*Deff_surfc*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invTc/d2
-    dVdtradlat = 3*pi*Rcon_var*Deff_bulkc*gamma_sv*Omega*(K3-Km)*invkb*invTc
-    dVdtradsput = 2*pi*Rcon_var*theta*Rnc*(phi_sput/nH2O)*gamma_sv*Omega*invkb*invTc*(K3-Km)
-
-    dRdtradsurf=dVdtradsurf/Vol_to_rad
-    dRdtradlat=dVdtradlat/Vol_to_rad
-    dRdtradsput=dVdtradsput/Vol_to_rad
     
-    dVdtrad_tot = dVdtradsurf + dVdtradlat + dVdtradsput 
-    dRdtrad_tot = dVdtrad_tot/Vol_to_rad
+    dVdtrad_tot = []
+    Surf = np.linspace(Deff_surf_minc, Deff_surf_maxc, num=20)
+    Bulk = np.linspace(Deff_bulk_minc, Deff_bulk_maxc, num=20)
+    for Deff_surf in Surf:
+        for Deff_bulk in Bulk:
+            dVdtradsurf = 3*pi*Rcon_var*Deff_surf*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invTc/d2
+            dVdtradlat = 3*pi*Rcon_var*Deff_bulk*gamma_sv*Omega*(K3-Km)*invkb*invTc
+            dVdtradsput = 2*pi*Rcon_var*theta*Rnc*(phi_sput/nH2O)*gamma_sv*Omega*invkb*invTc*(K3-Km)
+            dVdtrad_tot.append(dVdtradsurf + dVdtradlat + dVdtradsput)
 
-    fig = plt.figure(2)
-    ax2 = fig.add_subplot(1,1,1)
-    ax2.semilogy(Rcon_var/rg,dVdttherm_tot, linewidth=2, color='r', label = 'Therm. total')
-    ax2.semilogy(Rcon_var/rg,dVdtrad_tot, linewidth=2, color='b', label = 'Rad. total', linestyle = lineT)
+            dRdtradsurf=dVdtradsurf/Vol_to_rad
+            dRdtradlat=dVdtradlat/Vol_to_rad
+            dRdtradsput=dVdtradsput/Vol_to_rad
+            dRdtrad_tot = dVdtrad_tot/Vol_to_rad
 
-    ax2.semilogy([Rmin2/rg,Rmin2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
-    ax2.semilogy([Rmax2/rg,Rmax2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
- 
-    if dzswitch == 2:
-        ax2.semilogy(Rcon_var/rg,dVdtradsurf, color='m', label = 'Rad. surface', linestyle = lineT)
-        ax2.semilogy(Rcon_var/rg,dVdtradlat, color = 'g', label = 'Rad. lattice', linestyle = lineT)
-        ax2.semilogy(Rcon_var/rg,dVdtradsput, color='c', label = 'Rad. sputter', linestyle = lineT)
+'''
+            fig = plt.figure(2)
+            ax2 = fig.add_subplot(1,1,1)
+            ax2.semilogy(Rcon_var/rg,dVdttherm_tot, linewidth=2, color='r', label = 'Therm. total')
+            ax2.semilogy(Rcon_var/rg,dVdtrad_tot, linewidth=2, color='b', label = 'Rad. total', linestyle = lineT)
 
-#        ax2.loglog(Rcon_var/rg,dVdtsurf, color='m', label = 'Therm. surface')
-#        ax2.loglog(Rcon_var/rg,dVdtlat, color = 'g', label = 'Therm. lattice')
-#        ax2.loglog(Rcon_var/rg,dVdtvap, color='c', label = 'Therm. vapor')
+            ax2.semilogy([Rmin2/rg,Rmin2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
+            ax2.semilogy([Rmax2/rg,Rmax2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
 
-        box = ax2.get_position()
-        ax2.set_xlabel('Contact/Grain radius (Rcon/rg)')
-        ax2.set_ylabel('Volumetric Sintering Rate [cm^3/s]')
-        ax2.set_xlim([0,0.1])
-        ax2.legend(loc = 3, prop={'size':12})
-        
-#    plt.savefig('./Rad_Sint_Rates.png',dpi=600)
+            if dzswitch == 2:
+                ax2.semilogy(Rcon_var/rg,dVdtradsurf, color='m', label = 'Rad. surface', linestyle = lineT)
+                ax2.semilogy(Rcon_var/rg,dVdtradlat, color = 'g', label = 'Rad. lattice', linestyle = lineT)
+                ax2.semilogy(Rcon_var/rg,dVdtradsput, color='c', label = 'Rad. sputter', linestyle = lineT)
+
+        #        ax2.loglog(Rcon_var/rg,dVdtsurf, color='m', label = 'Therm. surface')
+        #        ax2.loglog(Rcon_var/rg,dVdtlat, color = 'g', label = 'Therm. lattice')
+        #        ax2.loglog(Rcon_var/rg,dVdtvap, color='c', label = 'Therm. vapor')
+
+                box = ax2.get_position()
+                ax2.set_xlabel('Contact/Grain radius (Rcon/rg)')
+                ax2.set_ylabel('Volumetric Sintering Rate [cm^3/s]')
+                ax2.set_xlim([0,0.1])
+                ax2.legend(loc = 3, prop={'size':12})
+
+        #    plt.savefig('./Rad_Sint_Rates.png',dpi=600)
 
 
-    Rcur = Rmin2
- #   print 'The min rad is %.2e' % Rmin2, ' and the max is %.2e' % Rmax2
-    ttot=0
-    R_t = []
-    timesteps = []
-    dt = 3.157e9
-    print 'Rcon, dRdtrad_tot, dRdttherm_tot'
-#    for i in range(10):
-    while Rcur<Rmax2:
-        index = find_nearest(Rcon_var,Rcur)
-        DR = dRdtrad_tot[index]+dRdttherm_tot[index]
-        Rcur+=DR*dt
-        R_t.append(Rcur)
-        ttot+=dt
-        timesteps.append(ttot)
-#        print '%.3e' % Rcur, '%.3e' % dRdtrad_tot[index], '%.3e' % dRdttherm_tot[index]
-        
-    R_tarr=np.array(R_t,dtype='float')
-    ttot_years = ttot*stoyear
+            Rcur = Rmin2
+         #   print 'The min rad is %.2e' % Rmin2, ' and the max is %.2e' % Rmax2
+            ttot=0
+            R_t = []
+            timesteps = []
+            dt = 3.157e9
+            print 'Rcon, dRdtrad_tot, dRdttherm_tot'
+        #    for i in range(10):
+            while Rcur<Rmax2:
+                index = find_nearest(Rcon_var,Rcur)
+                DR = dRdtrad_tot[index]+dRdttherm_tot[index]
+                Rcur+=DR*dt
+                R_t.append(Rcur)
+                ttot+=dt
+                timesteps.append(ttot)
+        #        print '%.3e' % Rcur, '%.3e' % dRdtrad_tot[index], '%.3e' % dRdttherm_tot[index]
 
-    print 'the total time for %d K' % Tc, ' is %.2e' % ttot_years, ' years' 
+            R_tarr=np.array(R_t,dtype='float')
+            ttot_years = ttot*stoyear
 
-    fig = plt.figure(3)
-    ax = fig.add_subplot(1,1,1)
-    line, = ax.plot(timesteps,R_tarr*1e4, linewidth=2, color='r', label = 'Rad. sint @ %d' %Tc, linestyle = lineT)
-    ax.annotate('Rmax @ %d K' % Tc,xy=(ttot,Rcur*1e4),xytext=(ttot,Rcur+2.4),arrowprops=dict(facecolor='black',shrink=0.05), horizontalalignment='center')
-    if dzswitch == 1:
-        ax.set_ylabel('Contact Radius [um]')
-        ax.set_xlabel('Timestep [s]')
-    if dzswitch == 3:
-        ax.legend(loc = 3, prop={'size':18})
-#        plt.savefig('./sint_timescales.png',dpi=600)
+            print 'the total time for %d K' % Tc, ' is %.2e' % ttot_years, ' years' 
 
-#plt.show()
+            fig = plt.figure(3)
+            ax = fig.add_subplot(1,1,1)
+            line, = ax.plot(timesteps,R_tarr*1e4, linewidth=2, color='r', label = 'Rad. sint @ %d' %Tc, linestyle = lineT)
+            ax.annotate('Rmax @ %d K' % Tc,xy=(ttot,Rcur*1e4),xytext=(ttot,Rcur+2.4),arrowprops=dict(facecolor='black',shrink=0.05), horizontalalignment='center')
+            if dzswitch == 1:
+                ax.set_ylabel('Contact Radius [um]')
+                ax.set_xlabel('Timestep [s]')
+            if dzswitch == 3:
+                ax.legend(loc = 3, prop={'size':18})
+        #        plt.savefig('./sint_timescales.png',dpi=600)
+
+        #plt.show()
+'''

@@ -165,11 +165,14 @@ def read_logfile(fn):
 
         count +=1
     
-    simName.append('{}->{}'.format(elemName[0],target))
+    simName.append('{}{}->{}'.format(Einit[0],elemName[0],target))
     simName.append('ipot={}'.format(ipot))
 #    simName.append('isbv={}'.format(isbv))
     simName.append('inel{}={}'.format(elemName[1],INEL0[1]))
     simName.append('Edispl{}={}'.format(elemName[1],Edispl[1]))
+    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-2],SBV[nE*nE-5]))
+    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-1],SBV[nE*nE-4]))
+    simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-2],SBV[nE*nE-2]))
     simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-1],SBV[nE*nE-1]))
     simName.append('Fluence={}'.format(fluenz))    
     simName.append('Thickness={}'.format(ttdyn))

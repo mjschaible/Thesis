@@ -73,15 +73,16 @@ while cont != 0:
 
     if num_runs==-1:
         print "Please identify the experimental data file."
-        Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-        filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+        # show an "Open" dialog box and return the path to the selected file
+        Tk().withdraw() 
+        filename = askopenfilename()
 
         exptName, exptEng, exptFlux_HeSiO2 = read_exptfile(filename)
         b = plot_sputExpt(exptName, exptEng, exptFlux_HeSiO2, simCount)
         simCount +=1
     else:
-        Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-        path = askdirectory() # show an "Open" dialog box and return the path to the selected file
+        Tk().withdraw() 
+        path = askdirectory() 
 #        path = './simple/HeSiO2'
         scanfiles = path+"/*.dat"                 
         print scanfiles
@@ -172,9 +173,6 @@ while cont != 0:
         totYld_sorted =  [x for (y,x) in sorted(zip(energies,totYld), key=lambda pair:pair[0])]
         energies_sorted=energies.sort()        
 
-        for i in range(len(simName)):
-            print ' '.join(simName_sorted[i]), 'Yield=',totYld_sorted[i]
-
 #        print totYld
 #        print totYld_sorted
 
@@ -188,6 +186,10 @@ while cont != 0:
                 else:
                     e_sort[i]=''
                     yld_sort[i]='--'
+
+        for i in range(len(simName)):
+            print ' '.join(simName_sorted[i]), 'Yield=',totYld_sorted[i]
+
 
         Flux1eq_sorted = [x for (y,x) in sorted(zip(energeq,Flux1eq), key=lambda pair:pair[0])]
         Flux2eq_sorted = [x for (y,x) in sorted(zip(energeq,Flux2eq), key=lambda pair:pair[0])]

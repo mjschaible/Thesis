@@ -1,4 +1,6 @@
 def fix_coeff(T):
+    import numpy as np
+
     Aij = np.zeros((5,3))
 
     Aij[0,0] = 17.1E4
@@ -38,6 +40,7 @@ def fix_coeff(T):
 
     return tempSij
 
+'''
 # ----- Determine the compliance coefficients -----
 ltSij = np.zeros((6,6,len(T)))
 ltSij = fix_coeff(T) # Make call to calculate mechanical coefficients
@@ -53,3 +56,4 @@ for i in range(len(T)):
     Ymod[i] = 1/ltSij[0,0,i]*Escale 
     Prat[i] = -ltSij[0,1,i]/ltSij[0,0,i]
     Rconjkr[i] = ((0.75*(1-Prat[i]*Prat[i])*rg*Fjkr)/Ymod[i])**(jkrpow)
+'''

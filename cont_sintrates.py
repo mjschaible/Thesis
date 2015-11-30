@@ -11,11 +11,81 @@ from decimal import Decimal
 from decimal import getcontext
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.mlab as ml
+from matplotlib import colors, ticker, cm
+import scipy.interpolate
 
 def find_nearest(Rcon,Rcur):
     index = (np.abs(Rcon-Rcur)).argmin()
     return index
+
+def meshdat(X, Y, Z,xpos=-1):
+    """Return coordinates matrices from coordinates vector with the requested xpos"""
+    #TODO check return order
+    
+    x=np.unique(X)
+    x.sort()
+    y=np.unique(Y)
+    y.sort()
+
+    if xpos==-1:
+        Z=Z[:len(x)*len(y)]
+    elif xpos==1:
+        Z=Z[len(x)*len(y):]
+    else:
+        print('Error: xpos must be 1 either -1')
+        return
+    z=np.array(Z)
+ 
+    gridz = np.reshape(Z, (x.shape[0], y.shape[0]))
+    gridx, gridy = np.meshgrid(x, y, indexing='ij')
+
+    return gridx, gridy, gridz
+
+def plot_cont(X, Y, Z, title):
+    mX, mY, mZ = meshdat(X, Y, Z)
+    bounds=(mX.min(), mX.max(), mY.min(), mY.max())
+
+    Zmin = float(mZ.min())
+    Zmax = float(mZ.max())
+    inter = Zmax/10
+    lev_exp = np.arange(np.floor(np.log10(mZ.min())-1),
+                        np.ceil(np.log10(mZ.max())+1))
+    levels = np.power(10, lev_exp)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cs = ax.contourf(mX, mY, mZ, levels, norm=colors.LogNorm())
+    ax.set_xscale("log")
+    cb = plt.colorbar(cs)
+    ax.set_xlabel('Contact Radius, Rcon')
+    ax.set_ylabel('Efficiency, f(Nm, l, xi, av)')
+    ax.set_title(title)
+
+    return
+
+def timescale():
+    Rcur = Rmin2
+    #   print 'The min rad is %.2e' % Rmin2, ' and the max is %.2e' % Rmax2
+    ttot=0
+    R_t = []
+    timesteps = []
+    dt = 3.157e9
+    print 'Rcon, dRdtrad_tot, dRdttherm_tot'
+    #    for i in range(10):
+    while Rcur<Rmax2:
+        index = find_nearest(Rcon_var,Rcur)
+        DR = dRdtrad_tot[index]+dRdttherm_tot[index]
+        Rcur+=DR*dt
+        R_t.append(Rcur)
+        ttot+=dt
+        timesteps.append(ttot)
+        #        print '%.3e' % Rcur, '%.3e' % dRdtrad_tot[index], '%.3e' % dRdttherm_tot[index]
+        
+    R_tarr=np.array(R_t,dtype='float')
+    ttot_years = ttot*stoyear
+
+    print 'the total time for %d K' % Tc, ' is %.2e' % ttot_years, ' years'
 
 # --------------- Define necessary model parameters -------------------------
 pi = np.pi
@@ -115,12 +185,16 @@ Dgb = 8.4*np.exp(-49e3*invR*invT) # from ....
 # ----- Calculate radiation induced diffusion coefficients ----
 # Calculate the approximate length scale of an electron excitation event 
 l_c = 0.25*alat*(beta*DeltaE/UH2O) # cm, length-scale of excitation event
+EF_min = 0.1
+EF_max = 1.0
 # or
-Dz_min = 2*alat
-Dz_max = 5*alat
+Dz_min = 1*alat
+Dz_max = 10*alat
 R_iv = alat/2 # GUESS, separation distance for spontaneous vacancy/interstitial recombination
-alpha_v = 0.1 # GUESS, average number of point defects which escape cascade
-d_vac = 5e-6 # cm, approximate average sink diffusion length scale
+alpha_v_min = 0.001
+alpha_v_max = 0.1 # GUESS, average number of point defects which escape cascade
+d_vac_min = 5*alat
+d_vac_max = 50*alat # cm, approximate average sink diffusion length scale
 
 Ea_bulk_min = (0.6)*1.602e-12 # (eV) erg, min bulk activation energy
 Ea_bulk_max = (0.75)*1.602e-12 # (eV) erg, max bulk activation energy 
@@ -128,26 +202,34 @@ Ea_bulk_max = (0.75)*1.602e-12 # (eV) erg, max bulk activation energy
 Ea_surf_min = (0.2)*1.602e-12 # (eV) erg, min surface diffusion activation energy
 Ea_surf_max = (0.5)*1.602e-12 # (eV) erg, max surface diffusion activation energy
 
-Nmob_surf_max = beta * DeltaE / (Ea_surf_max) # number of surface molecules mobilized per ionization
-Nmob_surf_min = beta * DeltaE / (Ea_surf_min) # number of surface molecules mobilized per ionization
+Nmob_surf_max = beta * DeltaE / Ea_surf_max # number of surface molecules mobilized per ionization
+Nmob_surf_min = beta * DeltaE / Ea_surf_min # number of surface molecules mobilized per ionization
 
-Nmob_bulk_max = beta * DeltaE / (Ea_bulk_max) # number of surface molecules mobilized per ionization
-Nmob_bulk_min = beta * DeltaE / (Ea_bulk_min) # number of surface molecules mobilized per ionization
+Nmob_bulk_max = beta * DeltaE / Ea_bulk_max # number of surface molecules mobilized per ionization
+Nmob_bulk_min = beta * DeltaE / Ea_bulk_min # number of surface molecules mobilized per ionization
 
 N_FP = 0.8*DeltaE/(2*UH2O)
 
 Deff_mc_surf_min = Nmob_surf_min*Dz_min*Dz_min *invtau/4
 Deff_mc_surf_max = Nmob_surf_max*Dz_max*Dz_max *invtau/4
+
 Deff_mc_bulk_min = Nmob_bulk_min*Dz_min*Dz_min *invtau/6
 Deff_mc_bulk_max = Nmob_bulk_max*Dz_max*Dz_max *invtau/6
 
-Deff_esd_mid = 2*alpha_v*d_vac*d_vac*N_FP*invtau 
-Deff_esd_low = (alpha_v*N_FP*Dvac*invtau/(pi*nH2O*R_iv))**0.5
+Deff_esd_mid_min = 2*alpha_v_min*d_vac_min*d_vac_min*N_FP*invtau 
+Deff_esd_mid_max = 2*alpha_v_max*d_vac_max*d_vac_max*N_FP*invtau 
 
-Deff_surf_min = Deff_mc_surf_min + Deff_esd_mid + Deff_esd_low
-Deff_bulk_min = Deff_mc_bulk_min + Deff_esd_mid + Deff_esd_low
-Deff_surf_max = Deff_mc_surf_max + Deff_esd_mid + Deff_esd_low
-Deff_bulk_max = Deff_mc_bulk_max + Deff_esd_mid + Deff_esd_low
+Deff_esd_low_min = (alpha_v_max*N_FP*Dvac*invtau/(pi*nH2O*R_iv))**0.5
+Deff_esd_low_max = (alpha_v_max*N_FP*Dvac*invtau/(pi*nH2O*R_iv))**0.5
+
+Desdtot_min = Deff_esd_mid_min+Deff_esd_low_min
+Desdtot_max = Deff_esd_mid_max+Deff_esd_low_max
+#print 'For mc,min; mc,min; esd,mid; esd,low: {}, {}, {}, {}'.format(Deff_mc_surf_min, Deff_mc_surf_max, Deff_esd_mid, Deff_esd_low[20])
+
+Deff_surf_min = Deff_mc_surf_min + Deff_esd_mid_min + Deff_esd_low_min
+Deff_surf_max = Deff_mc_surf_max + Deff_esd_mid_max + Deff_esd_low_min
+Deff_bulk_min = Deff_mc_bulk_min + Deff_esd_mid_min + Deff_esd_low_min
+Deff_bulk_max = Deff_mc_bulk_max + Deff_esd_mid_max + Deff_esd_low_min
 
 phi_sput = c_geo*l_c*invtau*nH2O # sputtered flux
 
@@ -166,7 +248,6 @@ print "Rconmaxquad = %.2e" % (Rconmaxquad[20]*1e4), " um"
 print "RconSYmax = %.2e" % (RconmaxSY[20]*1e4), " um"
 print "RconSYmin = %.2e" % (RconminSY[20]*1e4), " um"
 
-fig = plt.figure(1)
 #ax1 = fig.add_subplot(2,1,1)
 #ax1.semilogy(T,Rconjkr*1E4, label = 'Rcon,jkr')
 #ax1.semilogy(T,Rconminlin*1e4, label = 'Rcon,linear')
@@ -175,13 +256,17 @@ fig = plt.figure(1)
 #ax1.axis([60,110,5e-3,1])
 #ax1.legend(loc = 3, prop={'size':14})
 
+fig = plt.figure(1)
 ax2= fig.add_subplot(1,1,1)
 #ax2.semilogy(T,DsurfIc, label = 'DsurfIc')
 ax2.semilogy(T,Dsurf, label = 'Dsurf')
 ax2.semilogy(T,DlatB, label = 'Dlat')
 ax2.semilogy(T,Dgb, label = 'Dgb')
 ax2.semilogy(T,Dvac, label = 'Dvac')
-ax2.semilogy([60,110],[Deff_mc_bulk,Deff_mc_bulk], label = 'Drad_mc')
+ax2.semilogy([60,110],[Deff_mc_bulk_max,Deff_mc_bulk_max], label = 'Drad_mc', linestyle='-')
+ax2.semilogy([60,110],[Deff_mc_bulk_min,Deff_mc_bulk_min], label = 'Drad_mc', linestyle='--')
+ax2.semilogy([60,110],[Deff_mc_surf_max,Deff_mc_surf_max], label = 'Drad_mc', linestyle='-')
+ax2.semilogy([60,110],[Deff_mc_surf_min,Deff_mc_surf_min], label = 'Drad_mc', linestyle='--')
 ax2.semilogy([60,110],[Deff_esd_mid,Deff_esd_mid], label = 'Drad_esd, mid')
 ax2.semilogy(T,Deff_esd_low, label = 'Drad_esd, low')
 ax2.set_xlabel('Temperature [K]')
@@ -193,6 +278,7 @@ ax2.legend(loc = 4, prop={'size':14})
 
 # ----- Determine the variation in the sintering rates based on the contact radius -----
 Rcon_var = np.logspace(-6, -3, num=100, base=10.0) # in cm
+#Rcon_var = np.linspace(1e-4, 1e-3, num=50) # in cm
 invRcon_var = 1/Rcon_var
 
 Rnc = Rcon_var**2/(2*(rg-Rcon_var))
@@ -229,8 +315,8 @@ for dzswitch in switches:
         DlatIhc=DlatIh[20]
         Dvacc=Dvac[20]
         Deff_bulk_minc = Deff_bulk_min[20]
+        Deff_bulk_maxc = Deff_bulk_max[20] 
         Deff_surf_minc = Deff_surf_min[20]
-        Deff_bulk_maxc = Deff_bulk_max[20]
         Deff_surf_maxc = Deff_surf_max[20]
         invTc=invT[20]
         Tc=T[20]
@@ -283,80 +369,59 @@ for dzswitch in switches:
     dVdttherm_tot = dVdtsurf + dVdtlat + dVdtvap
     dRdttherm_tot = dVdttherm_tot/Vol_to_rad
     
+    RD_Surf = np.linspace(Deff_surf_minc, Deff_surf_maxc, num=100)
+    RD_Bulk = np.linspace(Deff_bulk_minc, Deff_bulk_maxc, num=100)
+    EF = np.linspace(EF_min, EF_max, num=100)
+ 
+    radsurf = 3*pi*Rcon_var*(delta_surf/d2) #*gamma_sv*Omega*(K3-K2)*invkb*invTc
+    radlat = 3*pi*Rcon_var #EF~gamma_sv*Omega*(K3-Km)*invkb*invTc
+    radsput = 2*pi*Rcon_var*theta*Rnc*(phi_sput/nH2O) #*gamma_sv*Omega*invkb*invTc*(K3-Km)
     dVdtrad_tot = []
-    Surf = np.linspace(Deff_surf_minc, Deff_surf_maxc, num=20)
-    Bulk = np.linspace(Deff_bulk_minc, Deff_bulk_maxc, num=20)
-    for Deff_surf in Surf:
-        for Deff_bulk in Bulk:
-            dVdtradsurf = 3*pi*Rcon_var*Deff_surf*delta_surf*gamma_sv*Omega*(K3-K2)*invkb*invTc/d2
-            dVdtradlat = 3*pi*Rcon_var*Deff_bulk*gamma_sv*Omega*(K3-Km)*invkb*invTc
-            dVdtradsput = 2*pi*Rcon_var*theta*Rnc*(phi_sput/nH2O)*gamma_sv*Omega*invkb*invTc*(K3-Km)
-            dVdtrad_tot.append(dVdtradsurf + dVdtradlat + dVdtradsput)
+    dVdtradsurf = []
+    dVdtradlat =  []
+    dVdtradsput = []
 
-            dRdtradsurf=dVdtradsurf/Vol_to_rad
-            dRdtradlat=dVdtradlat/Vol_to_rad
-            dRdtradsput=dVdtradsput/Vol_to_rad
-            dRdtrad_tot = dVdtrad_tot/Vol_to_rad
+    for i in range(len(RD_Surf)):
+        for j in range(len(Rcon_var)):
+            csurf= radsurf[j]*RD_Surf[i]*EF[i]
+            clat= radlat[j]*RD_Bulk[i]*EF[i]
+            csput= radsput[j]*EF[i]
+            ctot = csurf+clat+csput
+            dVdtradsurf.append(csurf)
+            dVdtradlat.append(clat)
+            dVdtradsput.append(csput)
+            dVdtrad_tot.append(ctot)
+            
+            dRdtradsurf=dVdtradsurf/Vol_to_rad[j]
+            dRdtradlat=dVdtradlat/Vol_to_rad[j]
+            dRdtradsput=dVdtradsput/Vol_to_rad[j]
 
-'''
-            fig = plt.figure(2)
-            ax2 = fig.add_subplot(1,1,1)
-            ax2.semilogy(Rcon_var/rg,dVdttherm_tot, linewidth=2, color='r', label = 'Therm. total')
-            ax2.semilogy(Rcon_var/rg,dVdtrad_tot, linewidth=2, color='b', label = 'Rad. total', linestyle = lineT)
+#        print max(dVdtradsurf), max(dVdtradlat), max(dVdtradsput)
+    
+#    print max(dVdtrad_tot)
+#    print 'The matix should be {}x{}={}: '.format(len(Rcon_var), len(RD_Surf), len(dVdtrad_tot))
+    a = plot_cont(Rcon_var, EF, dVdtradsput, 'Sputter Induced Sintering')
+    plt.savefig('./Sput_dVdt.png',dpi=300)
+    a = plot_cont(Rcon_var, RD_Bulk, dVdtradlat, 'Surface Diffusion Sintering')
+    plt.savefig('./Lat_dVdt.png',dpi=300)
+    a = plot_cont(Rcon_var, RD_Surf, dVdtradsurf, 'Lattice Diffusion Sintering')
+    plt.savefig('./Surf_dVdt.png',dpi=300)
+    a = plot_cont(Rcon_var, EF, dVdtrad_tot, 'Total Sintering Rate')
+    plt.savefig('./Tot_dVdt.png',dpi=600)
+    
+    
+#    plt.show()
 
-            ax2.semilogy([Rmin2/rg,Rmin2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
-            ax2.semilogy([Rmax2/rg,Rmax2/rg],[1e-34,1e-24], color='k', linewidth=2, linestyle = '-.')
-
-            if dzswitch == 2:
-                ax2.semilogy(Rcon_var/rg,dVdtradsurf, color='m', label = 'Rad. surface', linestyle = lineT)
-                ax2.semilogy(Rcon_var/rg,dVdtradlat, color = 'g', label = 'Rad. lattice', linestyle = lineT)
-                ax2.semilogy(Rcon_var/rg,dVdtradsput, color='c', label = 'Rad. sputter', linestyle = lineT)
-
-        #        ax2.loglog(Rcon_var/rg,dVdtsurf, color='m', label = 'Therm. surface')
-        #        ax2.loglog(Rcon_var/rg,dVdtlat, color = 'g', label = 'Therm. lattice')
-        #        ax2.loglog(Rcon_var/rg,dVdtvap, color='c', label = 'Therm. vapor')
-
-                box = ax2.get_position()
-                ax2.set_xlabel('Contact/Grain radius (Rcon/rg)')
-                ax2.set_ylabel('Volumetric Sintering Rate [cm^3/s]')
-                ax2.set_xlim([0,0.1])
-                ax2.legend(loc = 3, prop={'size':12})
-
-        #    plt.savefig('./Rad_Sint_Rates.png',dpi=600)
-
-
-            Rcur = Rmin2
-         #   print 'The min rad is %.2e' % Rmin2, ' and the max is %.2e' % Rmax2
-            ttot=0
-            R_t = []
-            timesteps = []
-            dt = 3.157e9
-            print 'Rcon, dRdtrad_tot, dRdttherm_tot'
-        #    for i in range(10):
-            while Rcur<Rmax2:
-                index = find_nearest(Rcon_var,Rcur)
-                DR = dRdtrad_tot[index]+dRdttherm_tot[index]
-                Rcur+=DR*dt
-                R_t.append(Rcur)
-                ttot+=dt
-                timesteps.append(ttot)
-        #        print '%.3e' % Rcur, '%.3e' % dRdtrad_tot[index], '%.3e' % dRdttherm_tot[index]
-
-            R_tarr=np.array(R_t,dtype='float')
-            ttot_years = ttot*stoyear
-
-            print 'the total time for %d K' % Tc, ' is %.2e' % ttot_years, ' years' 
-
-            fig = plt.figure(3)
-            ax = fig.add_subplot(1,1,1)
-            line, = ax.plot(timesteps,R_tarr*1e4, linewidth=2, color='r', label = 'Rad. sint @ %d' %Tc, linestyle = lineT)
-            ax.annotate('Rmax @ %d K' % Tc,xy=(ttot,Rcur*1e4),xytext=(ttot,Rcur+2.4),arrowprops=dict(facecolor='black',shrink=0.05), horizontalalignment='center')
-            if dzswitch == 1:
-                ax.set_ylabel('Contact Radius [um]')
-                ax.set_xlabel('Timestep [s]')
-            if dzswitch == 3:
-                ax.legend(loc = 3, prop={'size':18})
-        #        plt.savefig('./sint_timescales.png',dpi=600)
-
-        #plt.show()
-'''
+    
+    '''
+        fig = plt.figure(3)
+        ax = fig.add_subplot(1,1,1)
+        line, = ax.plot(timesteps,R_tarr*1e4, linewidth=2, color='r', label = 'Rad. sint @ %d' %Tc, linestyle = lineT)
+        ax.annotate('Rmax @ %d K' % Tc,xy=(ttot,Rcur*1e4),xytext=(ttot,Rcur+2.4),arrowprops=dict(facecolor='black',shrink=0.05), horizontalalignment='center')
+        if dzswitch == 1:
+            ax.set_ylabel('Contact Radius [um]')
+            ax.set_xlabel('Timestep [s]')
+        if dzswitch == 3:
+            ax.legend(loc = 3, prop={'size':18})
+    #        plt.savefig('./sint_timescales.png',dpi=600)
+    '''

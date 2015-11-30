@@ -32,7 +32,7 @@ kDtrail = 17.1 # erg/cm/s/K, Effective TC at Dione on the trailing hemisphere
 kDlead = 32.4 # erg/cm/s/K, Effective TC at Dione on the leading hemisphere
 
 rg = 25E-4 # cm, approximate grain radius (25 um) (all bodies)
-#phi = np.linspace(40,99,num=100)
+
 Phi_elec_Mimas = 8.2e3 # elec/cm^2/s, incident electron flux at Mimas
 Phi_elec_Tethys = 2.1e2 # elec/cm^2/s, incident electron flux at Tethys
 Phi_elec_Dione = 2.8e2 # elec/cm^2/s, incident electron flux at Dione
@@ -107,13 +107,13 @@ K3 = 2/rg
 kxice = (488.19/T+0.4685)*1e5 # [erg/cm/s/K], TC of Ih (hexagonal) crystalline water ice
 kaice = 7.1e2*T # [erg/cm/s/K], TC of amorphous water ice
 
-phi_arr = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95] # Assume 50% porosity for now (all bodies)
+phi_arr = [0.5]#, 0.6, 0.7, 0.8, 0.9, 0.95] # Assume 50% porosity for now (all bodies)
 
 colors = iter(cm.rainbow(np.linspace(0, 1, len(phi_arr))))
 
 for phi in phi_arr:
     # ------ Define Sirono and Yamamoto model parameters ------
-    g_SY = 4
+    g_SY = 1
     pc_SY = 0.333
     p_SY = 6*(1-phi)/pi
     SYpf = ((1-pc_SY)/(p_SY-pc_SY))*g_SY*rg*rg/pi
@@ -173,26 +173,28 @@ for phi in phi_arr:
         ax1 = fig.add_subplot(1,1,1)
 #        ax2 = ax1.twiny()
 
-        curcol = next(colors)
+#        curcol = next(colors)
 
-    #    ax1.loglog(Rcon_var/rg,keff_lin/kg, label = 'kg={:.2f},kcem={:.2f}'.format(kg/1e5, kcem/1e5), color = 'g')
-        ax1.loglog(Rcon_var/rg,keff_lin/kg,linestyle = '--', color = curcol)
-        ax1.loglog(Rcon_var/rg,keff_quad/kg,linestyle = '-', color = curcol, label = 'phi={:.2f}'.format(phi))
-#        ax1.loglog(Rcon_var/rg,keff_lin_nz/kg,linestyle = '--', color = curcol)
-#        ax1.loglog(Rcon_var/rg,keff_quad_nz/kg,linestyle = '-', color = curcol, label = 'phi={:.2f}'.format(phi) )
-#        ax1.loglog(Rcon_var/rg,keff_SY/kg,label = 'S&Y, keff~Rcon^2', color = 'c')
+        #ax1.loglog(Rcon_var/rg,keff_lin/kg, label = 'kg={:.2f},kcem={:.2f}'.format(kg/1e5, kcem/1e5), color = 'g')
+        #ax1.loglog(Rcon_var/rg,keff_lin/kg,linestyle = '--', color = curcol)
+        #ax1.loglog(Rcon_var/rg,keff_quad/kg,linestyle = '-', color = curcol, label = 'phi={:.2f}, r_g={:.0f}'.format(phi, rg))
+        ax1.loglog(Rcon_var/rg,keff_lin_nz/kg,linestyle = '--', color = 'k', label= 'Wood, keff~Rcon')
+        ax1.loglog(Rcon_var/rg,keff_quad_nz/kg,linestyle = '--', color = 'b',label= 'Wood, keff~Rcon^2')
+        ax1.loglog(Rcon_var/rg,keff_SY/kg,label = 'S&Y, keff~Rcon^2', color = 'c')
 
         xmin = 5e-5
         xmax = 0.5
         ax1.loglog([1e-5,.50],[kout/kg,kout/kg], linewidth=2, color='r')
         ax1.loglog([1e-5,.50],[kin/kg,kin/kg], linewidth=2, color='k')
-        ax1.set_xlabel('Contact to grain radius ratio, Rcon/rg')
+        #ax1.set_title('phi={:.2f}, r_g={:.0f}'.format(phi, rg), fontsize=18)
+        ax1.set_xlabel('Contact to grain radius ratio, Rcon/rg', fontsize=16)
         ax1.set_xlim([xmin,xmax])
         ax1.text(6e-5,2e-3,'Mimas, In')
-        ax1.text(1.75e-2,8e-5,'Mimas, Out')
-        ax1.set_ylabel('keff/kice')
-        ax1.set_ylim([5e-5,.01])
+        ax1.text(6e-2,7e-5,'Mimas, Out')
+        ax1.set_ylabel('keff/kice', fontsize=22)
+        ax1.set_ylim([5e-5,.1])
         ax1.legend(loc = 2, prop={'size':14})
+        plt.tight_layout
 
   #      ax1Ticks = ax1.get_xticks()
   #      ax2Ticks = ax1Ticks

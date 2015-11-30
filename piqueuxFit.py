@@ -3,7 +3,7 @@
 from pylab import *
 from scipy.optimize import curve_fit
 
-cem_vf = np.array([1e-7, 1e-6, 1e-5, 1e-4])
+cem_vf = np.array([6e-7, 6e-6, 6e-5, 6e-4])
 Rcon = np.array([0.66, 1.187, 2.109, 3.752])
 
 kcem65= np.array([0.161, 0.283, 0.48, 0.808])

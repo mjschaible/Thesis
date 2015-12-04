@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+from operator import attrgetter
 
 kcalToeV = 0.0433641 # convert kcal/mole to eV/atom
 
@@ -28,7 +29,12 @@ def generate_plots(n):
     for i in range(n):
         axs[0,i].plot(runs[i].step,runs[i].pe*kcalToeV,label = HeadCol[3])
         axs[0,i].plot(runs[i].step,runs[i].peave*kcalToeV*num_molec)
-
+        if i == 2:
+            pemin=min(runs[i].peave)
+            pemax=max(runs[i].peave)
+            axs[0,i].set_xscale([pemin-20,pemax+100])
+        if i > 2:
+            axs[0,i].set_xscale([pemin-20,pemax+100])
         plt.setp(axs[0,i].get_xticklabels(), visible=False)
         axs[0,i].locator_params(axis='x', tight=True, nbins=2)
 
@@ -52,7 +58,7 @@ def generate_plots(n):
             plt.setp(axs[1,i].get_yticklabels(), visible=False)
             plt.setp(axs[2,i].get_yticklabels(), visible=False)
         plt.subplots_adjust(wspace=0.001)
-#        axs[2,i].set_ylim(-1700,-1600)
+        axs[2,i].set_ylim(-1700,-1600)
 
     plt.show()
     return fig
@@ -72,8 +78,11 @@ markers=[]
 while cont != 0:
 #    name = raw_input('Enter filename: ')
 #    filename.append(name)
-    Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-    filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+
+# show an "Open" dialog box and return the path to the selected file
+    Tk().withdraw()
+    filename = askopenfilename() 
+#    filename = 'log.lammps'
     print(filename)
     counter = 1
 

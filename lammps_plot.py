@@ -23,8 +23,10 @@ def log_plots(runs, param):
         plt.setp(axs[0,i].get_xticklabels(), visible=False)
         axs[0,i].locator_params(axis='x', tight=True, nbins=2)
 
-        axs[1,i].plot(time,runs[i].ke*kcalToeV,label = runs[i].thermoCol[5])
-        axs[1,i].plot(time,runs[i].keave*kcalToeV*param[i].num_molec)
+        axs[1,i].plot(time,runs[i].temp,label = runs[i].thermoCol[1])
+        axs[1,i].plot(time,runs[i].tempave)
+#        axs[1,i].plot(time,runs[i].ke*kcalToeV,label = runs[i].thermoCol[5])
+#        axs[1,i].plot(time,runs[i].keave*kcalToeV*param[i].num_molec)
         plt.setp(axs[1,i].get_xticklabels(), visible=False)
         axs[1,i].locator_params(axis='x', tight=True, nbins=2)
  
@@ -32,9 +34,13 @@ def log_plots(runs, param):
         pemax_t=max(runs[i].peave)*kcalToeV*param[i].num_molec
         kemin_t=min(runs[i].keave)*kcalToeV*param[i].num_molec
         kemax_t=max(runs[i].keave)*kcalToeV*param[i].num_molec
-        if pemin_t < pemin:
+        if i == 1:
+            pemax = pemax_t
             pemin = pemin_t
-#            axs[0,i].set_ylim([pemin-0.5,pemin+5.5])
+            axs[0,i].set_ylim([pemin-0.5,pemax+5.5])
+        elif pemin_t > pemin:
+            pemax = pemin_t
+            axs[0,i].set_ylim([pemin-0.5,pemax+5.5])
         if kemax_t > kemax:
             kemax = kemax_t
 #            axs[1,i].set_ylim([kemax-5.5,kemax+0.5])
@@ -46,7 +52,7 @@ def log_plots(runs, param):
 
         if i == 0:
             axs[0,i].set_ylabel('Sys. {} (eV)'.format(runs[i].thermoCol[3]))
-            axs[1,i].set_ylabel('Sys. {} (eV)'.format(runs[i].thermoCol[5]))
+            axs[1,i].set_ylabel('Sys. {} (K)'.format(runs[i].thermoCol[1]))
             axs[2,i].set_ylabel('{} (eV)'.format(runs[i].thermoCol[7]))
             plt.suptitle('The pair potential used is {}'.format(param[i].potential))
         if i > 0:
@@ -72,3 +78,29 @@ def msd_plots(axrow, runs, param, label):
             axrow[i].set_xlabel('Time [ps] (step size = {} fs)'.format(param[i].timesteps))
         
         return
+
+def rdf_plots(runs, param):
+    for i in range(len(runs)):
+        
+        fig, axs = plt.subplots(2,1, sharex='col')
+
+        axs[0].plot(runs[i].pos,runs[i].RDF)
+        axs[0].set_ylabel('$g_{OO}$(r)')
+        axs[1].plot(runs[i].pos,runs[i].coordN)
+        axs[1].set_ylabel('Coordination Number')
+        
+        axs[1].set_xlabel('Distance [A]')
+        
+        return
+
+def msd2_plots(runs, msd, param):
+    
+    steparr=[runs[x].timestep for x in range(len(runs))]
+    print param[1].timesteps
+#    time = (steparr[:]-steparr[0])*param[1].timesteps/1000
+    plt.figure()
+    print range(len(msd))
+    for j in range(len(msd)):
+        plt.plot(steparr,msd[j])
+        
+    return

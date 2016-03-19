@@ -24,6 +24,7 @@ class LogData (object):
         self.etot=etot
         self.press=press
 
+# Define a class for mean-squared-displacement(msd) and density files
 class runData (object):
 
     def __init__(self,Head,step,data):
@@ -31,6 +32,26 @@ class runData (object):
         self.step=step
         self.data=data
 
+# Define a class for radial distribution function files
+class runRDF (object):
+
+    def __init__(self,timestep,Nbin,pos,RDF,coordN):
+        self.timestep=timestep
+        self.Nbin=Nbin
+        self.pos=pos
+        self.RDF=RDF
+        self.coordN=coordN
+
+# Define a class for the center-of-mass file
+class runCOM (object):
+
+    def __init__(self,timestep,Nmolec,xpos,ypos,zpos):
+        self.timestep=timestep
+        self.Nmolec=Nmolec
+        self.xpos=xpos
+        self.ypos=ypos
+        self.zpos=zpos
+    
 class prettyfloat(float):
     def __repr__(self):
         return "{:0.2f}".format(self)
@@ -38,6 +59,10 @@ class prettyfloat(float):
 def log_read(filename):
     counter = 1
     atomline = 0
+
+    mol_pka=0
+    pos_pka=0
+    vel_pka=0    
     
     data_start=[]
     data_end=[]
@@ -102,13 +127,6 @@ def log_read(filename):
         if counter == len(lines): 
             if len(data_end) < len(data_start):
                 data_end.append(counter)
-            if 'mol_pka' in locals():
-                print 'The excited molecule is {}, the position is {}, and the velocity is {:.2f}'.format(mol_pka, pos_pka, vel_pka)
-            else:
-                print 'No excited molecule specified'
-                mol_pka=0
-                pos_pka=0
-                vel_pka=0
 
     num_cur=len(data_start)-num_runs
 
@@ -203,3 +221,118 @@ def data_read(filename):
 
     return num_data, run_data
 
+def rdf_read(filename):
+    
+    counter=1
+    num_rdf=0
+    timestep=[]
+    data_start=[]
+    data_end=[]
+
+    rdf_data=[]
+
+    with open(filename,'r') as logfile:
+        contents=logfile.read()
+
+    lines=contents.split('\n')
+
+    for line in lines:
+        column=line.split()
+        if 'Row' in line:
+            Header=column
+        elif 'TimeStep' in line:
+            Header2=column
+        elif len(column)==2:
+            timestep.append(column[0])
+            data_start.append(counter+1)
+            if len(data_start)>1:
+                data_end.append(counter-1)
+        
+        counter+=1
+        if counter == len(lines) and len(data_end) < len(data_start):
+            data_end.append(counter)
+
+    num_cur=len(data_start)-num_rdf
+    data_vals=['']*num_cur
+
+    for n in range(num_cur):
+        data_vals[n]=lines[data_start[n+num_rdf]:data_end[n+num_rdf]-1]
+        nbin=[]
+        pos=[]
+        rdf=[]
+        coordn=[]
+
+        for m in range(len(data_vals[n])):
+            vals=data_vals[n][m].split()
+            nbin.append(vals[0])
+            pos.append(vals[1])
+            rdf.append(vals[2])
+            coordn.append(vals[3])
+
+        nbinarr=np.array(nbin,dtype='float')
+        posarr=np.array(pos,dtype='float')
+        rdfarr=np.array(rdf,dtype='float')
+        coordnarr=np.array(coordn,dtype='float')
+        
+        rdf_data.append(runRDF(timestep,nbinarr,posarr,rdfarr,coordnarr))
+    num_rdf+=num_cur
+
+    return num_rdf, rdf_data
+
+def com_read(filename):
+    
+    counter=1
+    num_com=0
+    timestep=[]
+    data_start=[]
+    data_end=[]
+
+    com_data=[]
+
+    with open(filename,'r') as logfile:
+        contents=logfile.read()
+
+    lines=contents.split('\n')
+
+    for line in lines:
+        column=line.split()
+        if 'Row' in line:
+            Header=column
+        elif 'TimeStep' in line:
+            Header2=column
+        elif len(column)==2:
+            timestep.append(column[0])
+            data_start.append(counter)
+            if len(data_start)>1:
+                data_end.append(counter-1)
+        
+        counter+=1
+        if counter == len(lines) and len(data_end) < len(data_start):
+            data_end.append(counter-1)
+
+    num_cur=len(data_start)
+    data_vals=['']*num_cur
+
+    for n in range(num_cur):
+        data_vals[n]=lines[data_start[n]:data_end[n]]
+        Nmolec=[]
+        xpos=[]
+        ypos=[]
+        zpos=[]
+
+        for m in range(len(data_vals[n])):
+            vals=data_vals[n][m].split()
+            Nmolec.append(vals[0])
+            xpos.append(vals[1])
+            ypos.append(vals[2])
+            zpos.append(vals[3])
+
+        nmolecarr=np.array(Nmolec,dtype='float')
+        xposarr=np.array(xpos,dtype='float')
+        yposarr=np.array(ypos,dtype='float')
+        zposarr=np.array(zpos,dtype='float')
+        
+        com_data.append(runCOM(float(timestep[n]),nmolecarr,xposarr,yposarr,zposarr))
+    num_com+=num_cur
+
+    return num_com, com_data

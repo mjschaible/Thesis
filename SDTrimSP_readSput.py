@@ -31,10 +31,10 @@ def read_exptfile(fn):
             Header = col
             for i in range(len(Header)-1):
                 exptName.append(col[i+1])
-            print len(exptName), exptName
+#            print len(exptName), exptName
             totYld= [[] for i in range(len(exptName))]
         else:
-            print line
+#            print line
             energies.append(float(col[0]))
             for i in range(1,len(Header)):
 #                print line[0], line[i]

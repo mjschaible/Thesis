@@ -1,8 +1,11 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 plt.interactive(True)
+matplotlib.use('TkAgg')
 import glob
 
+import Tkinter
 from Tkinter import Tk
 from tkFileDialog import askdirectory
 from tkFileDialog import askopenfilename
@@ -41,12 +44,14 @@ print "Please identify the experimental data file."
 efn='Expt_Data.dat'
 expt_yld.append(SDTrimSP_readSput.read_exptfile(efn))
 ion_target_pairs=expt_yld[0].label
+
 for expt in range(len(ion_target_pairs)):
     plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, expt, 'x')
 #plt.show()
 
 while cont != 0:
-    Tk().withdraw() 
+    print 'go go go'
+#    Tk().withdraw() 
     path = askdirectory() 
     logfiles = path+"/*.log"
     datfiles = path+"/*.dat"                 

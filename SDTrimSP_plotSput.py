@@ -5,11 +5,13 @@ import itertools
 
 def plot_sputExpt(log, nf, ls, lbl=None):
     fig = plt.figure(nf)
+
     fig.suptitle("The simulation run is {0}".format(log[0].label[nf]))
     ax1 = fig.add_subplot(111)
     ax1.scatter(log[0].energy,log[0].totYld[nf])#, label = lbl, linestyle=ls)
     ax1.set_ylabel('Yield (atom/ion)')
     ax1.set_xlabel('Energy (eV)')
+
     return
 
 def plot_log(log, nf, ls, lbl=None):

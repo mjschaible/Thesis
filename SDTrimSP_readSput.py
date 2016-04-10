@@ -54,10 +54,18 @@ def read_logfile(fn):
 
     regex = re.compile(r'\d')
     numbers = [int(s) for s in regex.findall(fn)]
-    energy = ''.join(map(str,numbers[1:(len(numbers)-2)]))
+    if 'SiO2' in fn:
+        start = len(numbers)-7
+        end = len(numbers)-2
+    elif 'Al2O3'in fn:
+        start = len(numbers)-8
+        end = len(numbers)-3
+    else:
+        print "please specify compound"
+    energy = ''.join(map(str,numbers[start:end]))
     isbv = numbers[len(numbers)-1]
     descrip = "The energy={} and isbv={}".format(energy, isbv)
-
+    
     lines = contents.split('\n')
     count = 1
     nE = 0
@@ -95,7 +103,6 @@ def read_logfile(fn):
     adens = 0 # atomix density of targer (atom/ang^3)
     deltahf = 0 # target formation enthalpy
     SBV = []
-    isbv = 0
     elementNum=[]
     incidentF=[]
     reflectedF=[]
@@ -176,11 +183,6 @@ def read_logfile(fn):
         if sbeline > 0 and count in range(sbeline+2, sbeline+2+nE*nE):
             numCol = len(columns)
             SBV.append(float(columns[numCol-4]))
-            if len(SBV) == nE*nE:
-                if SBV[nE*nE-2]==0:
-                    isbv = 1
-                else: 
-                    isbv = 3
         if 'incident   reflected   reemitted   sputtered   deposited' in line:
             readData = count
         if readData > 0 and count in range(readData+1, readData+1+nE):
@@ -217,10 +219,17 @@ def read_sputfile(fn):
 
     regex = re.compile(r'\d')
     numbers = [int(s) for s in regex.findall(fn)]
-    energy = ''.join(map(str,numbers[4:(len(numbers)-2)]))
+    if 'SiO2' in fn:
+        start = len(numbers)-7
+        end = len(numbers)-2
+    elif 'Al2O3'in fn:
+        start = len(numbers)-8
+        end = len(numbers)-3
+    else:
+        print "please specify compound"
+    energy = ''.join(map(str,numbers[start:end]))
     isbv = numbers[len(numbers)-1]
     descrip = "The energy={} and isbv={}".format(energy, isbv)
-
 
     lines = contents.split('\n')
     num=1
@@ -316,6 +325,7 @@ def find_sputvar(sput, i):
             iyld.append(sput[j].Flux[k][i])
         totYld=sput[j].totYld[i]
 #        print fs, totYld
+
         sput_data.append(LogData(sput[j].label, sput[j].energy, fs, iyld, totYld))
 
     return sput_data

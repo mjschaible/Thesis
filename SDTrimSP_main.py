@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 plt.interactive(True)
-matplotlib.use('TkAgg')
 import glob
+import itertools
 
-import Tkinter
 from Tkinter import Tk
 from tkFileDialog import askdirectory
 from tkFileDialog import askopenfilename
@@ -13,10 +13,16 @@ from tkFileDialog import askopenfilename
 import SDTrimSP_readSput
 import SDTrimSP_plotSput
 
+def find_between( s, first, last=None ):
+    try:
+        start = s.index( first ) + len( first )
+        return s[start:]
+    except ValueError:
+        return ""
+    
 # ------------ Begin main program ----------
 cont = 1
-num_runs=0
-
+nr=0
 
 # ----- Define a default array of simulation energies -----
 defEng = np.linspace(100, 10000, num=100)
@@ -29,17 +35,11 @@ np.savetxt(
     header='energies')
 
 expt_yld=[]
-
-loglist=[]
-log_yld=[]
-sput_yld=[]
-datlist=[]
-trfile=[]
-
 # read experimental data file
 print "Please identify the experimental data file."
 # show an "Open" dialog box and return the path to the selected file
-#Tk().withdraw() 
+root = Tk()
+#root.withdraw() 
 #efn = askopenfilename()
 efn='Expt_Data.dat'
 expt_yld.append(SDTrimSP_readSput.read_exptfile(efn))
@@ -47,43 +47,33 @@ ion_target_pairs=expt_yld[0].label
 
 for expt in range(len(ion_target_pairs)):
     plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, expt, 'x')
-#plt.show()
 
+color=[iter(plt.cm.rainbow(np.linspace(0,1,10))) for i in ion_target_pairs]
 while cont != 0:
+    loglist=[]
+    log_yld=[]
+    sput_yld=[]
+    datlist=[]
+    trfile=[]
+    n_eng=0
     print 'go go go'
-#    Tk().withdraw() 
+    root.withdraw() 
     path = askdirectory() 
     logfiles = path+"/*.log"
     datfiles = path+"/*.dat"                 
-
+    path_name=find_between(path, 'data')
+    print path_name
 # first read log data files to get full simulation description
     for filename in glob.glob(logfiles):
 #        print 'The file is {0}'.format(filename)
         loglist.append(filename)
-        log_yld.append(SDTrimSP_readSput.read_logfile(filename)) 
-
-# Plot total yields derived from the log files
-    plot1_yld = SDTrimSP_plotSput.plot_log(log_yld, num_runs, '-', 'isbv')
-    plt.show()
-
-    # After all files in a folder are read, sort the yields from the log and sputter data files
-    # by energy. 
-#    sputteredF = [x for (y,x) in sorted(zip(Esim,sputteredF), key=lambda pair:pair[0])]
-#    totYld = [x for (y,x) in sorted(zip(Esim,totYld), key=lambda pair:pair[0])]
-#    Esim[j].sort()
-#    print Esim
-#    print fluenz
-#    print sputteredF
-#    print totYld
-
-    # Read in sputter data and trajectory files
-    # and arrange according to energy
+        log_yld.append(SDTrimSP_readSput.read_logfile(filename))
+        #print log_yld[n_eng].label[0], log_yld[n_eng].label[1]   
+        n_eng+=1
 
     for filename in glob.glob(datfiles):
 #        print 'The file is {0}'.format(filename)
         datlist.append(filename)        
-    print
-#    print datlist
 
 # Call read functions for each data file type 
     for filename in datlist:
@@ -116,26 +106,41 @@ while cont != 0:
             continue
             # Trajectories for primary and secondary knock-on atoms
         else:
-            print 'The file {} does not have an analysis function written for it'.format(filename)
+            #print 'The file {} does not have an analysis function written for it'.format(filename)
+            continue
 
-    index = [i for i, s in enumerate(ion_target_pairs) if ion_target_pairs[s] in sput_yld[num_runs].label[3]]
-    print index
+    for i in range(len(ion_target_pairs)):
+        if ion_target_pairs[i] in log_yld[0].label[0]:
+            nf = i
+            c=next(color[i])       
+            print nf
+        else:
+            continue
+    #----- Plot total yields derived from the log files -----
+    plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
 
-    # Determine average yields
-    sput_yld_avg=SDTrimSP_readSput.average(sput_yld)
-    # Extract the sputter yield from the first time step
-    sput_yld_init=SDTrimSP_readSput.find_sputvar(sput_yld_avg, 1)
-    # Extract the sputter yield from the last time step
-    last= len(sput_yld_avg[0].fluence)-1
-    sput_yld_final=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
-    #----- Plot total yields derived from the sputter data files -----
-    plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init, nf, '--', None)
-    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
-#    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init, num_runs)
+    if not sput_yld:
+        print "No sput yield files present"
+    else:
+        # Determine average yields
+        sput_yld_avg=SDTrimSP_readSput.average(sput_yld)
+        # Extract the sputter yield from the first time step
+        sput_yld_init=SDTrimSP_readSput.find_sputvar(sput_yld_avg, 1)
+        # Extract the sputter yield from the last time step
+        last= len(sput_yld_avg[0].fluence)-1
+        sput_yld_final=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
+        
+        #----- Plot total yields derived from the sputter data files -----
+        #plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
+        #    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
+        #    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init)
 
-    plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg, ns+1)
-    plt.show()
+        #    plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg, nf+1)
+        #    plt.show()
+    nr+=1
+    cont = input('Enter 0 to end: ')
 
+'''
 # Arrange energy in the default list np.linspace(100,10000)    
     # Define log file arrays
     sim_name=[None]*len(defEng)
@@ -164,11 +169,6 @@ while cont != 0:
 
 #       
 
-    num_runs+=1
-    cont = input('Enter 0 to end: ')
-
-'''
-
     row0=[]
     allr=[]
     with open('output.dat', 'r') as csvinput:
@@ -185,7 +185,15 @@ while cont != 0:
         w = csv.writer(csvoutput, lineterminator='\n')
         w.writerows(allr)
 
-
+    # After all files in a folder are read, sort the yields from the log and sputter data files
+    # by energy. 
+#    sputteredF = [x for (y,x) in sorted(zip(Esim,sputteredF), key=lambda pair:pair[0])]
+#    totYld = [x for (y,x) in sorted(zip(Esim,totYld), key=lambda pair:pair[0])]
+#    Esim[j].sort()
+#    print Esim
+#    print fluenz
+#    print sputteredF
+#    print totYld
 '''
 
 

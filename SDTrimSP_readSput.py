@@ -298,7 +298,8 @@ def read_sputfile(fn):
     simName.append('isbv={}'.format(isbv))
     simName.append('Fluence={}'.format(fluenz))    
     simName.append('Hist={}'.format(nh))
-
+    simName.append(species)
+    
     sput_data = LogData(simName, float(energy), fsteps, specFlu, totYld)
     return sput_data
 

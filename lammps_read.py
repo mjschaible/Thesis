@@ -1,10 +1,11 @@
 import numpy as np
+import re
+import csv
 
 class SimParam (object):
 
-    def __init__(self,potential,num_molec,timesteps,mol_pka,pos_pka,vel_pka):
-        self.potential=potential
-        self.num_molec=num_molec
+    def __init__(self,descrip,timesteps,mol_pka,pos_pka,vel_pka):
+        self.descrip=descrip
         self.timesteps=timesteps
         self.mol_pka=mol_pka
         self.pos_pka=pos_pka
@@ -12,7 +13,8 @@ class SimParam (object):
 
 class LogData (object):
 
-    def __init__(self,thermoCol,step,temp,tempave,pe,peave,ke,keave,etot,press):
+    def __init__(self,descrip,thermoCol,step,temp,tempave,pe,peave,ke,keave,etot,press):
+        self.descrip=descrip
         self.thermoCol=thermoCol
         self.step=step
         self.temp=temp
@@ -27,7 +29,8 @@ class LogData (object):
 # Define a class for mean-squared-displacement(msd) and density files
 class runData (object):
 
-    def __init__(self,Head,step,data):
+    def __init__(self,descrip,Head,step,data):
+        self.descrip=descrip
         self.Head=Head
         self.step=step
         self.data=data
@@ -68,7 +71,8 @@ def log_read(filename):
     data_end=[]
     timesteps=[]
     markers=[]
-
+    descrip=[]
+    
     num_runs=0
     run_param = []
     run_thermo = []
@@ -127,7 +131,14 @@ def log_read(filename):
         if counter == len(lines): 
             if len(data_end) < len(data_start):
                 data_end.append(counter)
-
+                
+    descrip.append('pot={}'.format(potential))
+    descrip.append('nmolec={}'.format(num_molec))
+    if 'mol_pka' in locals():
+        descrip.append('PKA#={}'.format(mol_pka))
+        descrip.append('PKApos={}'.format(pos_pka))
+        descrip.append('PKAvel={}'.format(vel_pka))
+        
     num_cur=len(data_start)-num_runs
 
     data_vals=['']*num_cur
@@ -167,15 +178,15 @@ def log_read(filename):
         etotarr=np.array(etot,dtype='float')
         pressarr=np.array(press,dtype='float')
     #    runs.append(LogData(potential,step,pe,ke,etot))
-        run_param.append(SimParam(potential,num_molec,timesteps[n],mol_pka,pos_pka,vel_pka))
-        run_thermo.append(LogData(HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
+        run_param.append(SimParam(descrip,timesteps[n],mol_pka,pos_pka,vel_pka))
+        run_thermo.append(LogData(descrip,HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
 
     num_runs+=num_cur
 
     return num_runs, run_param, run_thermo
 
 
-def data_read(filename):
+def data_read(filename, descrip):
     counter = 1    
     num_data=0
     data_start=[]
@@ -216,12 +227,12 @@ def data_read(filename):
             data_val.append(vals[1])
         steparr=np.array(step,dtype='float')
         dataarr=np.array(data_val,dtype='float')
-        run_data.append(runData(dataHead,steparr,dataarr))
+        run_data.append(runData(descrip,dataHead,steparr,dataarr))
     num_data+=num_cur
 
     return num_data, run_data
 
-def rdf_read(filename):
+def rdf_read(filename, descrip):
     
     counter=1
     num_rdf=0
@@ -279,7 +290,7 @@ def rdf_read(filename):
 
     return num_rdf, rdf_data
 
-def com_read(filename):
+def com_read(filename, descrip):
     
     counter=1
     num_com=0
@@ -336,3 +347,43 @@ def com_read(filename):
     num_com+=num_cur
 
     return num_com, com_data
+
+def find_commsd(run_param, run_com, num_com):
+    xpka=run_param[1].pos_pka[0]
+    ypka=run_param[1].pos_pka[1]
+    zpka=run_param[1].pos_pka[2]
+    shell_thickness=5
+    num_shells=8
+    shell=[[] for y in range(num_shells)]
+
+    for i in range(len(run_com[0].Nmolec)):
+        xcom=run_com[0].xpos[i]
+        ycom=run_com[0].ypos[i]
+        zcom=run_com[0].zpos[i]
+        dist_from_pka=np.sqrt((xpka-xcom)**2+(ypka-ycom)**2+(zpka-zcom)**2)
+        for n in range(num_shells):
+            if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
+                shell[n].append(run_com[0].Nmolec[i])
+
+    msd=[[0 for x in range(1)] for y in range(num_shells)]
+    for n in range(1,num_com):
+        dist=[[] for y in range(num_shells)]
+        for i in range(len(run_com[n].Nmolec)):
+            xcom=run_com[n].xpos[i]
+            ycom=run_com[n].ypos[i]
+            zcom=run_com[n].zpos[i]
+            xcom_prev=run_com[n-1].xpos[i]
+            ycom_prev=run_com[n-1].ypos[i]
+            zcom_prev=run_com[n-1].zpos[i]
+            xdisp=(xcom-xcom_prev)**2
+            ydisp=(ycom-ycom_prev)**2
+            zdisp=(zcom-zcom_prev)**2
+            tot_disp=xdisp+ydisp+zdisp
+            for j in range(num_shells):
+                if run_com[n].Nmolec[i] in shell[j]:
+                    dist[j].append(tot_disp)
+
+        for j in range(num_shells):
+            msd[j].append(np.mean(dist[j]))
+
+    return msd

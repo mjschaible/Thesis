@@ -66,7 +66,7 @@ while cont != 0:
     datfiles = path+"/*.dat"
     srimfiles = path+"/*.srim"
     path_name=find_between(path, 'data')
-    print path_name
+    #print path_name
 # first read log data files to get full simulation description
     for filename in glob.glob(logfiles):
 #        print 'The file is {0}'.format(filename)
@@ -120,16 +120,15 @@ while cont != 0:
         print "No srim yield files present"
     else:
         for i in range(len(srim_yld)):
-            print len(srim_yld[i].label)
             for j in range(len(srim_yld[i].label)):
                 nsim = srim_yld[i].label[j]
-                #print nsim
                 for k in range(len(ion_target_pairs)-3):
                     if ion_target_pairs[k] in nsim:
                         nf = k
                         c=next(color[k])
+                        plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],nf,'-.',c,nsim)
+
                 #nf, c = find_name(nsim, color)
-                plot_expt = SDTrimSP_plotSput.plot_srim(srim_yld,nf,'-.',c,nsim)
 
     #----- Plot total yields derived from the log files -----
     if not log_yld:
@@ -161,11 +160,11 @@ while cont != 0:
         
         #----- Plot total yields derived from the sputter data files -----
         plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
-        plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
+        #plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
         #    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
         #    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init)
-
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg, len(ion_target_pairs)+nf)
+        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs)+nf,'-',1)
+        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,len(ion_target_pairs)+nf, ':')
         #    plt.show()
     nr+=1
     cont = input('Enter 0 to end: ')

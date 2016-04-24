@@ -17,7 +17,7 @@ def read_exptfile(fn):
     with open(fn,'r') as logfile:
         contents = logfile.read()
     logfile.close()
-
+    simname = fn.split('_')[-1].split('.srim')[0]
     exptName=[]
     energies = []
     totYld = []
@@ -26,25 +26,25 @@ def read_exptfile(fn):
     
     lines=contents.split('\n')
     for line in lines:
-        col = line.split(',')
+        lin = line.strip('\r')
+        col = lin.split(',')
         if 'Energies' in line:
             Header = col
             for i in range(len(Header)-1):
-                exptName.append(col[i+1])
-#            print len(exptName), exptName
+                if 'SRIM' in fn:
+                    exptName.append(col[i+1] + '_' + simname)
+                else:
+                    exptName.append(col[i+1])
+            #print exptName
             totYld= [[] for i in range(len(exptName))]
         else:
-#            print line
             energies.append(float(col[0]))
             for i in range(1,len(Header)):
-#                print line[0], line[i]
                 if col[i]=='':
                     totYld[i-1].append(None)
                 else:
                     totYld[i-1].append(col[i])
-
     expt_data=LogData(exptName, energies, fluence, exptFlux, totYld)
-
     return expt_data
             
 def read_logfile(fn):
@@ -194,8 +194,8 @@ def read_logfile(fn):
             depositedF.append(float(columns[5]))
 
         count +=1
-
-    totYld = np.sum(sputteredF)/fluenz
+    print np.sum(sputteredF[1:]), np.sum(sputteredF)
+    totYld = np.sum(sputteredF[1:])/fluenz
     simName.append('{}{}->{}'.format(Esim,elemName[0],target))
     simName.append('isbv={}'.format(isbv))
     simName.append('ipot={}'.format(ipot))

@@ -8,7 +8,6 @@ import itertools
 
 def plot_sputExpt(log, nf, ls, lbl=None):
     fig = plt.figure(nf)
-
     fig.suptitle("The simulation run is {0}".format(log[0].label[nf]))
     ax1 = fig.add_subplot(111)
     ax1.scatter(log[0].energy,log[0].totYld[nf], label=lbl, marker=ls)
@@ -19,7 +18,6 @@ def plot_sputExpt(log, nf, ls, lbl=None):
 
 def plot_srim(log,nf,ls,c,lbl=None):
     fig = plt.figure(nf)
-
     ax1 = fig.add_subplot(111)
     ax1.plot(log.energy,log.totYld[nf], label = lbl, linestyle=ls)
     leg=ax1.legend()
@@ -62,15 +60,11 @@ def plot_log(log,nf,ls,c,lbl=None):
     ax1.set_ylim(bottom=0)
     return
 
-def plot_flu(sput, nf, ls, labl=None): 
-    fig = plt.figure(nf)
-    ax1 = fig.add_subplot(111)
+def plot_flu(sput, nf, ls, lbl=None): 
     asdf=np.array(range(len(sput)))
     c1=iter(plt.cm.inferno(np.linspace(0,1,5)))
-    c2=iter(plt.cm.rainbow(np.linspace(0,1,8)))
-    #ls = itertools.cycle(('-','--','-.',':'))
+    
     isbv_pos=[1]
-    lbl=[]
     e_sort = []
     yld_sort = []
     for i in range(len(sput)):
@@ -78,29 +72,38 @@ def plot_flu(sput, nf, ls, labl=None):
         match="isbv={}".format(isbv_pos[0])
         if match==isbv:
             #print log[i].label[0], log[i].label[1]
-            lbl.append(sput[i].label[0])
             e_sort.append(sput[i].fluence)
             yld_sort.append(sput[i].totYld)
+
+    for i in range(len(sput)):
+        c2=iter(plt.cm.rainbow(np.linspace(0,1,8)))
+        fig2 = plt.figure(nf+i)
+        ax2 = fig2.add_subplot(111)
+        if lbl!= None:
+            ax2.plot(sput[i].fluence,sput[i].totYld,label='Tot.',c='k',lw=2,ls=ls)
+
+        for k in range(len(sput[i].Flux)):
+            if lbl!= None:
+                lbl=sput[i].label[4][k]
+            c=next(c2)
+            ax2.plot(sput[i].fluence,sput[i].Flux[k],label=lbl,c=c,lw=2,ls=ls)
+            leg=ax2.legend()
+
+        ax2.set_xlim(sput[i].fluence[1],sput[i].fluence[-1])
+        ax2.set_xlabel('Fluence (x$10^{16}$)')
+        ax2.set_ylabel('Sputter Yield (atoms/ion)')
+        ax2.set_title(sput[i].label[0])
+
+    IT_pair = sput[i].label[0].split()
+    
+    return
+
+'''
+    fig1 = plt.figure(nf)
+    ax1 = fig.add_subplot(111)
     for i in [1,3,len(e_sort)-1]:
         c=next(c1)
         ax1.plot(e_sort[i],yld_sort[i],label=lbl[i],c=c,lw=2,ls=ls)
-    fig = plt.figure(nf*2)
-    ax2 = fig.add_subplot(111)
-    for k in range(len(sput[i].Flux)):
-        c=next(c2)
-        lbl=sput[i].label[4][k]
-        ax2.plot(sput[4].fluence,sput[4].Flux[k],label=lbl,c=c,lw=2,ls=ls)
-
     ax1.set_xlim(0,sput[0].fluence[-1])
-    ax1.set_xlabel('Fluence (x10^16)')
-    ax1.set_ylabel('Sputter Yield (atoms/ion)')
-    IT_pair = sput[0].label[0].split()
     ax1.set_title('{}, {}, {}, {}'.format(IT_pair[1],sput[0].label[1],sput[0].label[2],sput[0].label[3]))
-    ax2.set_xlim(0,sput[0].fluence[-1])
-    ax2.set_xlabel('Fluence (x10^16)')
-    ax2.set_ylabel('Sputter Yield (atoms/ion)')
-    ax2.set_title(sput[4].label[0])
-    if labl!= None:
-        leg=ax1.legend()
-        leg=ax2.legend()
-    return
+'''

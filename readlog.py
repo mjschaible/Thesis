@@ -26,15 +26,15 @@ def generate_plots(n):
     fig, axs = plt.subplots(b,a,figsize=(a*b,b*b), sharex='col', sharey='row')
     axs.shape = (b,a)
 
+    pemin=0
+    pemax=0
+    kemin=0
+    kemax=0
+
     for i in range(n):
         axs[0,i].plot(runs[i].step,runs[i].pe*kcalToeV,label = HeadCol[3])
         axs[0,i].plot(runs[i].step,runs[i].peave*kcalToeV*num_molec)
-        if i == 2:
-            pemin=min(runs[i].peave)
-            pemax=max(runs[i].peave)
-            axs[0,i].set_xscale([pemin-20,pemax+100])
-        if i > 2:
-            axs[0,i].set_xscale([pemin-20,pemax+100])
+
         plt.setp(axs[0,i].get_xticklabels(), visible=False)
         axs[0,i].locator_params(axis='x', tight=True, nbins=2)
 
@@ -43,22 +43,33 @@ def generate_plots(n):
         plt.setp(axs[1,i].get_xticklabels(), visible=False)
         axs[1,i].locator_params(axis='x', tight=True, nbins=2)
  
+        pemin_t=min(runs[i].peave)*kcalToeV*num_molec
+        pemax_t=max(runs[i].peave)*kcalToeV*num_molec
+        kemin_t=min(runs[i].keave)*kcalToeV*num_molec
+        kemax_t=max(runs[i].keave)*kcalToeV*num_molec
+        if pemin_t < pemin:
+            pemin = pemin_t
+            axs[0,i].set_ylim([pemin-3,pemin+3])
+        if kemax_t > kemax:
+            kemax = kemax_t
+            axs[1,i].set_ylim([kemax-5.5,kemax+0.5])
+
         axs[2,i].plot(runs[i].step,runs[i].etot*kcalToeV,label = HeadCol[7])
         axs[2,i].set_xlabel('Step #  (%s fs)' % timesteps[i])
         axs[2,i].ticklabel_format(axis='x', style = 'sci')
         axs[2,i].locator_params(axis='x', tight=True, nbins=2)
 
         if i == 0:
-            axs[0,i].set_ylabel('%s (eV)' % HeadCol[3])
-            axs[1,i].set_ylabel('%s (eV)' % HeadCol[5])
-            axs[2,i].set_ylabel('%s (eV)' % HeadCol[7])
+            axs[0,i].set_ylabel('Sys. {} (eV)'.format(HeadCol[3]))
+            axs[1,i].set_ylabel('Sys. {} (eV)'.format(HeadCol[5]))
+            axs[2,i].set_ylabel('{} (eV)'.format(HeadCol[7]))
             plt.suptitle("The pair potential used is %s" % potential)
         if i > 0:
             plt.setp(axs[0,i].get_yticklabels(), visible=False)
             plt.setp(axs[1,i].get_yticklabels(), visible=False)
             plt.setp(axs[2,i].get_yticklabels(), visible=False)
         plt.subplots_adjust(wspace=0.001)
-        axs[2,i].set_ylim(-1700,-1600)
+        #axs[2,i].set_ylim(-1700,-1600)
 
     plt.show()
     return fig

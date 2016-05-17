@@ -17,7 +17,7 @@ def read_exptfile(fn):
     with open(fn,'r') as logfile:
         contents = logfile.read()
     logfile.close()
-
+    simname = fn.split('_')[-1].split('.srim')[0]
     exptName=[]
     energies = []
     totYld = []
@@ -26,25 +26,25 @@ def read_exptfile(fn):
     
     lines=contents.split('\n')
     for line in lines:
-        col = line.split(',')
+        lin = line.strip('\r')
+        col = lin.split(',')
         if 'Energies' in line:
             Header = col
             for i in range(len(Header)-1):
-                exptName.append(col[i+1])
-#            print len(exptName), exptName
+                if 'SRIM' in fn:
+                    exptName.append(col[i+1] + '_' + simname)
+                else:
+                    exptName.append(col[i+1])
+            #print exptName
             totYld= [[] for i in range(len(exptName))]
         else:
-#            print line
             energies.append(float(col[0]))
             for i in range(1,len(Header)):
-#                print line[0], line[i]
                 if col[i]=='':
                     totYld[i-1].append(None)
                 else:
                     totYld[i-1].append(col[i])
-
     expt_data=LogData(exptName, energies, fluence, exptFlux, totYld)
-
     return expt_data
             
 def read_logfile(fn):
@@ -53,11 +53,16 @@ def read_logfile(fn):
     logfile.close()
 
     regex = re.compile(r'\d')
+    stuff = fn.split('_')
+    for i in range(len(stuff)):
+        if 'eV' in stuff[i]:
+            numbers = [int(s) for s in regex.findall(stuff[i])]
+            energy = ''.join(map(str,numbers[:]))
+    
     numbers = [int(s) for s in regex.findall(fn)]
-    energy = ''.join(map(str,numbers[1:(len(numbers)-2)]))
     isbv = numbers[len(numbers)-1]
     descrip = "The energy={} and isbv={}".format(energy, isbv)
-
+    #print descrip
     lines = contents.split('\n')
     count = 1
     nE = 0
@@ -95,7 +100,6 @@ def read_logfile(fn):
     adens = 0 # atomix density of targer (atom/ang^3)
     deltahf = 0 # target formation enthalpy
     SBV = []
-    isbv = 0
     elementNum=[]
     incidentF=[]
     reflectedF=[]
@@ -118,6 +122,8 @@ def read_logfile(fn):
             nE+=1
         else:
             sysLine=0
+        if '->' in line and len(columns)>3:
+            target = columns[3]
         if 'SYMBOL A-Z  A-MASS' in line:
             sysLine = count
         if ' CPT          E0      AlPHA0       INEL0' in line:
@@ -176,11 +182,6 @@ def read_logfile(fn):
         if sbeline > 0 and count in range(sbeline+2, sbeline+2+nE*nE):
             numCol = len(columns)
             SBV.append(float(columns[numCol-4]))
-            if len(SBV) == nE*nE:
-                if SBV[nE*nE-2]==0:
-                    isbv = 1
-                else: 
-                    isbv = 3
         if 'incident   reflected   reemitted   sputtered   deposited' in line:
             readData = count
         if readData > 0 and count in range(readData+1, readData+1+nE):
@@ -188,24 +189,26 @@ def read_logfile(fn):
             incidentF.append(float(columns[1]))
             reflectedF.append(float(columns[2]))
             reemittedF.append(float(columns[3]))
-            sputteredF.append(float(columns[4]))
+            sputteredF.append(float(columns[4])/fluenz)
             depositedF.append(float(columns[5]))
 
         count +=1
 
-    totYld = np.sum(sputteredF)/fluenz
-    simName.append('{}{}->{}'.format(Esim,elemName[0],target))
+    totYld = np.sum(sputteredF[1:])
+    simName.append('{}eV{}->{}'.format(Esim,elemName[0],target))
     simName.append('isbv={}'.format(isbv))
     simName.append('ipot={}'.format(ipot))
-    simName.append('inel{}={}'.format(elemName[1],INEL0[1]))
-    simName.append('Edispl{}={}'.format(elemName[1],Edispl[1]))
-    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-2],SBV[nE*nE-5]))
-    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-1],SBV[nE*nE-4]))
-    simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-2],SBV[nE*nE-2]))
-    simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-1],SBV[nE*nE-1]))
-    simName.append('Fluence={}'.format(fluenz))    
-    simName.append('Thickness={}'.format(ttdyn))
-    simName.append('Hist={}'.format(nh))
+    simName.append(elemName)
+    simName.append(target)
+#    simName.append('inel{}={}'.format(elemName[1],INEL0[1]))
+#    simName.append('Edispl{}={}'.format(elemName[1],Edispl[1]))
+#    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-2],SBV[nE*nE-5]))
+#    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-1],SBV[nE*nE-4]))
+#    simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-2],SBV[nE*nE-2]))
+#    simName.append('SBE{}-{}={}'.format(elemName[nE-1],elemName[nE-1],SBV[nE*nE-1]))
+#    simName.append('Fluence={}'.format(fluenz))    
+#    simName.append('Thickness={}'.format(ttdyn))
+#    simName.append('Hist={}'.format(nh))
 
     log_data = LogData(simName, Esim, fluenz, sputteredF, totYld)
     return log_data
@@ -216,12 +219,17 @@ def read_sputfile(fn):
     sputfile.close()
 
     regex = re.compile(r'\d')
+    stuff = fn.split('_')
+    for i in range(len(stuff)):
+        if 'eV' in stuff[i]:
+            numbers = [int(s) for s in regex.findall(stuff[i])]
+            energy = ''.join(map(str,numbers[:]))
+    
     numbers = [int(s) for s in regex.findall(fn)]
-    energy = ''.join(map(str,numbers[4:(len(numbers)-2)]))
     isbv = numbers[len(numbers)-1]
     descrip = "The energy={} and isbv={}".format(energy, isbv)
-
-
+    #print descrip
+    
     lines = contents.split('\n')
     num=1
     pn = 0 
@@ -235,8 +243,6 @@ def read_sputfile(fn):
     totYld=[]
     fsteps=[]
     for line in lines:
-        # First 7 lines should ALWAYS be the same. Read in values as 'line'.
-        # Strip removes whitespace/carrage return from EOL
         line = line.strip()
         columns = line.split()
         if 'SDTrimSP' in line:
@@ -270,12 +276,12 @@ def read_sputfile(fn):
             elif numcur<ncp:
                 for i in range(ncp):
                     specFlu_cur[i]+=float(columns[i])
-#                print specFlu_cur
                 numcur+=1
             if numcur == ncp:
                 for i in range(ncp):
                     specFlu[i].append(specFlu_cur[i])
-                    totYld_cur+=specFlu_cur[i]
+                    #totYld_cur+=specFlu_cur[i]
+                totYld_cur = np.sum(specFlu_cur[1:])
                 totYld.append(totYld_cur)
 #                print totYld, numcur
                 specFlu_cur = [0]*ncp
@@ -289,6 +295,7 @@ def read_sputfile(fn):
     simName.append('isbv={}'.format(isbv))
     simName.append('Fluence={}'.format(fluenz))    
     simName.append('Hist={}'.format(nh))
+    simName.append(species)
 
     sput_data = LogData(simName, float(energy), fsteps, specFlu, totYld)
     return sput_data
@@ -316,6 +323,7 @@ def find_sputvar(sput, i):
             iyld.append(sput[j].Flux[k][i])
         totYld=sput[j].totYld[i]
 #        print fs, totYld
+
         sput_data.append(LogData(sput[j].label, sput[j].energy, fs, iyld, totYld))
 
     return sput_data

@@ -9,6 +9,7 @@ import itertools
 from Tkinter import Tk
 from tkFileDialog import askdirectory
 from tkFileDialog import askopenfilename
+from operator import add
 
 import SDTrimSP_readSput
 import SDTrimSP_plotSput
@@ -19,71 +20,48 @@ def find_between( s, first, last=None ):
         return s[start:]
     except ValueError:
         return ""
-
-def find_name(yld_label, color): 
-    for i in range(len(ion_target_pairs)):
-        if ion_target_pairs[i] in yld_label:
-            nf = i
-            c=next(color[i])
-            return nf, c
-        else:
-            return None
     
 # ------------ Begin main program ----------
 cont = 1
-nr=2
+nr=0
 
 # ----- Define a default array of simulation energies -----
 defEng = np.linspace(100, 10000, num=100)
-
-expt_yld=[]
-# read experimental data file
-print "Please identify the experimental data file."
-# show an "Open" dialog box and return the path to the selected file
 root = Tk()
-#root.withdraw() 
-#efn = askopenfilename()
-efn='ExpData.dat'
-expt_yld.append(SDTrimSP_readSput.read_exptfile(efn))
-ion_target_pairs=expt_yld[0].label
+root.withdraw()
 
-for expt in range(len(ion_target_pairs)-3):
-    plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, expt, 'o', 'Experimental')
+elemlist = ['Na','Mg','Al','Si','K','Ca','Ti','Fe','Ni','O']
+ifrac = 0.05
+relcorr = [23.319, 2.886, 3.637, 1.000, 81.080, 3.950, 3.582, 2.767, 2.886, 0.01]
 
-color=[iter(plt.cm.rainbow(np.linspace(0,1,10))) for i in ion_target_pairs]
 while cont != 0:
-    loglist=[]
+    tarlist=[]
     log_yld=[]
-    srim_yld=[]
     sput_yld=[]
-    srimfn=[]
+    esput=[]
     trfile=[]
     n_eng=0
-
-    root.withdraw() 
+ 
     path = askdirectory() 
     logfiles = path+"/*.log"
     datfiles = path+"/*.dat"
-    srimfiles = path+"/*.srim"
+
     path_name=find_between(path, 'data')
     #print path_name
     # first read log data files to get full simulation description
     for filename in glob.glob(logfiles):
         #print 'The file is {0}'.format(filename)
-        loglist.append(filename)
         log_yld.append(SDTrimSP_readSput.read_logfile(filename))
+        if log_yld[n_eng].label[4] in tarlist:
+            continue
+        else:
+            tarlist.append(log_yld[n_eng].label[4])
         n_eng+=1
-
-    for filename in glob.glob(srimfiles):
-        if 'Thiel' not in filename:
-            srimfn.append(filename)
-            #print filename
-            srim_yld.append(SDTrimSP_readSput.read_exptfile(filename))
-
+    print tarlist
+    
 # Call read functions for each data file type 
     for filename in glob.glob(datfiles):
         if 'E0_31'in filename:
-#            print 'The file is {0}'.format(filename)
             continue
            # File with variation in elemental concentration vs. timestep(+?)
         elif 'E0_33' in filename:
@@ -91,45 +69,64 @@ while cont != 0:
             #print filename
             sput_yld.append(SDTrimSP_readSput.read_sputfile(filename))
         elif 'E0_34'in filename:
-#            print 'The file is {0}'.format(filename)
             continue
             # File with energy loss moments?
         elif 'EngAn' in filename:
-#            print 'The file is {0}'.format(filename)
             continue
             # File with analysis of how energy of projectile and target atoms is lost/partitioned
         elif 'layer' in filename:
-#            print 'The file is {0}'.format(filename)
             continue
             # File with final(?) elemental variation as a function of depth
         elif 'tr_all' in filename:
             trfile.append(filename)
 #            projectr.append(read the trajectory file)
-#            print 'The file is {0}'.format(filename)
             # Trajectories for a number of projectiles and excited particles
         elif 'tr' in filename:
-#            print 'The file is {0}'.format(filename)
             continue
             # Trajectories for primary and secondary knock-on atoms
         else:
-            #print 'The file {} does not have an analysis function written for it'.format(filename)
             continue
-        
-    #----- Plot total yeilds derived from SRIM simulations -----
-    if not srim_yld:
-        print "No srim yield files present"
-    else:
-        for i in range(len(srim_yld)):
-            for j in range(len(srim_yld[i].label)):
-                nsim = srim_yld[i].label[j]
-                for k in range(len(ion_target_pairs)-3):
-                    if ion_target_pairs[k] in nsim:
-                        nf = k
-                        c=next(color[k])
-                        plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],nf,'-.',c,nsim)
 
-                #nf, c = find_name(nsim, color)
+    for k in range(len(tarlist)):
+        hyld=[]
+        h_iyld=[]
+        heyld=[]
+        he_iyld=[]
+        for i in range(len(log_yld)):
+            print log_yld[i].label[3]
+            print log_yld[i].Flux
 
+            if log_yld[i].label[3][0] == 'H' and log_yld[i].label[4] == tarlist[k]:
+                print 'The {} yield is {:.3f}'.format(log_yld[i].label[0], log_yld[i].totYld)
+                for y in range(len(elemlist)):
+                    match = [j for j, x in enumerate(log_yld[i].label[3]) if x == elemlist[y]]
+                    if match:
+                        yld=0.95*log_yld[i].Flux[match[0]]
+                        hyld.append(yld)
+                        h_iyld.append(yld*relcorr[y]*ifrac)
+                print hyld
+            elif log_yld[i].label[3][0] == 'He' and log_yld[i].label[4] == tarlist[k]:
+                print 'The {} yield is {:.3f}'.format(log_yld[i].label[0], log_yld[i].totYld)
+                for y in range(len(elemlist)):
+                    match = [j for j, x in enumerate(log_yld[i].label[3]) if x == elemlist[y]]
+                    if match:
+                        yld=0.05*log_yld[i].Flux[match[0]]
+                        heyld.append(yld)
+                        he_iyld.append(yld*relcorr[y]*ifrac)
+                print heyld
+            else:
+                print 'What ion are you using dumbass?'
+
+        sw_yld= map(add,hyld,heyld)
+        sw_iyld= map(add,h_iyld,he_iyld)
+        print sw_iyld
+            
+    nr+=1
+    cont = input('Enter 0 to end: ')
+
+color=iter(plt.cm.rainbow(np.linspace(0,1,nr)))
+
+'''
     #----- Plot total yields derived from the log files -----
     if not log_yld:
         print "No log files present"
@@ -147,6 +144,11 @@ while cont != 0:
     if not sput_yld:
         print "No sput yield files present"
     else:
+        nsim = sput_yld[0].label[0]
+        for i in range(len(ion_target_pairs)):
+            if ion_target_pairs[i] in nsim:
+                nf = i
+                c=next(color[i])
         # Determine average yields
         sput_yld_avg=SDTrimSP_readSput.average(sput_yld)
         # Extract the sputter yield from the first time step
@@ -160,13 +162,11 @@ while cont != 0:
         #plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
         #    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
         #    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init)
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs),':')
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,len(ion_target_pairs), '-', 1)
-            
-    nr+=1
-    cont = input('Enter 0 to end: ')
-
-'''
+        #plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs)+nf,'-',1)
+        #plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,'-',1)
+        #plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,nr, ':')
+        #    plt.show()
+    
 np.savetxt(
     'output.dat',
     defEng,

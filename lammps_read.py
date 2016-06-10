@@ -92,7 +92,7 @@ def log_read(filename):
         if 'pair_style' in line:
             pot_full = line
             potential = column[1]
-        if 'timestep' in line:
+        if 'timestep' in line and not 'reset' in line and not '$' in line:
             timesteps.append(float(column[1]))
         if 'PPPM' in line:
             markers.append(counter)
@@ -101,11 +101,11 @@ def log_read(filename):
             HeadCol = column
         if 'group gPKA molecule' in line:
             mol_pka = column[3]        
-        if 'region rRad sphere' in line:
-            pos_x = column[3]
-            pos_y = column[4]
-            pos_z = column[5]
-            if pos_z != '${zpos}':
+        if 'PKA position' in line:
+            pos_x = column[5]
+            pos_y = column[6]
+            pos_z = column[7]
+            if pos_z != '${ypos}':
                 pos_x=float(pos_x)
                 pos_y=float(pos_y)
                 pos_z=float(pos_z)
@@ -137,7 +137,7 @@ def log_read(filename):
     if 'mol_pka' in locals():
         descrip.append('PKA#={}'.format(mol_pka))
         descrip.append('PKApos={}'.format(pos_pka))
-        descrip.append('PKAvel={}'.format(vel_pka))
+        descrip.append(float(vel_pka))
         
     num_cur=len(data_start)-num_runs
 
@@ -177,14 +177,12 @@ def log_read(filename):
         keavearr=np.array(keave,dtype='float')
         etotarr=np.array(etot,dtype='float')
         pressarr=np.array(press,dtype='float')
-    #    runs.append(LogData(potential,step,pe,ke,etot))
         run_param.append(SimParam(descrip,timesteps[n],mol_pka,pos_pka,vel_pka))
         run_thermo.append(LogData(descrip,HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
 
     num_runs+=num_cur
 
     return num_runs, run_param, run_thermo
-
 
 def data_read(filename, descrip):
     counter = 1    

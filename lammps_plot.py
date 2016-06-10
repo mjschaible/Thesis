@@ -25,6 +25,7 @@ def log_plots(runs, param):
         time = (runs[i].step-runs[0].step[0])*param[i].timesteps/1000
         num_molec = re.findall('\d+\.\d+',runs[i].descrip[1])
         num_molec = float(num_molec[0])
+        
         axs[0,i].plot(time,runs[i].pe*kcalToeV,label = runs[i].thermoCol[2])
         axs[0,i].plot(time,runs[i].peave*kcalToeV*num_molec)
 

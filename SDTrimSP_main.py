@@ -31,7 +31,7 @@ def find_name(yld_label, color):
     
 # ------------ Begin main program ----------
 cont = 1
-nr=0
+nr=2
 
 # ----- Define a default array of simulation energies -----
 defEng = np.linspace(100, 10000, num=100)
@@ -59,7 +59,7 @@ while cont != 0:
     srimfn=[]
     trfile=[]
     n_eng=0
-    print 'go go go'
+
     root.withdraw() 
     path = askdirectory() 
     logfiles = path+"/*.log"
@@ -67,12 +67,11 @@ while cont != 0:
     srimfiles = path+"/*.srim"
     path_name=find_between(path, 'data')
     #print path_name
-# first read log data files to get full simulation description
+    # first read log data files to get full simulation description
     for filename in glob.glob(logfiles):
-#        print 'The file is {0}'.format(filename)
+        #print 'The file is {0}'.format(filename)
         loglist.append(filename)
         log_yld.append(SDTrimSP_readSput.read_logfile(filename))
-        #print log_yld[n_eng].label[0], log_yld[n_eng].label[1]   
         n_eng+=1
 
     for filename in glob.glob(srimfiles):
@@ -89,6 +88,7 @@ while cont != 0:
            # File with variation in elemental concentration vs. timestep(+?)
         elif 'E0_33' in filename:
             # File with variation in elemetal sputter yield vs. timestep
+            #print filename
             sput_yld.append(SDTrimSP_readSput.read_sputfile(filename))
         elif 'E0_34'in filename:
 #            print 'The file is {0}'.format(filename)
@@ -140,16 +140,13 @@ while cont != 0:
                 nf = i
                 c=next(color[i])
         #nf, c = find_name(nsim, color)
-        #plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
+        #nf = 1
+        #c=next(color[nf])
+        plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
 
     if not sput_yld:
         print "No sput yield files present"
     else:
-        nsim = sput_yld[0].label[0]
-        for i in range(len(ion_target_pairs)):
-            if ion_target_pairs[i] in nsim:
-                nf = i
-                c=next(color[i])
         # Determine average yields
         sput_yld_avg=SDTrimSP_readSput.average(sput_yld)
         # Extract the sputter yield from the first time step
@@ -159,13 +156,13 @@ while cont != 0:
         sput_yld_final=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
         
         #----- Plot total yields derived from the sputter data files -----
-        plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
+        #plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
         #plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
         #    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
         #    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init)
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs)+nf,'-',1)
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,len(ion_target_pairs)+nf, ':')
-        #    plt.show()
+        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs),':')
+        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,len(ion_target_pairs), '-', 1)
+            
     nr+=1
     cont = input('Enter 0 to end: ')
 

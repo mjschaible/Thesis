@@ -1,8 +1,10 @@
 import numpy as np
 import re
 import csv
+import math
 
 import useful_funcs
+from operator import add
 
 class LogData (object):
 
@@ -12,13 +14,27 @@ class LogData (object):
         self.fluence=fluence # Array of fluence (n) steps in a simulation 
         self.Flux=Flux # Flux of each species  (m) at a given fluence step (n by m array)
         self.totYld=totYld # Total yield at each fluence step
+    def __repr__(seld):
+        return repr((self.label, self.energy, self.fluence, self,Flux, self.totYld))
+
+    
+elemlist = ['C','Na','Mg','Al','Si','S','K','Ca','Ti','Fe','Ni','O']
+ifrac = 0.1
+relcorr = [0.01, 23.319, 2.886, 3.637, 1.000, 0.01, 81.080, 3.950, 3.582, 2.767, 2.886, 0.01]
+navg=10
 
 def read_exptfile(fn):
     with open(fn,'r') as logfile:
         contents = logfile.read()
     logfile.close()
     simname = fn.split('_')[-1].split('.srim')[0]
+    descrip=[]
     exptName=[]
+    ion=[]
+    target=[]
+    author=[]
+    SBEO=[]
+    SBEX=[]
     energies = []
     totYld = []
     fluence=0
@@ -31,22 +47,178 @@ def read_exptfile(fn):
         if 'Energies' in line:
             Header = col
             for i in range(len(Header)-1):
-                if 'SRIM' in fn:
-                    exptName.append(col[i+1] + '_' + simname)
-                else:
-                    exptName.append(col[i+1])
+                ion_tar=col[i+1].split('->')
+                ion.append(ion_tar[0])
+                target.append(ion_tar[1])
+                exptName.append(col[i+1])
             #print exptName
             totYld= [[] for i in range(len(exptName))]
+        elif 'Authors' in line:
+            for i in range(len(Header)-1):
+                author.append(col[i+1])
+        elif 'SBE_O' in line:
+            for i in range(len(Header)-1):
+                SBEO.append(col[i+1])
+        elif 'SBE_X' in line:
+            for i in range(len(Header)-1):
+                SBEX.append(col[i+1])
         else:
             energies.append(float(col[0]))
             for i in range(1,len(Header)):
                 if col[i]=='':
-                    totYld[i-1].append(None)
+                    totYld[i-1].append(float('nan'))
                 else:
-                    totYld[i-1].append(col[i])
-    expt_data=LogData(exptName, energies, fluence, exptFlux, totYld)
+                    totYld[i-1].append(float(col[i]))
+    
+    descrip.append(exptName)
+    descrip.append(ion)
+    descrip.append(target)
+    descrip.append(author)
+    descrip.append(SBEO)
+    descrip.append(SBEX)
+    
+    expt_data=LogData(descrip, energies, fluence, exptFlux, totYld)
     return expt_data
+
+def read_outfile(fn):
+    counter = 0
+
+    filename=[]
+    simeng=[]
+    incion=[]
+    target=[]
+    isbv=[]
+    
+    flulines=[]
+    flu_start=[]
+    flu_end=[]
+
+    nelem=[]
+    descrip=[]
+    sumlines=[]
+    histlines=[]
+
+    sim_data=[]
+    
+    r1 = re.compile('.*:.*:.*:.*: .*')
+    with open(fn,'r') as logfile:
+        contents = logfile.read()
+    logfile.close()
+
+    lines=contents.split('\n')
+
+    for line in lines:
+        counter+=1
+        columns = line.split()
+        line = re.sub('([:])', r'\1 ', line)
+        line = re.sub('(dt)', r'\1 ', line)
+        
+        if 'ERROR' in line:
+            continue
+        elif 'filename' in line:
             
+            filename.append(line.split('_')[-1])
+            #print filename[-1]
+        elif '->' in line and 'eV' in line:
+            #print line
+            ncp=0
+            simeng.append(columns[0])
+            incion.append(columns[1])
+            target.append(columns[3])
+        elif 'isbv model' in line:
+            isbv.append(columns[5])
+        elif 'use inelastic' in line:
+            ncp+=1
+        elif 'outgasing' in line:
+            diff = line.split(':')
+            outgass = '{} diffusion ON'.format(diff[1].rstrip())
+            print line
+        elif 'INFO' in line and 'flc' in line:
+            #print line
+            totflu=columns[3]
+        elif 'Fluence step' in line:
+            flu_step=columns[3] 
+        elif r1.match(line) is not None:
+            flulines.append(line)
+            if float(columns[0])==1:
+                flu_start.append(len(flulines)-1)
+                iYsum=columns.index('Ysum:')
+                iqumax=columns.index('qumax')
+                nYsum=iqumax-iYsum-1
+                nqumax=len(columns)-iqumax-1
+                if nYsum == nqumax and nYsum == ncp:
+                    nelem.append(nYsum)
+                    #print 'The number of elements is {}'.format(nYsum)
+                else:
+                    print "The number of elements does not match"
+                    print 'nYsum = {}, nqumax = {}, ncp = {}'.format(nYsum, nqumax, ncp)
+                    
+            if float(columns[2])==float(totflu):
+                flu_end.append(len(flulines))
+        elif 'sum' in line:
+            sumlines.append(line)
+        elif 'ihist' in line:
+            histlines.append(line)
+        elif 'isbv' in line and 'move' not in line and 'WARNING' not in line:
+            print line
+        elif counter == len(lines):
+            if len(flu_end) < len(flu_start):
+                flu_end.append(counter-1)
+
+        if len(isbv)<len(flu_start):
+            isbv.append('isbv1')
+
+    try:
+        outgass
+    except:
+        outgass = 'Diffusion OFF'
+
+    num_cur=len(flu_end)
+    data_vals=['']*num_cur
+    for n in range(num_cur):
+        data_vals[n]=flulines[flu_start[n]:flu_end[n]]
+
+        descrip=[]
+        flustep=[]
+        energy=[]
+        dz=[]
+        dzdt=[]
+        flu_yld=[]
+        flu_qumax=[]
+        tot_yld=[]
+        ylds=[[] for i in range(ncp)]
+        tyld=0
+        
+        for m in range(len(data_vals[n])):
+            vals=data_vals[n][m].split()
+            for i in range(10,10+ncp):
+                ylds[i-10].append(float(vals[i]))
+                if i>10:
+                    tyld+=float(vals[i])
+                                
+            qumax=np.array(vals[10+ncp+1:len(vals)]).astype(np.float)
+            flustep.append(vals[2])
+            energy.append(float(vals[4]))
+            dz.append(float(vals[6]))
+            dzdt.append(float(vals[8]))
+
+            flu_qumax.append(qumax)
+            tot_yld.append(tyld)
+            tyld=0
+
+        descrip.append(filename[n])
+        descrip.append('{}->{}'.format(incion[n],target[n]))
+        descrip.append(outgass)
+        descrip.append(isbv[n])
+        arr_step=np.array(flustep,dtype='float')
+        arr_eng=np.array(energy,dtype='float')
+        arr_yld=np.array(ylds,dtype='float')
+        arr_qumax=np.array(flu_qumax,dtype='float')
+        arr_tyld=np.array(tot_yld,dtype='float')
+        sim_data.append(LogData(descrip,arr_eng,arr_step,arr_yld,arr_tyld))
+            
+    return sim_data
+    
 def read_logfile(fn):
     with open(fn,'r') as logfile:
         contents = logfile.read()
@@ -73,12 +245,17 @@ def read_logfile(fn):
     potline = 0
     fluline = 0
     sysLine = 0
+    tarLine = 0
     targetline = 0
     sbeline=0
     elemName = []
     Amass = []
     DNS0 = []
     RHO = []
+    Q0=[]
+    Qbeam=[]
+    Qmax=[]
+    Charge=[]
     INEL0 = []
     Ecutoff=[]
     Edispl=[]
@@ -114,6 +291,8 @@ def read_logfile(fn):
         columns = line.split()
         if 'SDTrimSP' in line:
             version = line # Read in the version of SDTrimSP being used
+        if '->' in line and len(columns)>3:
+            target = columns[3]
         if line.strip()!='' and sysLine > 0:
             elemName.append(columns[1])
             Amass.append(columns[3])
@@ -122,10 +301,16 @@ def read_logfile(fn):
             nE+=1
         else:
             sysLine=0
-        if '->' in line and len(columns)>3:
-            target = columns[3]
         if 'SYMBOL A-Z  A-MASS' in line:
             sysLine = count
+        if 'Q-0      Q-BEAM' in line:
+            tarLine=count
+        if tarLine > 0 and count in range(tarLine+1, tarLine+1+nE):   
+            columns=line.split()
+            Q0.append(float(columns[1]))
+            Qbeam.append(float(columns[2]))
+            Qmax.append(float(columns[3]))
+            Charge.append(float(columns[4]))
         if ' CPT          E0      AlPHA0       INEL0' in line:
             energline = count
         if energline > 0 and count in range(energline+1, energline+1+nE):
@@ -193,13 +378,16 @@ def read_logfile(fn):
             depositedF.append(float(columns[5]))
 
         count +=1
-
+    print DNS0
+    print Q0
+    tardensity=np.sum()
     totYld = np.sum(sputteredF[1:])
-    simName.append('{}eV{}->{}'.format(Esim,elemName[0],target))
+    simName.append('{}->{}'.format(elemName[0],target))
     simName.append('isbv={}'.format(isbv))
     simName.append('ipot={}'.format(ipot))
     simName.append(elemName)
     simName.append(target)
+    simName.append(Esurfb)
 #    simName.append('inel{}={}'.format(elemName[1],INEL0[1]))
 #    simName.append('Edispl{}={}'.format(elemName[1],Edispl[1]))
 #    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-2],SBV[nE*nE-5]))
@@ -304,11 +492,14 @@ def average(sput):
     sput_data=[]
     for j in range(len(sput)):
         iyld=[]
-        fs=sput[j].fluence[1::]
+        fs=sput[j].fluence[1:]
+        span = math.ceil(len(fs)/2)
+        if span % 2 ==0:
+            span += 1
         for k in range(len(sput[j].Flux)):
-            smflux = useful_funcs.savitzky_golay(np.array(sput[j].Flux[k][1::]), 41, 3)
+            smflux = useful_funcs.savitzky_golay(np.array(sput[j].Flux[k][1:]), span, 3)
             iyld.append(smflux)
-        smooth=useful_funcs.savitzky_golay(np.array(sput[j].totYld[1::]), 41, 3)
+        smooth=useful_funcs.savitzky_golay(np.array(sput[j].totYld[1:]), span, 3)
         totYld=smooth.tolist()
         sput_data.append(LogData(sput[j].label,sput[j].energy,fs,iyld,totYld))
 
@@ -319,6 +510,9 @@ def find_sputvar(sput, i):
     for j in range(len(sput)):
         iyld=[]
         fs=sput[j].fluence[i]
+        print sput[0].fluence
+        print sput[0].Flux
+
         for k in range(len(sput[j].Flux)):
             iyld.append(sput[j].Flux[k][i])
         totYld=sput[j].totYld[i]
@@ -328,3 +522,51 @@ def find_sputvar(sput, i):
 
     return sput_data
 
+def comp_yield(out_yld, tar):
+    hyld=[[0]*len(elemlist) for i in range(len(tar))]
+    h_iyld=[[0]*len(elemlist) for i in range(len(tar))]
+    heyld=[[0]*len(elemlist) for i in range(len(tar))]
+    he_iyld=[[0]*len(elemlist) for i in range(len(tar))]
+    sw_yld=[]
+    sw_iyld=[]
+    Elem_Ratio=[[0]*4 for i in range(len(tar))]
+    nE=[2, 3, 7, 9]
+    #print out_yld[i].label[4]
+    #print out_yld[i].Flux
+    print tar
+    for i in range(len(out_yld)):
+        for j in range(len(out_yld[i])):
+            for k in range(len(tar)):
+                ion = out_yld[i][j].label[1].split('->')[0]
+                target = out_yld[i][j].label[1].split('->')[1]
+                tyld=np.mean(out_yld[i][j].totYld[len(out_yld[i][j].totYld)-navg:])
+                #print ion, target, tar[k]
+                if ion == 'H' and target in tar[k]:
+                    print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    for y, elem in enumerate(elemlist):
+                        match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
+                        if match:
+                            yld=np.mean(0.95*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])
+                            hyld[k][y]=yld
+                            h_iyld[k][y]=yld*relcorr[y]*ifrac
+
+                elif ion == 'He' and target == tar[k]:
+                    print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    for y, elem in enumerate(elemlist):
+                        match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
+                        if match:
+                            yld=np.mean(0.05*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])
+                            heyld[k][y]=yld
+                            he_iyld[k][y]=yld*relcorr[y]*ifrac
+
+    for k in range(len(tar)):
+        sw_yld.append(map(add,hyld[k],heyld[k]))
+        sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
+        for i in range(len(nE)):
+            Elem_Ratio[k][i]=sw_iyld[k][nE[i]]/sw_iyld[k][4]
+        print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k]))
+        print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
+
+    #print Elem_Ratio
+    
+    return Elem_Ratio

@@ -1,16 +1,9 @@
 import numpy as np
 import re
 import csv
+from collections import defaultdict
 
-class SimParam (object):
-
-    def __init__(self,descrip,timesteps,mol_pka,pos_pka,vel_pka):
-        self.descrip=descrip
-        self.timesteps=timesteps
-        self.mol_pka=mol_pka
-        self.pos_pka=pos_pka
-        self.vel_pka=vel_pka
-
+# Define a class for the standard lammps log output file
 class LogData (object):
 
     def __init__(self,descrip,thermoCol,step,temp,tempave,pe,peave,ke,keave,etot,press):
@@ -29,8 +22,7 @@ class LogData (object):
 # Define a class for mean-squared-displacement(msd) and density files
 class runData (object):
 
-    def __init__(self,descrip,Head,step,data):
-        self.descrip=descrip
+    def __init__(self,Head,step,data):
         self.Head=Head
         self.step=step
         self.data=data
@@ -54,7 +46,22 @@ class runCOM (object):
         self.xpos=xpos
         self.ypos=ypos
         self.zpos=zpos
-    
+
+# Define a class for the dump file
+class runDump (object):
+
+    def __init__(self,natoms,timestep,atype,atid,molid,xpos,ypos,zpos,peatom,keatom):
+        self.natoms=natoms
+        self.timestep=timestep
+        self.atype=atype
+        self.atid=atid
+        self.molid=molid
+        self.xpos=xpos
+        self.ypos=ypos
+        self.zpos=zpos
+        self.peatom=peatom
+        self.keatom=keatom
+        
 class prettyfloat(float):
     def __repr__(self):
         return "{:0.2f}".format(self)
@@ -71,7 +78,6 @@ def log_read(filename):
     data_end=[]
     timesteps=[]
     markers=[]
-    descrip=[]
     
     num_runs=0
     run_param = []
@@ -131,19 +137,13 @@ def log_read(filename):
         if counter == len(lines): 
             if len(data_end) < len(data_start):
                 data_end.append(counter)
-                
-    descrip.append('pot={}'.format(potential))
-    descrip.append('nmolec={}'.format(num_molec))
-    if 'mol_pka' in locals():
-        descrip.append('PKA#={}'.format(mol_pka))
-        descrip.append('PKApos={}'.format(pos_pka))
-        descrip.append(float(vel_pka))
         
     num_cur=len(data_start)-num_runs
 
     data_vals=['']*num_cur
 
     for n in range(num_cur):
+        descrip=[]
         data_vals[n]=lines[data_start[n+num_runs]:data_end[n+num_runs]-1]
 
         step=[]
@@ -177,19 +177,25 @@ def log_read(filename):
         keavearr=np.array(keave,dtype='float')
         etotarr=np.array(etot,dtype='float')
         pressarr=np.array(press,dtype='float')
-        run_param.append(SimParam(descrip,timesteps[n],mol_pka,pos_pka,vel_pka))
+
+        descrip.append(timesteps[n]) # timestep in femtoseconds
+        descrip.append('pot={}'.format(potential)) 
+        descrip.append(num_molec)
+        if 'mol_pka' in locals():
+            descrip.append(mol_pka)
+            descrip.append(pos_pka)
+            descrip.append(float(vel_pka))
+        
         run_thermo.append(LogData(descrip,HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
 
     num_runs+=num_cur
 
-    return num_runs, run_param, run_thermo
+    return num_runs, run_thermo
 
-def data_read(filename, descrip):
+def data_read(filename, ts):
     counter = 1    
-    num_data=0
     data_start=[]
     data_end=[]
-
     run_data = []
 
     with open(filename,'r') as logfile:
@@ -202,8 +208,6 @@ def data_read(filename, descrip):
         if 'TimeStep' in line:
             dataHead = column
             data_start.append(counter+1)
-            if len(data_start)>1:
-                data_end.append(counter-1)
         elif '#' in line:
             title = line
         
@@ -211,29 +215,26 @@ def data_read(filename, descrip):
         if counter == len(lines) and len(data_end) < len(data_start):
             data_end.append(counter)
 
-    num_cur=len(data_start)-num_data
+    num_cur=len(data_start)
     data_vals=['']*num_cur
-
+    
     for n in range(num_cur):
-        data_vals[n]=lines[data_start[n+num_data]:data_end[n+num_data]-1]
+        data_vals[n]=lines[data_start[n]:data_end[n]-1]
         step=[]
         data_val=[]
 
         for m in range(len(data_vals[n])):
             vals=data_vals[n][m].split()
-            step.append(vals[0])
-            data_val.append(vals[1])
+            step.append(float(vals[0])*float(ts)/1000) # append timesteps converted to picoseconds
+            data_val.append(vals[1]) # append data values (system MSD or density)
         steparr=np.array(step,dtype='float')
         dataarr=np.array(data_val,dtype='float')
-        run_data.append(runData(descrip,dataHead,steparr,dataarr))
-    num_data+=num_cur
+        run_data.append(runData(dataHead,steparr,dataarr))
 
-    return num_data, run_data
+    return run_data
 
-def rdf_read(filename, descrip):
-    
+def rdf_read(filename, ts):
     counter=1
-    num_rdf=0
     timestep=[]
     data_start=[]
     data_end=[]
@@ -251,8 +252,8 @@ def rdf_read(filename, descrip):
             Header=column
         elif 'TimeStep' in line:
             Header2=column
-        elif len(column)==2:
-            timestep.append(column[0])
+        elif len(column)==2: # the timestep + Nbins
+            timestep.append(float(column[0])*float(ts)/1000) # Read in timestep and convert to picoseconds
             data_start.append(counter+1)
             if len(data_start)>1:
                 data_end.append(counter-1)
@@ -261,11 +262,11 @@ def rdf_read(filename, descrip):
         if counter == len(lines) and len(data_end) < len(data_start):
             data_end.append(counter)
 
-    num_cur=len(data_start)-num_rdf
+    num_cur=len(data_start)
     data_vals=['']*num_cur
 
     for n in range(num_cur):
-        data_vals[n]=lines[data_start[n+num_rdf]:data_end[n+num_rdf]-1]
+        data_vals[n]=lines[data_start[n]:data_end[n]-1]
         nbin=[]
         pos=[]
         rdf=[]
@@ -284,14 +285,12 @@ def rdf_read(filename, descrip):
         coordnarr=np.array(coordn,dtype='float')
         
         rdf_data.append(runRDF(timestep,nbinarr,posarr,rdfarr,coordnarr))
-    num_rdf+=num_cur
 
-    return num_rdf, rdf_data
+    return rdf_data
 
-def com_read(filename, descrip):
+def com_read(filename, ts):
     
     counter=1
-    num_com=0
     timestep=[]
     data_start=[]
     data_end=[]
@@ -310,7 +309,7 @@ def com_read(filename, descrip):
         elif 'TimeStep' in line:
             Header2=column
         elif len(column)==2:
-            timestep.append(column[0])
+            timestep.append(float(column[0])*float(ts)/1000) # Read in timestep and convert to picoseconds
             data_start.append(counter)
             if len(data_start)>1:
                 data_end.append(counter-1)
@@ -324,10 +323,10 @@ def com_read(filename, descrip):
 
     for n in range(num_cur):
         data_vals[n]=lines[data_start[n]:data_end[n]]
-        Nmolec=[]
         xpos=[]
         ypos=[]
         zpos=[]
+        Nmolec=[]
 
         for m in range(len(data_vals[n])):
             vals=data_vals[n][m].split()
@@ -335,53 +334,203 @@ def com_read(filename, descrip):
             xpos.append(vals[1])
             ypos.append(vals[2])
             zpos.append(vals[3])
-
-        nmolecarr=np.array(Nmolec,dtype='float')
+        Nmolecarr=np.array(Nmolec,dtype='float')
         xposarr=np.array(xpos,dtype='float')
         yposarr=np.array(ypos,dtype='float')
         zposarr=np.array(zpos,dtype='float')
         
-        com_data.append(runCOM(float(timestep[n]),nmolecarr,xposarr,yposarr,zposarr))
-    num_com+=num_cur
+        com_data.append(runCOM(timestep[n],Nmolecarr,xposarr,yposarr,zposarr))
 
-    return num_com, com_data
+    return com_data
 
-def find_commsd(run_param, run_com, num_com):
-    xpka=run_param[1].pos_pka[0]
-    ypka=run_param[1].pos_pka[1]
-    zpka=run_param[1].pos_pka[2]
-    shell_thickness=5
-    num_shells=8
-    shell=[[] for y in range(num_shells)]
+def find_commsd(run_com, PKApos):
+    # Read the PKA position from the log data file
+    xpka=PKApos[4][0]
+    ypka=PKApos[4][1]
+    zpka=PKApos[4][2]
+    
+    shell_thickness=3
+    num_shells=6
+    shell_dat=[]
+    shell_dat.append(shell_thickness)
+    shell_dat.append(num_shells)
+    # This array of arrays will contain the chunk ID for molecules within a shell extending from:
+    # dist_from_pka > shell_thickness*n to dist_from_pka<=shell_thickness*(n+1)
+    # for n=0 to num_shells
+    shell=[[] for y in range(num_shells)] 
 
+    # Define an array that will contain each timestep the COM data is printed out at and
+    # the MSD of each molecule with reference to it's initial position at that timestep
+    # divided into the shells defined above.
+    #->Could add functionality to group all COMs with radius greater than shell_thickness*num_shells
+    run_data = []
+
+    # Here I loop though all the chunk ID's and record their position at step=0 
     for i in range(len(run_com[0].Nmolec)):
-        xcom=run_com[0].xpos[i]
-        ycom=run_com[0].ypos[i]
-        zcom=run_com[0].zpos[i]
-        dist_from_pka=np.sqrt((xpka-xcom)**2+(ypka-ycom)**2+(zpka-zcom)**2)
+        xcom_init=run_com[0].xpos[i]
+        ycom_init=run_com[0].ypos[i]
+        zcom_init=run_com[0].zpos[i]
+        #print xcom, ycom, zcom
+        # Then I calculate each molecules distance from the PKA above
+        dist_from_pka=np.sqrt((xpka-xcom_init)**2+(ypka-ycom_init)**2+(zpka-zcom_init)**2)
         for n in range(num_shells):
+            # and if that COM is in a given shell it's chunkID is added to the appropriate shell array
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
 
+    # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]
-    for n in range(1,num_com):
+
+    # Define an array of ALL the timesteps
+    step=[run_com[x].timestep for x in range(len(run_com))]
+    steparr=np.array(step,dtype='float')
+
+    # For each timestep
+    for n in range(1,len(run_com)):
+        print run_com[n].timestep
+        print steparr[n]
+        # define an array that will have the msd of all molecules in a given shell
         dist=[[] for y in range(num_shells)]
+        # loop through all molecules (which should be constant...)
         for i in range(len(run_com[n].Nmolec)):
-            xcom=run_com[n].xpos[i]
-            ycom=run_com[n].ypos[i]
-            zcom=run_com[n].zpos[i]
-            xcom_prev=run_com[n-1].xpos[i]
-            ycom_prev=run_com[n-1].ypos[i]
-            zcom_prev=run_com[n-1].zpos[i]
-            xdisp=(xcom-xcom_prev)**2
-            ydisp=(ycom-ycom_prev)**2
-            zdisp=(zcom-zcom_prev)**2
+            # determine the current (x,y,z) position of each molecule
+            xcom_cur=run_com[n].xpos[i]
+            ycom_cur=run_com[n].ypos[i]
+            zcom_cur=run_com[n].zpos[i]
+            xcom_init=run_com[0].xpos[i]
+            ycom_init=run_com[0].ypos[i]
+            zcom_init=run_com[0].zpos[i]
+            # calculate the (x,y,z) dispacement from it's initial position
+            xdisp=(xcom_cur-xcom_init)**2
+            ydisp=(ycom_cur-ycom_init)**2
+            zdisp=(zcom_cur-zcom_init)**2
             tot_disp=xdisp+ydisp+zdisp
+            # and add the total displacement to it's occording shell
             for j in range(num_shells):
                 if run_com[n].Nmolec[i] in shell[j]:
                     dist[j].append(tot_disp)
-
+        # For each cell calculate the mean MSD of all molecules in that shell for this timestep
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
+        # ........??
+        #print msd[0][-1], msd[1][-1]
+    run_data.append(runData(shell_dat,steparr,msd))
+    #print run_data.Head, len(run_data.step), len(run_data.data[0])
+    return run_data
 
-    return msd
+def dump_read(filename, ts):
+    
+    counter=1
+    timestep=[]
+    natoms=[]
+    data_start=[]
+    data_end=[]
+
+    nal=0
+    dump_data=[]
+
+    with open(filename,'r') as logfile:
+        contents=logfile.read()
+
+    lines=contents.split('\n')
+
+    for line in lines:
+        column=line.split()
+        if 'ITEM: TIMESTEP' in line:
+            tsl=counter
+            if len(data_start)>0:
+                data_end.append(counter-1)
+        if counter==tsl+1:
+            timestep.append(float(column[0])*float(ts)/1000)
+        if 'ITEM: NUMBER OF ATOMS' in line:
+            nal=counter
+        if counter==nal+1 and nal!=0:
+            natoms.append(column[0])
+        if 'ITEM: ATOMS' in line:
+            data_start.append(counter)
+            headers=column[2:]
+        counter+=1
+        if counter == len(lines) and len(data_end) < len(data_start):
+            data_end.append(counter-1)
+
+    num_cur=len(data_start)
+    data_vals=['']*num_cur
+
+    for n in range(num_cur):
+        data_vals[n]=lines[data_start[n]:data_end[n]]
+        atype=[]
+        atom_id=[]
+        mol_id=[]
+        xpos=[]
+        ypos=[]
+        zpos=[]
+        pe_atom=[]
+        ke_atom=[]
+        for m in range(len(data_vals[n])):
+            vals=data_vals[n][m].split()
+            #print vals
+            atype.append(vals[0])
+            atom_id.append(vals[1])
+            mol_id.append(vals[2])
+            xpos.append(vals[3])
+            ypos.append(vals[4])
+            zpos.append(vals[5])
+            pe_atom.append(vals[9])
+            ke_atom.append(vals[10])
+        atypearr=np.array(atype,dtype='float')
+        atidarr=np.array(atom_id,dtype='float')
+        molidarr=np.array(mol_id,dtype='float')
+        xposarr=np.array(xpos,dtype='float')
+        yposarr=np.array(ypos,dtype='float')
+        zposarr=np.array(zpos,dtype='float')
+        pearr=np.array(pe_atom,dtype='float')
+        kearr=np.array(ke_atom,dtype='float')
+        
+        dump_data.append(runDump(natoms[n],timestep[n],atype,atidarr,molidarr,xposarr,yposarr,zposarr,pearr,kearr))
+
+    return dump_data
+
+def find_dumpeng(dump, info):
+    xpka=info[4][0]
+    ypka=info[4][1]
+    zpka=info[4][2]
+    shell_thickness=3
+    num_shells=6
+    shell_dat=[]
+    shell_dat.append(shell_thickness)
+    shell_dat.append(num_shells)
+    shell=[[] for y in range(num_shells)]
+    run_data = []
+    step=[dump[x].timestep for x in range(len(dump))]
+    steparr=np.array(step,dtype='float')
+    molids=list(set(dump[0].molid)) # Determine a unique set of molecule ID's
+    kearr=[]
+    for key,value1,xpos,ypos,zpos in zip(dump[0].molid,dump[0].atype,dump[0].xpos,dump[0].ypos,dump[0].zpos):
+            if int(value1)==1:
+                #print xpos, ypos, zpos
+                dist=np.sqrt((xpka-xpos)**2+(ypka-ypos)**2+(zpka-zpos)**2)
+                for t in range(num_shells):
+                    if dist > shell_thickness*t and dist<=shell_thickness*(t+1):
+                        shell[t].append(int(key))
+                        
+    values = defaultdict(int)
+    for n in dump: # Loop through each of the output steps in the dump file
+        for key, value in zip(n.molid,n.keatom):
+            values[key]+=value
+        molids, kemol = zip(*sorted(values.items()))
+
+
+    print len(kearr), len(kearr[0])
+    print len(shell[0])
+    
+    for n in range(1,len(dump)):
+        kearr=[[] for y in range(num_shells)]
+        for i in range(len(molids)):
+            for j in range(num_shells):
+                if dump[n].Nmolec[i] in shell[j]:
+                    dist[j].append(tot_disp)
+        run_data.append(runData(shell_dat,steparr,msd))        
+        
+
+    
+    return run_data

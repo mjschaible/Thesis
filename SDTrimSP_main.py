@@ -33,27 +33,31 @@ def find_name(yld_label, color):
 cont = 1
 nr=2
 
-# ----- Define a default array of simulation energies -----
-defEng = np.linspace(100, 10000, num=100)
+# ----- Define a default arrays -----
 
-expt_yld=[]
 # read experimental data file
-print "Please identify the experimental data file."
+#print "Please identify the experimental data file."
 # show an "Open" dialog box and return the path to the selected file
 root = Tk()
 #root.withdraw() 
 #efn = askopenfilename()
-efn='ExpData.dat'
-expt_yld.append(SDTrimSP_readSput.read_exptfile(efn))
-ion_target_pairs=expt_yld[0].label
+efn='ExpData.csv'
+expt_yld=SDTrimSP_readSput.read_exptfile(efn)
+ion_target_pairs=list(set(expt_yld.label[0]))
+target= list(set(expt_yld.label[2]))
+#print target
+#plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, ion_target_pairs)
 
-for expt in range(len(ion_target_pairs)-3):
-    plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, expt, 'o', 'Experimental')
+elem_comp=1
+expt_comp=0
 
-color=[iter(plt.cm.rainbow(np.linspace(0,1,10))) for i in ion_target_pairs]
+color=[iter(plt.cm.rainbow(np.linspace(0,1,6))) for i in ion_target_pairs]
+color2=iter(['gray','darkgray','blue','red','green','cyan','purple','black'])
 while cont != 0:
     loglist=[]
     log_yld=[]
+    out_yld=[]
+    ER=[]
     srim_yld=[]
     sput_yld=[]
     srimfn=[]
@@ -63,16 +67,13 @@ while cont != 0:
     root.withdraw() 
     path = askdirectory() 
     logfiles = path+"/*.log"
+    outfiles = path+"/*.out"
     datfiles = path+"/*.dat"
     srimfiles = path+"/*.srim"
     path_name=find_between(path, 'data')
     #print path_name
     # first read log data files to get full simulation description
-    for filename in glob.glob(logfiles):
-        #print 'The file is {0}'.format(filename)
-        loglist.append(filename)
-        log_yld.append(SDTrimSP_readSput.read_logfile(filename))
-        n_eng+=1
+
 
     for filename in glob.glob(srimfiles):
         if 'Thiel' not in filename:
@@ -80,6 +81,42 @@ while cont != 0:
             #print filename
             srim_yld.append(SDTrimSP_readSput.read_exptfile(filename))
 
+    for filename in glob.glob(logfiles):
+        #print 'The file is {0}'.format(filename)
+        loglist.append(filename)
+        log_yld.append(SDTrimSP_readSput.read_logfile(filename))
+        n_eng+=1
+    log_yld=sorted(log_yld, key=lambda x: x.label[0], reverse=True)
+    tar=[i.label[0] for i in log_yld]
+    targets=list(set([i.label[0].split('->')[1] for i in log_yld]))
+    #print targets
+
+    for filename in glob.glob(outfiles):
+        #print 'The file is {0}'.format(filename)
+        out_yld.append(SDTrimSP_readSput.read_outfile(filename))
+    rat=[]
+    for i in range(len(out_yld)):
+        out_yld[i]=sorted(out_yld[i], key=lambda x: x.label[1], reverse=True)
+        for j in range(len(out_yld[i])):
+            rat.append(out_yld[i][j].label[1])
+            if len(out_yld[i][j].Flux) == len(log_yld[0].label[3]):
+                #print log_yld[0].label[3]
+                #print log_yld[0].label[5]
+                out_yld[i][j].label.append(log_yld[0].label[3]) # append element names
+                out_yld[i][j].label.append(log_yld[0].label[5]) # append SBE
+            else:
+                print "the number of elements does not match"
+            met_class=out_yld[i][j].label[0]
+    
+    if rat!=tar:
+        print "ERROR: Out and Log file targets don't match"
+
+    if elem_comp == 1:
+        c=next(color2)
+        ER=SDTrimSP_readSput.comp_yield(out_yld,targets)
+        ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, met_class)
+        OvC_plot=SDTrimpSP_plotSput.plot_YvO()
+        
 # Call read functions for each data file type 
     for filename in glob.glob(datfiles):
         if 'E0_31'in filename:
@@ -115,20 +152,10 @@ while cont != 0:
             #print 'The file {} does not have an analysis function written for it'.format(filename)
             continue
         
-    #----- Plot total yeilds derived from SRIM simulations -----
-    if not srim_yld:
-        print "No srim yield files present"
-    else:
+    #----- Plot total yields derived from SRIM simulations -----
+    if srim_yld:
         for i in range(len(srim_yld)):
-            for j in range(len(srim_yld[i].label)):
-                nsim = srim_yld[i].label[j]
-                for k in range(len(ion_target_pairs)-3):
-                    if ion_target_pairs[k] in nsim:
-                        nf = k
-                        c=next(color[k])
-                        plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],nf,'-.',c,nsim)
-
-                #nf, c = find_name(nsim, color)
+            plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],ion_target_pairs)
 
     #----- Plot total yields derived from the log files -----
     if not log_yld:
@@ -139,34 +166,34 @@ while cont != 0:
             if ion_target_pairs[i] in nsim:
                 nf = i
                 c=next(color[i])
-        #nf, c = find_name(nsim, color)
-        #nf = 1
-        #c=next(color[nf])
-        plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
-
-    if not sput_yld:
-        print "No sput yield files present"
-    else:
-        # Determine average yields
-        sput_yld_avg=SDTrimSP_readSput.average(sput_yld)
-        # Extract the sputter yield from the first time step
-        sput_yld_init=SDTrimSP_readSput.find_sputvar(sput_yld_avg, 1)
-        # Extract the sputter yield from the last time step
-        last= len(sput_yld_avg[0].fluence)-1
-        sput_yld_final=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
-        
-        #----- Plot total yields derived from the sputter data files -----
         #plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
-        #plot_init_yld=SDTrimSP_plotSput.plot_log(sput_yld_init,nf,'--',c,None)
-        #    plot_final_yld=SDTrimSP_plotSput.plot_log(sput_yld_final, nf, '-.', None)
-        #    plot_avg_yld=SDTrimSP_plotSput.plot_sput(sput_yld_init)
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld,len(ion_target_pairs),':')
-        plot3_sput=SDTrimSP_plotSput.plot_flu(sput_yld_avg,len(ion_target_pairs), '-', 1)
-            
+
+    #----- Plot total yields derived from the sputter data files -----
+    if out_yld:
+        for out in out_yld:
+            nsim = out[0].label[0]
+            for j, k  in enumerate(ion_target_pairs):
+                #print j, k
+                if k in nsim:
+                    nf = j
+                    c=next(color[j])
+                
+            # Determine average yields
+            sput_yld_avg=SDTrimSP_readSput.average(out)
+        
+            # Extract the sputter yield from the first time step
+            #sput_yld_init=SDTrimSP_readSput.find_sputvar(sput_yld_avg, 1)
+            # Extract the sputter yield from the last time step
+            last= len(sput_yld_avg[0].fluence)-1
+            #sput_yld_eq=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
+            if expt_comp==1:
+                plot3_sput=SDTrimSP_plotSput.plot_out(out,nf,'-',c)
+                #plot3_sput=SDTrimSP_plotSput.plot_out(out_yld_avg,nf, '-')
+        
     nr+=1
     cont = input('Enter 0 to end: ')
 
-'''
+    '''
 np.savetxt(
     'output.dat',
     defEng,

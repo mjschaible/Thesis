@@ -350,7 +350,7 @@ def find_commsd(run_com, PKApos):
     zpka=PKApos[4][2]
     
     shell_thickness=3
-    num_shells=6
+    num_shells=4
     shell_dat=[]
     shell_dat.append(shell_thickness)
     shell_dat.append(num_shells)
@@ -377,6 +377,8 @@ def find_commsd(run_com, PKApos):
             # and if that COM is in a given shell it's chunkID is added to the appropriate shell array
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
+    # print the molecule ID's that are within shell_thickness of the PKA
+    #print shell[0]
 
     # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]
@@ -387,8 +389,6 @@ def find_commsd(run_com, PKApos):
 
     # For each timestep
     for n in range(1,len(run_com)):
-        print run_com[n].timestep
-        print steparr[n]
         # define an array that will have the msd of all molecules in a given shell
         dist=[[] for y in range(num_shells)]
         # loop through all molecules (which should be constant...)
@@ -412,8 +412,7 @@ def find_commsd(run_com, PKApos):
         # For each cell calculate the mean MSD of all molecules in that shell for this timestep
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
-        # ........??
-        #print msd[0][-1], msd[1][-1]
+
     run_data.append(runData(shell_dat,steparr,msd))
     #print run_data.Head, len(run_data.step), len(run_data.data[0])
     return run_data
@@ -455,6 +454,7 @@ def dump_read(filename, ts):
 
     num_cur=len(data_start)
     data_vals=['']*num_cur
+    print timestep
 
     for n in range(num_cur):
         data_vals[n]=lines[data_start[n]:data_end[n]]
@@ -495,42 +495,50 @@ def find_dumpeng(dump, info):
     ypka=info[4][1]
     zpka=info[4][2]
     shell_thickness=3
-    num_shells=6
+    num_shells=4
     shell_dat=[]
     shell_dat.append(shell_thickness)
     shell_dat.append(num_shells)
     shell=[[] for y in range(num_shells)]
     run_data = []
     step=[dump[x].timestep for x in range(len(dump))]
+    #print step
     steparr=np.array(step,dtype='float')
     molids=list(set(dump[0].molid)) # Determine a unique set of molecule ID's
     kearr=[]
+
     for key,value1,xpos,ypos,zpos in zip(dump[0].molid,dump[0].atype,dump[0].xpos,dump[0].ypos,dump[0].zpos):
-            if int(value1)==1:
+            if int(value1)==2:
                 #print xpos, ypos, zpos
                 dist=np.sqrt((xpka-xpos)**2+(ypka-ypos)**2+(zpka-zpos)**2)
                 for t in range(num_shells):
                     if dist > shell_thickness*t and dist<=shell_thickness*(t+1):
                         shell[t].append(int(key))
-                        
+    # print the molecule ID's that are within shell_thickness of the PKA
+    #print shell[0]
+    # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
+    keng=[[0 for x in range(1)] for y in range(num_shells)]
+
+    molids=[]
+    kemol=[]
     values = defaultdict(int)
     for n in dump: # Loop through each of the output steps in the dump file
         for key, value in zip(n.molid,n.keatom):
             values[key]+=value
-        molids, kemol = zip(*sorted(values.items()))
+        molids_cur, kemol_cur = zip(*sorted(values.items()))
+        molids.append(molids_cur)
+        kemol.append(kemol_cur)
+    #print len(molids[0])
+    #print len(kemol[0])
 
-
-    print len(kearr), len(kearr[0])
-    print len(shell[0])
-    
-    for n in range(1,len(dump)):
-        kearr=[[] for y in range(num_shells)]
-        for i in range(len(molids)):
+    for n in range(len(dump)-1):
+        ke=[[] for y in range(num_shells)]
+        for i in range(len(molids[n])):
             for j in range(num_shells):
-                if dump[n].Nmolec[i] in shell[j]:
-                    dist[j].append(tot_disp)
-        run_data.append(runData(shell_dat,steparr,msd))        
-        
-
-    
+                if molids[n][i] in shell[j]:
+                    ke[j].append(kemol[n][i])
+        for j in range(num_shells):
+            keng[j].append(np.mean(ke[j]))
+    run_data.append(runData(shell_dat,steparr,keng))
+    #print run_data[0].Head, len(run_data[0].step), run_data[0].data[0]
     return run_data

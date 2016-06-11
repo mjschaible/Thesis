@@ -58,17 +58,15 @@ while cont != 0:
 
     filedump = filepath+'.dump'
     run_dump = lammps_read.dump_read(filedump, steplen)
-    #dump_eng = lammps_read.find_dumpeng(run_dump, run_info)
+    dump_eng = lammps_read.find_dumpeng(run_dump, run_info)
     
     #----- -----
-    lammps_plot.log_plots(run_thermo)
-
     nrows=2
-    fig, axs = plt.subplots(nrows,1,sharey='row',squeeze=False)
     #lammps_plot.msd_plots(axs[0,:], run_dens, 'Density (g/cm^3)')
-    lammps_plot.msd_plots(axs[0,:], run_msd, 'All msd (A^2)')
-    lammps_plot.msd_plots(axs[1,:], msd_com, 'Shell msd (A^2)')
-
+    #lammps_plot.msd_plots(run_msd, 'All msd', 2)
+    lammps_plot.log_plots(run_thermo, nrows)
+    lammps_plot.msd_plots(dump_eng, 'Shell Avg. KE',4)
+    lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',3)
 #    lammps_plot.msd_plots(axs[1,:], run_msd_gRad, run_param, 'gRad msd (A^2)')
 #    lammps_plot.msd_plots(axs[2,:], run_msd_gPKA, run_param, 'PKA msd (A^2)')
 #    lammps_plot.rdf_plots(run_rdf, run_param)

@@ -349,8 +349,8 @@ def find_commsd(run_com, PKApos):
     ypka=PKApos[4][1]
     zpka=PKApos[4][2]
     
-    shell_thickness=3
-    num_shells=4
+    shell_thickness=5
+    num_shells=3
     shell_dat=[]
     shell_dat.append(shell_thickness)
     shell_dat.append(num_shells)
@@ -454,7 +454,6 @@ def dump_read(filename, ts):
 
     num_cur=len(data_start)
     data_vals=['']*num_cur
-    print timestep
 
     for n in range(num_cur):
         data_vals[n]=lines[data_start[n]:data_end[n]]
@@ -494,8 +493,8 @@ def find_dumpeng(dump, info):
     xpka=info[4][0]
     ypka=info[4][1]
     zpka=info[4][2]
-    shell_thickness=3
-    num_shells=4
+    shell_thickness=5
+    num_shells=3
     shell_dat=[]
     shell_dat.append(shell_thickness)
     shell_dat.append(num_shells)

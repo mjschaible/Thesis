@@ -61,35 +61,42 @@ def plot_srim(log,tar,lbl=None):
     return
 
 def plot_log(log,nf,ls,c,lbl=None):
-    lll=0
-    altx=np.linspace(100,1e4,num=50, endpoint=True)
-    isbv_pos=[1,3,5]
-    mk = ['s','*','^']
-    e_sort = [[] for i in range(len(isbv_pos))]
-    yld_sort = [[] for i in range(len(isbv_pos))]
-    for i in range(len(log)):
-        isbv=log[i].label[1]
-        for j in range(len(isbv_pos)):
-            match="isbv={}".format(isbv_pos[j])
-            if match==isbv:
-                #print log[i].label[0], log[i].label[1]
-                e_sort[j].append(log[i].energy)
-                yld_sort[j].append(log[i].totYld)
-
-    for j in range(len(isbv_pos)):
-        yld_sort[j] = [x for (y,x) in sorted(zip(e_sort[j],yld_sort[j]), key=lambda pair:pair[0])]
-        e_sort[j].sort()
-
     fig = plt.figure(nf)
     ax1 = fig.add_subplot(111)
-    for j in range(len(isbv_pos)):
-        if e_sort[j] != []:
-            if lbl != None and lll==0:
-                lll=1
-                ax1.plot(e_sort[j],yld_sort[j],c=c,label=lbl,ls=ls,marker=mk[j])
-            else:
-                ax1.plot(e_sort[j],yld_sort[j],c=c,ls=ls,marker=mk[j])
-        leg = ax1.legend()
+    if nf==0:
+        for i in log:
+            ind=np.arange(len(i.label[4]))
+            width = 1/len(i.label[4])
+            ax1.bar(ind, i.Flux, width)
+        ax1.set_xticklabels(log[0].label[4])
+    else:    
+        lll=0
+        altx=np.linspace(100,1e4,num=50, endpoint=True)
+        isbv_pos=[1,3,5]
+        mk = ['s','*','^']
+        e_sort = [[] for i in range(len(isbv_pos))]
+        yld_sort = [[] for i in range(len(isbv_pos))]
+        for i in range(len(log)):
+            isbv=log[i].label[1]
+            for j in range(len(isbv_pos)):
+                match="isbv={}".format(isbv_pos[j])
+                if match==isbv:
+                    #print log[i].label[0], log[i].label[1]
+                    e_sort[j].append(log[i].energy)
+                    yld_sort[j].append(log[i].totYld)
+
+        for j in range(len(isbv_pos)):
+            yld_sort[j] = [x for (y,x) in sorted(zip(e_sort[j],yld_sort[j]), key=lambda pair:pair[0])]
+            e_sort[j].sort()
+
+        for j in range(len(isbv_pos)):
+            if e_sort[j] != []:
+                if lbl != None and lll==0:
+                    lll=1
+                    ax1.plot(e_sort[j],yld_sort[j],c=c,label=lbl,ls=ls,marker=mk[j])
+                else:
+                    ax1.plot(e_sort[j],yld_sort[j],c=c,ls=ls,marker=mk[j])
+            leg = ax1.legend()
     return
 
 def plot_out(sput, nf, ls, c, lbl=None): 

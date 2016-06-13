@@ -380,14 +380,16 @@ def read_logfile(fn):
         count +=1
     print DNS0
     print Q0
-    tardensity=np.sum()
+#    tardensity=np.sum()
     totYld = np.sum(sputteredF[1:])
     simName.append('{}->{}'.format(elemName[0],target))
     simName.append('isbv={}'.format(isbv))
     simName.append('ipot={}'.format(ipot))
-    simName.append(elemName)
     simName.append(target)
+    simName.append(elemName)
+    simName.append(Amass)
     simName.append(Esurfb)
+
 #    simName.append('inel{}={}'.format(elemName[1],INEL0[1]))
 #    simName.append('Edispl{}={}'.format(elemName[1],Edispl[1]))
 #    simName.append('SBE{}-{}={}'.format(elemName[nE-2],elemName[nE-2],SBV[nE*nE-5]))

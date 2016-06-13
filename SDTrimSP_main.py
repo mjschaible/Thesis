@@ -102,8 +102,9 @@ while cont != 0:
             if len(out_yld[i][j].Flux) == len(log_yld[0].label[3]):
                 #print log_yld[0].label[3]
                 #print log_yld[0].label[5]
-                out_yld[i][j].label.append(log_yld[0].label[3]) # append element names
-                out_yld[i][j].label.append(log_yld[0].label[5]) # append SBE
+                out_yld[i][j].label.append(log_yld[0].label[4]) # append element names
+                out_yld[i][j].label.append(log_yld[0].label[5]) # append atomic masses
+                out_yld[i][j].label.append(log_yld[0].label[6]) # append SBE
             else:
                 print "the number of elements does not match"
             met_class=out_yld[i][j].label[0]
@@ -164,9 +165,11 @@ while cont != 0:
         nsim = log_yld[0].label[0]
         for i in range(len(ion_target_pairs)):
             if ion_target_pairs[i] in nsim:
-                nf = i
+                nf = i+1
                 c=next(color[i])
-        #plot_yld = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
+            else:
+                nf=0
+        plot_log = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
 
     #----- Plot total yields derived from the sputter data files -----
     if out_yld:

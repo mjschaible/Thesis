@@ -378,14 +378,15 @@ def read_logfile(fn):
             depositedF.append(float(columns[5]))
 
         count +=1
-    print DNS0
-    print Q0
-#    tardensity=np.sum()
+    #print DNS0
+    #print Q0
+    #tardensity=np.sum()
     totYld = np.sum(sputteredF[1:])
     simName.append('{}->{}'.format(elemName[0],target))
     simName.append('isbv={}'.format(isbv))
     simName.append('ipot={}'.format(ipot))
     simName.append(target)
+    #print elemName
     simName.append(elemName)
     simName.append(Amass)
     simName.append(Esurfb)
@@ -555,6 +556,7 @@ def comp_yield(out_yld, tar):
                 elif ion == 'He' and target == tar[k]:
                     print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
+                        #print out_yld[i][j].label[4], elem
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
                         if match:
                             yld=np.mean(0.05*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])

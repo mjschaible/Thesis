@@ -31,7 +31,7 @@ def find_name(yld_label, color):
     
 # ------------ Begin main program ----------
 cont = 1
-nr=2
+nr=1
 
 # ----- Define a default arrays -----
 
@@ -49,10 +49,11 @@ target= list(set(expt_yld.label[2]))
 #plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, ion_target_pairs)
 
 elem_comp=1
-expt_comp=0
+expt_comp=2
 
 color=[iter(plt.cm.rainbow(np.linspace(0,1,6))) for i in ion_target_pairs]
-color2=iter(['gray','darkgray','blue','red','green','cyan','purple','black'])
+# MetClass = "Lunar", "LunarAnalog", "MetStds", "Mars", "HEDs", "Aubrites", "Urelites", "CCs", "OCs"
+color2=iter(['gray','darkgray','blue','red','green','cyan','purple','orange', 'orangered'])
 while cont != 0:
     loglist=[]
     log_yld=[]
@@ -85,8 +86,9 @@ while cont != 0:
         #print 'The file is {0}'.format(filename)
         loglist.append(filename)
         log_yld.append(SDTrimSP_readSput.read_logfile(filename))
+        #print log_yld[-1].label[4]
         n_eng+=1
-    log_yld=sorted(log_yld, key=lambda x: x.label[0], reverse=True)
+    log_yld=sorted(log_yld, key=lambda x: x.label[0])#, reverse=True)
     tar=[i.label[0] for i in log_yld]
     targets=list(set([i.label[0].split('->')[1] for i in log_yld]))
     #print targets
@@ -95,29 +97,77 @@ while cont != 0:
         #print 'The file is {0}'.format(filename)
         out_yld.append(SDTrimSP_readSput.read_outfile(filename))
     rat=[]
+    nlog=0
     for i in range(len(out_yld)):
-        out_yld[i]=sorted(out_yld[i], key=lambda x: x.label[1], reverse=True)
+        out_yld[i]=sorted(out_yld[i], key=lambda x: x.label[1])
         for j in range(len(out_yld[i])):
             rat.append(out_yld[i][j].label[1])
-            if len(out_yld[i][j].Flux) == len(log_yld[0].label[3]):
-                #print log_yld[0].label[3]
-                #print log_yld[0].label[5]
+            #print len(out_yld[i][j].Flux)
+            #print log_yld[nlog].label[4]
+            if len(out_yld[i][j].Flux) == len(log_yld[nlog].label[4]):
                 out_yld[i][j].label.append(log_yld[0].label[4]) # append element names
                 out_yld[i][j].label.append(log_yld[0].label[5]) # append atomic masses
                 out_yld[i][j].label.append(log_yld[0].label[6]) # append SBE
             else:
                 print "the number of elements does not match"
+                print len(out_yld[i][j].Flux)
+                print len(log_yld[nlog].label[4])
             met_class=out_yld[i][j].label[0]
+            nlog+=1
     
     if rat!=tar:
         print "ERROR: Out and Log file targets don't match"
 
+    #----- Plot total yields derived from the *.out files -----
     if elem_comp == 1:
         c=next(color2)
+        nf=0
         ER=SDTrimSP_readSput.comp_yield(out_yld,targets)
-        ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, met_class)
-        OvC_plot=SDTrimpSP_plotSput.plot_YvO()
+        ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class)
+        #OvC_plot=SDTrimpSP_plotSput.plot_YvO()
         
+    if out_yld:
+        #print len(out_yld)
+        for out in out_yld:
+            #print len(out)
+            out_yld_avg=SDTrimSP_readSput.average(out)    
+            nsim = out[0].label[0]
+            # Determine average yields
+            if expt_comp==1:
+                for j, k  in enumerate(ion_target_pairs):
+                    #print j, k
+                    if k in nsim:
+                        nf = j
+                        c=next(color[j])
+                #plot3_sput=SDTrimSP_plotSput.plot_out(out,nf,'-',c)
+                plot3_sput=SDTrimSP_plotSput.plot_out1(out_yld_avg,nf,'-',c)
+            if expt_comp==2:
+                nf=1
+                plot3_sput=SDTrimSP_plotSput.plot_out2(out_yld_avg,nf,c)
+    #----- Plot total yields derived from SRIM simulations -----
+    if srim_yld:
+        for i in range(len(srim_yld)):
+            plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],ion_target_pairs)
+
+    #----- Plot total yields derived from the log files -----
+    if not log_yld:
+        print "No log files present"
+    else:
+        nsim = log_yld[0].label[0]
+        for i in range(len(ion_target_pairs)):
+            if ion_target_pairs[i] in nsim:
+                nf = i+1
+                c=next(color[i])
+                lbl=path_name
+            else:
+                nf=nr+1
+                lbl='bar'
+        plot_log = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,lbl)
+
+    nr+=1
+    cont = input('Enter 0 to end: ')
+
+    '''
 # Call read functions for each data file type 
     for filename in glob.glob(datfiles):
         if 'E0_31'in filename:
@@ -153,86 +203,6 @@ while cont != 0:
             #print 'The file {} does not have an analysis function written for it'.format(filename)
             continue
         
-    #----- Plot total yields derived from SRIM simulations -----
-    if srim_yld:
-        for i in range(len(srim_yld)):
-            plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],ion_target_pairs)
-
-    #----- Plot total yields derived from the log files -----
-    if not log_yld:
-        print "No log files present"
-    else:
-        nsim = log_yld[0].label[0]
-        for i in range(len(ion_target_pairs)):
-            if ion_target_pairs[i] in nsim:
-                nf = i+1
-                c=next(color[i])
-            else:
-                nf=0
-        plot_log = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,path_name)
-
-    #----- Plot total yields derived from the sputter data files -----
-    if out_yld:
-        for out in out_yld:
-            nsim = out[0].label[0]
-            for j, k  in enumerate(ion_target_pairs):
-                #print j, k
-                if k in nsim:
-                    nf = j
-                    c=next(color[j])
-                
-            # Determine average yields
-            sput_yld_avg=SDTrimSP_readSput.average(out)
-        
-            # Extract the sputter yield from the first time step
-            #sput_yld_init=SDTrimSP_readSput.find_sputvar(sput_yld_avg, 1)
-            # Extract the sputter yield from the last time step
-            last= len(sput_yld_avg[0].fluence)-1
-            #sput_yld_eq=SDTrimSP_readSput.find_sputvar(sput_yld_avg, last)
-            if expt_comp==1:
-                plot3_sput=SDTrimSP_plotSput.plot_out(out,nf,'-',c)
-                #plot3_sput=SDTrimSP_plotSput.plot_out(out_yld_avg,nf, '-')
-        
-    nr+=1
-    cont = input('Enter 0 to end: ')
-
-    '''
-np.savetxt(
-    'output.dat',
-    defEng,
-    fmt='%.0f',
-    delimiter=',',
-    newline='\n',
-    header='energies')
-
-# Arrange energy in the default list np.linspace(100,10000)    
-    # Define log file arrays
-    sim_name=[None]*len(defEng)
-    e_sort=[None]*len(defEng)
-    yld_sort=[None]*len(defEng)
-
-    ymax=0
-    for j in range(len(log_yld)):
-        for i in range(len(defEng)):
-            if log_yld[j].energy==defEng[i]:
-                if log_yld[j].label[2]=='isbv=1':
-                    sim_name[i]=log_yld[j].label
-                    e_sort[i]=log_yld[j].energy
-                    yld_sort[i]=log_yld[j].totYld
-                    if yld_sort[i]>ymax:
-                        ymax=yld_sort[i]
-                        maxi=i
-            elif e_sort[i] != None:
-                continue
-            else:
-                e_sort[i]=defEng[i]
-                yld_sort[i]=0
-
-#    for i in range(len(sim_name)):
-#        print e_sort[i], yld_sort[i]
-
-#       
-
     row0=[]
     allr=[]
     with open('output.dat', 'r') as csvinput:
@@ -249,15 +219,6 @@ np.savetxt(
         w = csv.writer(csvoutput, lineterminator='\n')
         w.writerows(allr)
 
-    # After all files in a folder are read, sort the yields from the log and sputter data files
-    # by energy. 
-#    sputteredF = [x for (y,x) in sorted(zip(Esim,sputteredF), key=lambda pair:pair[0])]
-#    totYld = [x for (y,x) in sorted(zip(Esim,totYld), key=lambda pair:pair[0])]
-#    Esim[j].sort()
-#    print Esim
-#    print fluenz
-#    print sputteredF
-#    print totYld
 '''
 
 

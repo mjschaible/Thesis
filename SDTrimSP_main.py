@@ -52,8 +52,9 @@ elem_comp=1
 expt_comp=2
 
 color=[iter(plt.cm.rainbow(np.linspace(0,1,6))) for i in ion_target_pairs]
-# MetClass = "Lunar", "LunarAnalog", "MetStds", "Mars", "HEDs", "Aubrites", "Urelites", "CCs", "OCs"
-color2=iter(['gray','darkgray','blue','red','green','cyan','purple','orange', 'orangered'])
+MetClass = ["Lunar", "LunarAnalog", "MetStds", "Mars", "HEDs", "Aubrites", "Urelites", "CCs", "OCs"]
+colorlist=['gray','darkgray','blue','red','green','cyan','purple','orange', 'orangered']
+color2=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
 while cont != 0:
     loglist=[]
     log_yld=[]
@@ -101,13 +102,18 @@ while cont != 0:
     for i in range(len(out_yld)):
         out_yld[i]=sorted(out_yld[i], key=lambda x: x.label[1])
         for j in range(len(out_yld[i])):
+            ctar = out_yld[i][j].label[1]
+            #print ctar
+            for n, t in enumerate(tar):
+                if t == ctar:
+                    index=n
             rat.append(out_yld[i][j].label[1])
             #print len(out_yld[i][j].Flux)
             #print log_yld[nlog].label[4]
             if len(out_yld[i][j].Flux) == len(log_yld[nlog].label[4]):
-                out_yld[i][j].label.append(log_yld[0].label[4]) # append element names
-                out_yld[i][j].label.append(log_yld[0].label[5]) # append atomic masses
-                out_yld[i][j].label.append(log_yld[0].label[6]) # append SBE
+                out_yld[i][j].label.append(log_yld[index].label[4]) # append element names
+                out_yld[i][j].label.append(log_yld[index].label[5]) # append atomic masses
+                out_yld[i][j].label.append(log_yld[index].label[6]) # append SBE
             else:
                 print "the number of elements does not match"
                 print len(out_yld[i][j].Flux)
@@ -123,7 +129,7 @@ while cont != 0:
         c=next(color2)
         nf=0
         ER=SDTrimSP_readSput.comp_yield(out_yld,targets)
-        ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class)
+        ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class, targets)
         #OvC_plot=SDTrimpSP_plotSput.plot_YvO()
         
     if out_yld:
@@ -143,7 +149,7 @@ while cont != 0:
                 plot3_sput=SDTrimSP_plotSput.plot_out1(out_yld_avg,nf,'-',c)
             if expt_comp==2:
                 nf=1
-                plot3_sput=SDTrimSP_plotSput.plot_out2(out_yld_avg,nf,c)
+                plot3_sput=SDTrimSP_plotSput.plot_out2(out,nf,c)
     #----- Plot total yields derived from SRIM simulations -----
     if srim_yld:
         for i in range(len(srim_yld)):
@@ -153,6 +159,7 @@ while cont != 0:
     if not log_yld:
         print "No log files present"
     else:
+        neut_yld, ion_yld=SDTrimSP_readSput.log_comp(log_yld,targets)
         nsim = log_yld[0].label[0]
         for i in range(len(ion_target_pairs)):
             if ion_target_pairs[i] in nsim:
@@ -162,8 +169,9 @@ while cont != 0:
             else:
                 nf=nr+1
                 lbl='bar'
-        plot_log = SDTrimSP_plotSput.plot_log(log_yld,nf,'-',c,lbl)
-
+        plot_log = SDTrimSP_plotSput.plot_log(neut_yld,nf,'-',c,lbl)
+        plot_log = SDTrimSP_plotSput.plot_log(ion_yld,nf,'-',c,lbl,'//',met_class)
+        
     nr+=1
     cont = input('Enter 0 to end: ')
 

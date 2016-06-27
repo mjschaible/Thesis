@@ -18,10 +18,16 @@ class LogData (object):
         return repr((self.label, self.energy, self.fluence, self,Flux, self.totYld))
 
     
-elemlist = ['C','Na','Mg','Al','Si','S','K','Ca','Ti','Fe','Ni','O']
+elemlist = ['H', 'He', 'C_g','Na','Mg','Al','Si','S','K','Ca','Ti','Mn','Fe','Ni','O']
 ifrac = 0.1
-relcorr = [0.01, 23.319, 2.886, 3.637, 1.000, 0.01, 81.080, 3.950, 3.582, 2.767, 2.886, 0.01]
+relcorr = [0.00,0.00,0.01,51.222,8.340,4.667,1.000,0.01,229.488,9.299,3.846,7.128,1.893,2.886,0.01]
 navg=10
+
+def f4(seq): 
+   # order preserving
+   noDupes = []
+   [noDupes.append(i) for i in seq if not noDupes.count(i)]
+   return noDupes
 
 def read_exptfile(fn):
     with open(fn,'r') as logfile:
@@ -533,10 +539,10 @@ def comp_yield(out_yld, tar):
     sw_yld=[]
     sw_iyld=[]
     Elem_Ratio=[[0]*4 for i in range(len(tar))]
-    nE=[2, 3, 7, 9]
+    nE=[4, 5, 9, 12]
     #print out_yld[i].label[4]
     #print out_yld[i].Flux
-    print tar
+    #print tar
     for i in range(len(out_yld)):
         for j in range(len(out_yld[i])):
             for k in range(len(tar)):
@@ -547,6 +553,7 @@ def comp_yield(out_yld, tar):
                 if ion == 'H' and target in tar[k]:
                     print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
+                        #print out_yld[i][j].label[4]
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
                         if match:
                             yld=np.mean(0.95*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])
@@ -566,11 +573,76 @@ def comp_yield(out_yld, tar):
     for k in range(len(tar)):
         sw_yld.append(map(add,hyld[k],heyld[k]))
         sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
-        for i in range(len(nE)):
-            Elem_Ratio[k][i]=sw_iyld[k][nE[i]]/sw_iyld[k][4]
-        print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k]))
-        print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
-
-    #print Elem_Ratio
+        for l in range(len(nE)):
+            Elem_Ratio[k][l]=sw_iyld[k][nE[l]]/sw_iyld[k][4]
+        #print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k]))
+        #print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
     
     return Elem_Ratio
+
+def log_comp(yld, tar):
+    hyld=[[] for i in range(len(tar))]
+    h_iyld=[[] for i in range(len(tar))]
+    heyld=[[] for i in range(len(tar))]
+    he_iyld=[[] for i in range(len(tar))]
+    sw_yld=[]
+    sw_iyld=[]
+    Elem_Ratio=[[0]*4 for i in range(len(tar))]
+    nE=[4, 5, 9, 12]
+    #print out_yld[i].label[4]
+    #print out_yld[i].Flux
+    #print tar
+    neut_data=[]
+    ion_data=[]
+    for i in range(len(yld)):
+        for k in range(len(tar)):
+            ion = yld[i].label[0].split('->')[0]
+            target = yld[i].label[0].split('->')[1]
+            tyld=yld[i].totYld
+            #print ion, target, tar[k]
+            if ion == 'H' and target in tar[k]:
+                #print 'The {} yield is {}'.format(yld[i].label[0], tyld)
+                #print yld[i].label[4]
+                for y, elem in enumerate(elemlist):
+                    match = [l for l, x in enumerate(yld[i].label[4]) if x == elem]
+                    if match:
+                        #print yld[i].label[4][match[0]]
+                        ny=yld[i].Flux[match[0]]
+                        hyld[k].append(ny)
+                        #print elem, yld[i].label[4][match[0]], relcorr[y], ny
+                        h_iyld[k].append(ny*relcorr[y]*ifrac)
+
+            elif ion == 'He' and target == tar[k]:
+                #print 'The {} yield is {}'.format(yld[i].label[0], tyld)
+                for y, elem in enumerate(elemlist):
+                    #print out_yld[i][j].label[4], elem
+                    match = [l for l, x in enumerate(yld[i].label[4]) if x == elem]
+                    if match:
+                        cy=yld[i].Flux[match[0]]
+                        heyld[k].append(cy)
+                        he_iyld[k].append(cy*relcorr[y]*ifrac)
+
+    for k in range(len(tar)):
+        print tar[k]
+        print len(yld[0].label[4]), len(hyld[k]), len(heyld[k])
+        sw_yld.append(map(add,hyld[k],heyld[k]))
+        sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
+        for l in range(len(yld[0].label[4])):
+            print yld[0].label[4][l]
+        print 'H Yield'
+        for l in range(len(yld[0].label[4])):
+            #print '{}, {:.4f}, {:.6f}'.format(out_yld[i][j].label[4][l],sw_yld[k][l],sw_iyld[k][l])
+            print '{:.2e}'.format(hyld[k][l])
+        print 'He Yield'
+        for l in range(len(yld[i].label[4])):
+            print '{:.2e}'.format(heyld[k][l])
+        #print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k]))
+        #print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
+        #sw_yld[-1]=f4(sw_yld[-1])
+        #sw_iyld[-1]=f4(sw_iyld[-1])
+        #print sw_iyld[-1]
+        neut_data.append(LogData(yld[k].label,yld[k].energy,yld[k].fluence,sw_yld[k],np.sum(sw_yld[k])))
+        ion_data.append(LogData(yld[k].label,yld[k].energy,yld[k].fluence,sw_iyld[k],np.sum(sw_iyld[k])))
+
+    return neut_data, ion_data
+                        

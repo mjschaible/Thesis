@@ -19,7 +19,7 @@ cont = 1
 num_runs=0
 run_param=[]
 run_thermo=[]
-
+rad_file=0
 while cont != 0:
 # show an "Open" dialog box and return the path to the selected file
     Tk().withdraw()
@@ -52,21 +52,24 @@ while cont != 0:
     filerdf = filepath+'.rdf'
     run_rdf=lammps_read.rdf_read(filerdf, steplen)
 
-    filecom = filepath+'.com'
-    run_com = lammps_read.com_read(filecom, steplen)
-    msd_com = lammps_read.find_commsd(run_com, run_info)
+    if rad_file==1:
+        filecom = filepath+'.com'
+        run_com = lammps_read.com_read(filecom, steplen)
+        msd_com = lammps_read.find_commsd(run_com, run_info)
 
-    filedump = filepath+'.dump'
-    run_dump = lammps_read.dump_read(filedump, steplen)
-    dump_eng = lammps_read.find_dumpeng(run_dump, run_info)
+        filedump = filepath+'.dump'
+        run_dump = lammps_read.dump_read(filedump, steplen)
+        dump_eng = lammps_read.find_dumpeng(run_dump, run_info)
     
     #----- -----
-    nrows=2
-    #lammps_plot.msd_plots(axs[0,:], run_dens, 'Density (g/cm^3)')
-    #lammps_plot.msd_plots(run_msd, 'All msd', 2)
+    nrows=3
     lammps_plot.log_plots(run_thermo, nrows)
-    lammps_plot.msd_plots(dump_eng, 'Shell Avg. KE',4)
-    lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',3)
+    #lammps_plot.msd_plots(axs[0,:], run_dens, 'Density (g/cm^3)')
+    nrows=2
+    lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
+    lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
+#    lammps_plot.msd_plots(dump_eng, 'Shell Avg. KE',4)
+#    lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',3)
 #    lammps_plot.msd_plots(axs[1,:], run_msd_gRad, run_param, 'gRad msd (A^2)')
 #    lammps_plot.msd_plots(axs[2,:], run_msd_gPKA, run_param, 'PKA msd (A^2)')
 #    lammps_plot.rdf_plots(run_rdf, run_param)

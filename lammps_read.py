@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 import re
 import csv
-from collections import defaultdict
+import sys
+import string
 
 # Define a class for the standard lammps log output file
 class LogData (object):
@@ -343,11 +345,11 @@ def com_read(filename, ts):
 
     return com_data
 
-def find_commsd(run_com, PKApos):
+def find_commsd(run_com, descrip):
     # Read the PKA position from the log data file
-    xpka=PKApos[4][0]
-    ypka=PKApos[4][1]
-    zpka=PKApos[4][2]
+    xpka=descrip[4][0]
+    ypka=descrip[4][1]
+    zpka=descrip[4][2]
     
     shell_thickness=5
     num_shells=3
@@ -371,14 +373,14 @@ def find_commsd(run_com, PKApos):
         ycom_init=run_com[0].ypos[i]
         zcom_init=run_com[0].zpos[i]
         #print xcom, ycom, zcom
-        # Then I calculate each molecules distance from the PKA above
+        # Calculate each molecule's distance from the PKA above
         dist_from_pka=np.sqrt((xpka-xcom_init)**2+(ypka-ycom_init)**2+(zpka-zcom_init)**2)
         for n in range(num_shells):
-            # and if that COM is in a given shell it's chunkID is added to the appropriate shell array
+            # and if that COM is in a given shell it's chunk/molecule ID is added to the appropriate shell array
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
     # print the molecule ID's that are within shell_thickness of the PKA
-    #print shell[0]
+    # print shell[0]
 
     # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]
@@ -415,7 +417,60 @@ def find_commsd(run_com, PKApos):
 
     run_data.append(runData(shell_dat,steparr,msd))
     #print run_data.Head, len(run_data.step), len(run_data.data[0])
-    return run_data
+    return run_data, shell
+
+def createDataframeFromDump(dumpfile, shell, info, tslen):
+    # create dummy headers for 14 columns. 
+    # Chis is needed because rows are of unequal length.
+    # Missing values will be assigned as NaN
+    my_cols=string.ascii_uppercase[0:14]
+    dataframe = pd.read_table(dumpfile, delimiter=' ', names=my_cols) #, engine='python')
+    # Pull out all row indices that contain 'TIMESTEP' in 2nd column ('B')
+    timestep_startrow=dataframe[dataframe.B == 'TIMESTEP'].index
+    # Get list of TIMESTEP values
+    timesteps = dataframe['A'].loc[timestep_startrow + 1]
+    ts=timesteps.values
+    ts = [ float(x) * tslen/1000 for x in ts]
+    print ts
+    # Create Series for TIMESTEPS
+    rowsPerTimestep=timestep_startrow[1]-timestep_startrow[0]
+    matrix = [ ([i] * rowsPerTimestep) for i in timesteps ]
+    timeSeriesData=np.hstack(np.asarray(matrix)) # flatten to 1D array
+    # Add TIMESTEP series as new column 
+    dataframe['timestep']=pd.Series(timeSeriesData,index=dataframe.index)
+    
+    # Rename columns
+    dataframe.columns=['type','id', 'mol', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'c_pe_atom', 'c_ke_atom', 'L','M','N','timestep']
+    
+    # Drop all rows that are headers. Headers contain NaN in column 'vx' 
+    dataframe=dataframe.dropna(subset=['vx'])
+    dataframe=dataframe[dataframe.type != 'ITEM:']
+    # Remove additional columns
+    dataframe=dataframe.dropna(axis=1)
+    # Convert entire dataframe to numeric data type
+    dataframe=dataframe.apply(pd.to_numeric)
+
+    run_data=[]
+    shellke=[]
+    for i in range(len(shell)):
+        #print shell[i]
+        selectMol=shell[i] # select molecules in shell 'i'
+        df=dataframe.loc[dataframe['mol'].isin(selectMol)]
+        # aggregate some numbers for data grouped by TIMESTEPS and mol
+        groups=df.groupby(['mol', 'timestep'])
+        sums=groups['c_pe_atom','c_ke_atom'].sum()
+        #print(sums.describe())
+        ggroup=df.groupby(['timestep'])
+        gsum=ggroup['c_ke_atom'].sum()
+        gmean=ggroup['c_ke_atom'].mean()
+        shellke.append(gmean.values)
+
+    run_data.append(runData(info,ts,shellke))    
+    return dataframe, run_data
+    
+def createDataframeFromConvDump(convDumpfile):    
+    dataframe = pd.read_table(convDumpfile, delimiter=' ')
+    return dataframe
 
 def dump_read(filename, ts):
     

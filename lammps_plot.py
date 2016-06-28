@@ -7,11 +7,11 @@ from scipy import interpolate
 import itertools
 import re
 
-def log_plots(runs, b):
+def log_plots(runs, b, ft):
     kcalToeV = 0.0433641 # convert kcal/mole to eV/atom
 
     a = len(runs) #num columns
-    #b =  num rows
+
 #    print "a\t=\t%d\nb\t=\t%d\na*b\t=\t%d\nn\t=\t%d" % (a,b,a*b,n)
 #    fig, axs = plt.subplots(b,a,figsize=(a*b,b*b), sharex='col', sharey='row')
 #    axs.shape = (b,a)
@@ -22,13 +22,14 @@ def log_plots(runs, b):
     kemax=0
     fig=plt.figure(0)
     ax=[]
-    if b>1:
-        ax2=[]
+    ax2=[]
     if b>2:
         ax3=[]
-    for i in range(len(runs)):
+        
+    for i in range(ft,len(runs)):
         time = (runs[i].step-runs[0].step[0])*runs[i].descrip[0]/1000
         num_molec = runs[i].descrip[2]
+
         if i==0:
             ax.append(plt.subplot(b,a,i+1))
         else:
@@ -37,27 +38,23 @@ def log_plots(runs, b):
         ax[-1].plot(time,runs[i].peave*kcalToeV*num_molec,color='blue',label='Sys. {} (eV)'.format(runs[i].thermoCol[3]))
         ax[-1].locator_params(axis='x', tight=True, nbins=2) 
         plt.setp(ax[-1].get_xticklabels(), visible=False)
-        if i>0:
-            plt.setp(ax[-1].get_yticklabels(), visible=False)
-        
-        try:
-            ax2
+             
+        if ft==1:
+            ax2.append(ax[-1].twinx())
+        else:
             if i==0:
                 ax2.append(plt.subplot(b,a,i+1+a))
             else:
-                ax2.append(plt.subplot(b,a,i+1+a,sharey=ax2[-1]))
-            #ax2.append(ax[-1].twinx())
-            #ax2.plot(time,runs[i].temp,label = runs[i].thermoCol[1])
-            ax2[-1].plot(time,runs[i].tempave,color='red',label='Sys. {} (K)'.format(runs[i].thermoCol[1]))
-            ax2[-1].locator_params(axis='x', tight=True, nbins=2)
-            plt.setp(ax2[-1].get_xticklabels(), visible=False)
-            if i>0:
-                plt.setp(ax2[-1].get_yticklabels(), visible=False)
-            #axs[1,i].plot(time,runs[i].ke*kcalToeV,label = runs[i].thermoCol[5])
-            #axs[1,i].plot(time,runs[i].keave*kcalToeV*param[i].num_molec)
-        except NameError:
-            print 'Only one axis defned'
+                ax2.append(plt.subplot(b,a,i+1+a,sharey=ax2[-1]))            
+                plt.setp(ax2[-1].get_xticklabels(), visible=False)
+                
+        ax2[-1].plot(time,runs[i].tempave,color='red',label='Sys. {} (K)'.format(runs[i].thermoCol[1]))
+        ax2[-1].locator_params(axis='x', tight=True, nbins=2)
             
+        if i>0:
+            plt.setp(ax2[-1].get_yticklabels(), visible=False)
+            plt.setp(ax[-1].get_yticklabels(), visible=False)
+
         try:
             ax3
             if i==0:
@@ -117,15 +114,17 @@ def msd_plots(runs, label, nr, c):
     for i in range(len(runs)):
         #time = (runs[i].step-runs[i].step[0])*param[i].timesteps/1000
         if 'Shell Avg' in label:
-            ax=plt.subplots(2,2,c, sharey=ax)
+            ax=fig.add_subplot(nr,2,c)
             for j in range(len(runs[i].data)):
+                #print len(runs[i].step), len(runs[i].data[j])
                 lbl = '{} to {} $\AA$'.format(runs[i].Head[0]*j,runs[i].Head[0]*(j+1))
                 ax.plot(runs[i].step,runs[i].data[j],label = lbl)
             if 'MSD' in label:
                 ax.set_ylabel('{} ($\AA^2$)'.format(label))
             elif 'KE' in label:
-                ax.legend(fontsize=10, loc=2)
+                ax.legend(fontsize=10, loc=1)
                 ax.set_ylabel('{} ($eV$)'.format(label))
+                ax.locator_params(axis='x', tight=True, nbins=10)
                 #ax.set_ylim([0,100])
         else:
             ax=fig.add_subplot(nr,1,c)
@@ -135,12 +134,11 @@ def msd_plots(runs, label, nr, c):
             ax.ticklabel_format(axis='x', style = 'sci')
 
         if c==1:
-            plt.setp(ax.get_xticklabels(), visible=False)
-        
-        
+            plt.setp(ax.get_xticklabels(), visible=True)
+                
         #plt.figtext(0.5,0.95,'The sim is {}'.format(runs[i].descrip),ha='center')
-
-        return
+    fig.tight_layout()
+    return
 
 def rdf_plots(runs):
     for i in range(len(runs)):

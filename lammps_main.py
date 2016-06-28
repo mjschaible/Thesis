@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 plt.interactive(True)
 import glob
 import itertools
+import sys
 
 from Tkinter import Tk
 from tkFileDialog import askdirectory
@@ -14,67 +15,74 @@ import lammps_read
 import lammps_plot
 
 # ------------ Begin main program ----------
-cont = 1
+def main():
+    cont = 1
+    num_runs=0
 
-num_runs=0
-run_param=[]
-run_thermo=[]
-rad_file=0
-while cont != 0:
-# show an "Open" dialog box and return the path to the selected file
-    Tk().withdraw()
-    filename = askopenfilename()
-    filepath = filename.split(".")[0]
-    print filepath
+    while cont != 0:
+    # show an "Open" dialog box and return the path to the selected file
+        Tk().withdraw()
+        filename = askopenfilename()
+        filepath = filename.split(".")[0]
+        print filepath
+        if 'rad' in filepath:
+            ftype=1
+        else:
+            ftype=0
+            
+        num_runs, run_thermo = lammps_read.log_read(filename)
+        if run_thermo[0].descrip[2] is not None:
+            print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[3], run_thermo[0].descrip[4])
+            print 'The molecule velocity is {:.2f}'.format(run_thermo[0].descrip[5])
+        else:
+            print 'No excited molecule specified', run_thermo[0].descrip[2]
 
-    num_runs, run_thermo = lammps_read.log_read(filename)
-    if run_thermo[0].descrip[2] is not None:
-        print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[3], run_thermo[0].descrip[4])
-        print 'The molecule velocity is {:.2f}'.format(run_thermo[0].descrip[5])
-    else:
-        print 'No excited molecule specified', run_thermo[0].descrip[2]
+        steplen = run_thermo[0].descrip[0]
+        run_info= run_thermo[0].descrip
 
-    steplen = run_thermo[0].descrip[0]
-    run_info= run_thermo[0].descrip
+        filedens = filepath+'.dens'
+        run_dens = lammps_read.data_read(filedens, steplen)
 
-    filedens = filepath+'.dens'
-    run_dens = lammps_read.data_read(filedens, steplen)
+        filemsd = filepath+'.msd'
+        run_msd = lammps_read.data_read(filemsd, steplen)
 
-    filemsd = filepath+'.msd'
-    run_msd = lammps_read.data_read(filemsd, steplen)
+        filerdf = filepath+'.rdf'
+        run_rdf=lammps_read.rdf_read(filerdf, steplen)
 
-#    filemsd_gRad = filepath+'_gRad.msd'
-#    num_msd_gRad, run_msd_gRad = lammps_read.data_read(filemsd_gRad, run_thermo[0].descrip)
+        if ftype==0:
+            nrows=3
+            lammps_plot.log_plots(run_thermo, nrows, ftype)
 
-#    filemsd_gPKA = filepath+'_gPKA.msd'
-#    num_msd_gPKA, run_msd_gPKA = lammps_read.data_read(filemsd_gPKA, run_thermo[0].descrip)
+            nrows=2
+            lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
+            lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
 
-    filerdf = filepath+'.rdf'
-    run_rdf=lammps_read.rdf_read(filerdf, steplen)
+        if ftype==1:
+            filecom = filepath+'.com'
+            run_com = lammps_read.com_read(filecom, steplen)
+            msd_com, shell = lammps_read.find_commsd(run_com, run_info)
 
-    if rad_file==1:
-        filecom = filepath+'.com'
-        run_com = lammps_read.com_read(filecom, steplen)
-        msd_com = lammps_read.find_commsd(run_com, run_info)
+            # create DataFrame and save as csv --> converted dump file
+            filedump = filepath+'.dump'
+            dataframe, dumpeng=lammps_read.createDataframeFromDump(filedump, shell, run_info, steplen)
+            dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
+            # comment lines 59 & 60 and use the function call line 63 instead if reading
+            # from converted dump file
+            #dataframe=createDataframeFromConvDump(sys.argv[1])        
 
-        filedump = filepath+'.dump'
-        run_dump = lammps_read.dump_read(filedump, steplen)
-        dump_eng = lammps_read.find_dumpeng(run_dump, run_info)
-    
-    #----- -----
-    nrows=3
-    lammps_plot.log_plots(run_thermo, nrows)
-    #lammps_plot.msd_plots(axs[0,:], run_dens, 'Density (g/cm^3)')
-    nrows=2
-    lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
-    lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
-#    lammps_plot.msd_plots(dump_eng, 'Shell Avg. KE',4)
-#    lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',3)
-#    lammps_plot.msd_plots(axs[1,:], run_msd_gRad, run_param, 'gRad msd (A^2)')
-#    lammps_plot.msd_plots(axs[2,:], run_msd_gPKA, run_param, 'PKA msd (A^2)')
-#    lammps_plot.rdf_plots(run_rdf, run_param)
-    plt.show()
+            #----- -----
+            nrows=2
+            lammps_plot.log_plots(run_thermo, nrows, ftype)
 
-    cont = input('Enter 0 to end: ')
-    
-raise SystemExit()
+            nrows=2
+            lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
+            #lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
+            lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',nrows,3)
+            lammps_plot.msd_plots(dumpeng, 'Shell Avg. KE',nrows,4)
+            #    lammps_plot.rdf_plots(run_rdf, run_param)
+            plt.show()
+
+        cont = input('Enter 0 to end: ')
+
+if __name__ == "__main__":
+    main()

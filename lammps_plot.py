@@ -23,7 +23,7 @@ def log_plots(runs, b, ft):
     fig=plt.figure(0)
     ax=[]
     ax2=[]
-    if b>2:
+    if b>1:
         ax3=[]
         
     for i in range(ft,len(runs)):
@@ -31,25 +31,19 @@ def log_plots(runs, b, ft):
         num_molec = runs[i].descrip[2]
 
         if i==0:
-            ax.append(plt.subplot(b,a,i+1))
+            ax.append(plt.subplot(b,a,i))
         else:
-            ax.append(plt.subplot(b,a,i+1, sharey=ax[-1]))
-        #ax.plot(time,runs[i].pe*kcalToeV,label = runs[i].thermoCol[2])
+            ax.append(plt.subplot(b,a,i, sharey=ax[-1]))
+        #ax[-1].plot(time,runs[i].pe*kcalToeV,label = runs[i].thermoCol[2])
         ax[-1].plot(time,runs[i].peave*kcalToeV*num_molec,color='blue',label='Sys. {} (eV)'.format(runs[i].thermoCol[3]))
         ax[-1].locator_params(axis='x', tight=True, nbins=2) 
         plt.setp(ax[-1].get_xticklabels(), visible=False)
              
-        if ft==1:
-            ax2.append(ax[-1].twinx())
-        else:
-            if i==0:
-                ax2.append(plt.subplot(b,a,i+1+a))
-            else:
-                ax2.append(plt.subplot(b,a,i+1+a,sharey=ax2[-1]))            
-                plt.setp(ax2[-1].get_xticklabels(), visible=False)
-                
+        ax2.append(ax[-1].twinx())
         ax2[-1].plot(time,runs[i].tempave,color='red',label='Sys. {} (K)'.format(runs[i].thermoCol[1]))
         ax2[-1].locator_params(axis='x', tight=True, nbins=2)
+        plt.setp(ax2[-1].get_xticklabels(), visible=False)
+                
             
         if i>0:
             plt.setp(ax2[-1].get_yticklabels(), visible=False)
@@ -58,9 +52,9 @@ def log_plots(runs, b, ft):
         try:
             ax3
             if i==0:
-                ax3.append(plt.subplot(b,a,i+1+2*a))
+                ax3.append(plt.subplot(b,a,i+1+a))
             else:
-                ax3.append(plt.subplot(b,a,i+1+2*a, sharey=ax3[-1]))
+                ax3.append(plt.subplot(b,a,i+1+a, sharey=ax3[-1]))
             ax3[-1].plot(time,runs[i].etot*kcalToeV,label = runs[i].thermoCol[7])
             #ax3[-2].set_xlabel('(ss={})'.format(runs[i].descrip[0]))
             ax3[-1].ticklabel_format(axis='x', style = 'sci')
@@ -69,7 +63,7 @@ def log_plots(runs, b, ft):
                 plt.setp(ax3[-1].get_yticklabels(), visible=False)
         except NameError:
             print 'Only one axis defned'
-            
+                        
         pemin_t=min(runs[i].peave)*kcalToeV*num_molec
         pemax_t=max(runs[i].peave)*kcalToeV*num_molec
         #kemin_t=min(runs[i].keave)*kcalToeV*num_molec
@@ -83,17 +77,17 @@ def log_plots(runs, b, ft):
         elif pemin_t > pemin:
             pemax = pemin_t
             ax[-1].set_ylim([pemin-5,pemax+5])
-        #if i == len(runs)-1:
-        if kemax_t>kemax:
+        if i == len(runs)-1:
+        #if kemax_t>kemax:
             kemax=kemax_t
             #kemin=kemin_t
             #ax2[-1].set_ylim([kemax-10.5,kemax+0.75])
             ax2[-1].set_ylim([kemin-5,kemax+5])
-            
+
         #for ac in ax:
         #    ac.get_shared_y_axes().join(ac,ax[-1])
-        #for ac in ax2:
-        #    ac.get_shared_y_axes().join(ac,ax2[-1])
+        for ac in ax2:
+            ac.get_shared_y_axes().join(ac,ax2[-1])
 
         if i == 0:
             h1,l1=ax[-1].get_legend_handles_labels()

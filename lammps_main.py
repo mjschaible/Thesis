@@ -50,7 +50,7 @@ def main():
         run_rdf=lammps_read.rdf_read(filerdf, steplen)
 
         if ftype==0:
-            nrows=3
+            nrows=2
             lammps_plot.log_plots(run_thermo, nrows, ftype)
 
             nrows=2

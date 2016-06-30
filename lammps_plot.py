@@ -12,15 +12,15 @@ def log_plots(runs, b, ft):
 
     a = len(runs) #num columns
 
-#    print "a\t=\t%d\nb\t=\t%d\na*b\t=\t%d\nn\t=\t%d" % (a,b,a*b,n)
-#    fig, axs = plt.subplots(b,a,figsize=(a*b,b*b), sharex='col', sharey='row')
+    #print "a\t=\t%d\nb\t=\t%d\na*b\t=\t%d\nn\t=\t%d" % (a,b,a*b,n)
+    #fig, axs = plt.subplots(b,a,figsize=(a,a/b), sharex='col', sharey='row')
 #    axs.shape = (b,a)
 
     pemin=0
     pemax=0
     kemin=0
     kemax=0
-    fig=plt.figure(0)
+    fig=plt.figure(figsize=(a+1,a/b))
     ax=[]
     ax2=[]
     if b>1:
@@ -29,38 +29,60 @@ def log_plots(runs, b, ft):
     for i in range(ft,len(runs)):
         time = (runs[i].step-runs[0].step[0])*runs[i].descrip[0]/1000
         num_molec = runs[i].descrip[2]
-
-        if i==0:
-            ax.append(plt.subplot(b,a,i))
+        
+        if i==ft:
+            ax.append(plt.subplot(b,a,i+1))
         else:
-            ax.append(plt.subplot(b,a,i, sharey=ax[-1]))
-        #ax[-1].plot(time,runs[i].pe*kcalToeV,label = runs[i].thermoCol[2])
+            ax.append(plt.subplot(b,a,i+1, sharey=ax[0]))
+            
         ax[-1].plot(time,runs[i].peave*kcalToeV*num_molec,color='blue',label='Sys. {} (eV)'.format(runs[i].thermoCol[3]))
-        ax[-1].locator_params(axis='x', tight=True, nbins=2) 
-        plt.setp(ax[-1].get_xticklabels(), visible=False)
-             
+        ax[-1].locator_params(axis='x', tight=True) 
+        #plt.setp(ax[-1].get_xticklabels(), visible=False)
+        plt.setp(ax[-1], xticks=[min(time)])
+
         ax2.append(ax[-1].twinx())
         ax2[-1].plot(time,runs[i].tempave,color='red',label='Sys. {} (K)'.format(runs[i].thermoCol[1]))
-        ax2[-1].locator_params(axis='x', tight=True, nbins=2)
         plt.setp(ax2[-1].get_xticklabels(), visible=False)
-                
-            
-        if i>0:
+
+        if i>ft:
             plt.setp(ax2[-1].get_yticklabels(), visible=False)
             plt.setp(ax[-1].get_yticklabels(), visible=False)
 
+        if i==len(runs)-1:
+            ax[0].set_ylabel('Energy ($eV$)')
+            ax2[-1].set_ylabel('Temperature (K)')
+            h1,l1=ax[-1].get_legend_handles_labels()
+            h2,l2=ax2[-1].get_legend_handles_labels()
+            
+            l = ax[-1].legend(h1+h2, l1+l2, loc=4, fontsize=10)
+            #l.set_zorder(20)
+            plt.setp(ax2[-1].get_yticklabels(), visible=True)
+
+
+            #ax2.append(plt.subplot(b,a,i, sharey=ax[0]))
+        #ax[-1].plot(time,runs[i].pe*kcalToeV,label = runs[i].thermoCol[2])
+        
+        if i>ft:
+            for ac in ax:
+                ac.get_shared_y_axes().join(ac,ax[-1])
+            for ac in ax2:
+                ac.get_shared_y_axes().join(ac,ax2[-1])
+
         try:
             ax3
-            if i==0:
+            if i==ft:
                 ax3.append(plt.subplot(b,a,i+1+a))
+                ax3[-1].set_ylabel('{} (eV)'.format(runs[i].thermoCol[7]))
             else:
                 ax3.append(plt.subplot(b,a,i+1+a, sharey=ax3[-1]))
             ax3[-1].plot(time,runs[i].etot*kcalToeV,label = runs[i].thermoCol[7])
             #ax3[-2].set_xlabel('(ss={})'.format(runs[i].descrip[0]))
             ax3[-1].ticklabel_format(axis='x', style = 'sci')
             ax3[-1].locator_params(axis='x', tight=True, nbins=2)
-            if i>0:
+            plt.setp(ax3[-1], xticks=[min(time)])
+            if i>ft:
                 plt.setp(ax3[-1].get_yticklabels(), visible=False)
+
         except NameError:
             print 'Only one axis defned'
                         
@@ -70,41 +92,32 @@ def log_plots(runs, b, ft):
         #kemax_t=max(runs[i].keave)*kcalToeV*num_molec
         kemin_t=min(runs[i].tempave)
         kemax_t=max(runs[i].tempave)
-        if i == 1:
+        if i == ft:
             pemax = pemax_t
             pemin = pemin_t
+            kemax=kemax_t
+            kemin=kemin_t
             ax[-1].set_ylim([pemin-5,pemax+5])
-        elif pemin_t > pemin:
+            #ax2[-1].set_ylim([kemin-5,kemax+5])
+        if pemin_t > pemin:
             pemax = pemin_t
             ax[-1].set_ylim([pemin-5,pemax+5])
-        if i == len(runs)-1:
-        #if kemax_t>kemax:
-            kemax=kemax_t
+        #if i == len(runs)-1:
+        if kemin_t>kemin:
+            kemax=kemin_t
             #kemin=kemin_t
             #ax2[-1].set_ylim([kemax-10.5,kemax+0.75])
             ax2[-1].set_ylim([kemin-5,kemax+5])
-
-        #for ac in ax:
-        #    ac.get_shared_y_axes().join(ac,ax[-1])
-        for ac in ax2:
-            ac.get_shared_y_axes().join(ac,ax2[-1])
-
-        if i == 0:
-            h1,l1=ax[-1].get_legend_handles_labels()
-            h2,l2=ax2[-1].get_legend_handles_labels()
-            #ax[-1].legend(h1+h2, l1+l2, loc=2, fontsize=10)
-            ax[-1].set_ylabel('Energy ($eV$)')
-            ax2[-1].set_ylabel('Temperature (K)')
-            ax3[-1].set_ylabel('{} (eV)'.format(runs[i].thermoCol[7]))
+            
             #plt.figtext(0.5,0.95,'The sim is {}'.format(runs[i].descrip),ha='center')
-        plt.suptitle('Time [ps]',fontsize=16)
         plt.subplots_adjust(wspace=0.001)
-        #axs[2,i].set_ylim(-1700,-1600)
-    
+
+    fig.text(0.5,0.04,'Time [ps]', ha='center')
+    plt.savefig('../../../../../../images/IhDrad_80kenergy.png', dpi=600)
     return
 
 def msd_plots(runs, label, nr, c):
-    fig = plt.figure(1)
+    fig = plt.figure(2)
     for i in range(len(runs)):
         #time = (runs[i].step-runs[i].step[0])*param[i].timesteps/1000
         if 'Shell Avg' in label:
@@ -124,14 +137,17 @@ def msd_plots(runs, label, nr, c):
             ax=fig.add_subplot(nr,1,c)
             ax.plot(runs[i].step,runs[i].data,label = runs[i].Head[2])
             ax.set_ylabel(label)
+            if c==2:
+                ax.set_xlabel('Time [ps]')
             ax.locator_params(axis='x', tight=True, nbins=10)
             ax.ticklabel_format(axis='x', style = 'sci')
 
         if c==1:
-            plt.setp(ax.get_xticklabels(), visible=True)
+            plt.setp(ax.get_xticklabels(), visible=False)
                 
         #plt.figtext(0.5,0.95,'The sim is {}'.format(runs[i].descrip),ha='center')
-    fig.tight_layout()
+    #fig.tight_layout()
+    plt.savefig('../../../../../../images/IhDrad_80kdens.png', dpi=600)
     return
 
 def rdf_plots(runs):

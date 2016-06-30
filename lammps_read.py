@@ -431,7 +431,7 @@ def createDataframeFromDump(dumpfile, shell, info, tslen):
     timesteps = dataframe['A'].loc[timestep_startrow + 1]
     ts=timesteps.values
     ts = [ float(x) * tslen/1000 for x in ts]
-    print ts
+    
     # Create Series for TIMESTEPS
     rowsPerTimestep=timestep_startrow[1]-timestep_startrow[0]
     matrix = [ ([i] * rowsPerTimestep) for i in timesteps ]

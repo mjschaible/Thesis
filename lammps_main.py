@@ -29,22 +29,22 @@ def main():
             ftype=1
         else:
             ftype=0
-            
+        
         num_runs, run_thermo = lammps_read.log_read(filename)
         if run_thermo[0].descrip[2] is not None:
-            print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[3], run_thermo[0].descrip[4])
-            print 'The molecule velocity is {:.2f}'.format(run_thermo[0].descrip[5])
+            print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[4], run_thermo[0].descrip[5])
+            print 'The molecule velocity is {:.3f}'.format(run_thermo[0].descrip[6])
         else:
-            print 'No excited molecule specified', run_thermo[0].descrip[2]
+            print 'No excited molecule specified', run_thermo[0].descrip[3]
 
-        steplen = run_thermo[0].descrip[0]
-        run_info= run_thermo[0].descrip
+        steplen = run_thermo[0].descrip[1] # pull out timestep length [fs]
+        run_info= run_thermo[0].descrip # pull out entire simulation description
 
         filedens = filepath+'.dens'
-        run_dens = lammps_read.data_read(filedens, steplen)
+        run_dens = lammps_read.data_read(filedens, steplen, run_info)
 
         filemsd = filepath+'.msd'
-        run_msd = lammps_read.data_read(filemsd, steplen)
+        run_msd = lammps_read.data_read(filemsd, steplen, run_info)
 
         filerdf = filepath+'.rdf'
         run_rdf=lammps_read.rdf_read(filerdf, steplen)
@@ -54,31 +54,32 @@ def main():
             lammps_plot.log_plots(run_thermo, nrows, ftype)
 
             nrows=2
-            lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
-            lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
+            lammps_plot.msd_plots(run_msd, 'Avg All msd',nrows,1,ftype)
+            lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)',nrows,2,ftype)
 
         if ftype==1:
+            #----- -----
+            nrows=2
+            lammps_plot.log_plots(run_thermo, nrows, ftype)
+
+            #----- -----
             filecom = filepath+'.com'
             run_com = lammps_read.com_read(filecom, steplen)
             msd_com, shell = lammps_read.find_commsd(run_com, run_info)
 
             # create DataFrame and save as csv --> converted dump file
             filedump = filepath+'.dump'
-            dataframe, dumpeng=lammps_read.createDataframeFromDump(filedump, shell, run_info, steplen)
+            dataframe, dumpeng=lammps_read.createDataframeFromDump(filedump,shell,run_info,steplen)
             dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
             # comment lines 59 & 60 and use the function call line 63 instead if reading
             # from converted dump file
             #dataframe=createDataframeFromConvDump(sys.argv[1])        
 
-            #----- -----
             nrows=2
-            lammps_plot.log_plots(run_thermo, nrows, ftype)
-
-            nrows=2
-            lammps_plot.msd_plots(run_msd, 'All msd', nrows, 1)
+            lammps_plot.msd_plots(run_msd, 'Avg All msd', nrows, 1,ftype)
             #lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
-            lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',nrows,3)
-            lammps_plot.msd_plots(dumpeng, 'Shell Avg. KE',nrows,4)
+            lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',nrows,3,ftype)
+            lammps_plot.msd_plots(dumpeng, 'Shell Avg. KE',nrows,4,ftype)
             #    lammps_plot.rdf_plots(run_rdf, run_param)
             plt.show()
 

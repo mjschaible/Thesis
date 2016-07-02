@@ -24,8 +24,8 @@ class LogData (object):
 # Define a class for mean-squared-displacement(msd) and density files
 class runData (object):
 
-    def __init__(self,Head,step,data):
-        self.Head=Head
+    def __init__(self,descrip,step,data):
+        self.descrip=descrip
         self.step=step
         self.data=data
 
@@ -69,6 +69,14 @@ class prettyfloat(float):
         return "{:0.2f}".format(self)
     
 def log_read(filename):
+    fn = filename.split('/')[-1]
+    fn = fn.strip('.log')
+    fn = fn.replace("tip4p","")
+
+    nrad=filename.split('/')[-2]
+    if 'rad' in nrad:
+        nrad=nrad.strip('rad')
+        fn+=nrad
     counter = 1
     atomline = 0
 
@@ -180,6 +188,7 @@ def log_read(filename):
         etotarr=np.array(etot,dtype='float')
         pressarr=np.array(press,dtype='float')
 
+        descrip.append(fn)
         descrip.append(timesteps[n]) # timestep in femtoseconds
         descrip.append('pot={}'.format(potential)) 
         descrip.append(num_molec)
@@ -194,7 +203,10 @@ def log_read(filename):
 
     return num_runs, run_thermo
 
-def data_read(filename, ts):
+def data_read(filename, ts, descrip):
+    fn = filename.split('/')[-1]
+    fn = fn.strip('.msd')
+    fn = fn.strip('.dens')
     counter = 1    
     data_start=[]
     data_end=[]
@@ -219,7 +231,9 @@ def data_read(filename, ts):
 
     num_cur=len(data_start)
     data_vals=['']*num_cur
-    
+    if descrip[0] == fn:
+        print 'Yay'
+
     for n in range(num_cur):
         data_vals[n]=lines[data_start[n]:data_end[n]-1]
         step=[]
@@ -231,7 +245,7 @@ def data_read(filename, ts):
             data_val.append(vals[1]) # append data values (system MSD or density)
         steparr=np.array(step,dtype='float')
         dataarr=np.array(data_val,dtype='float')
-        run_data.append(runData(dataHead,steparr,dataarr))
+        run_data.append(runData(descrip+dataHead,steparr,dataarr))
 
     return run_data
 
@@ -347,15 +361,15 @@ def com_read(filename, ts):
 
 def find_commsd(run_com, descrip):
     # Read the PKA position from the log data file
-    xpka=descrip[4][0]
-    ypka=descrip[4][1]
-    zpka=descrip[4][2]
+    xpka=descrip[5][0]
+    ypka=descrip[5][1]
+    zpka=descrip[5][2]
     
     shell_thickness=5
     num_shells=3
-    shell_dat=[]
-    shell_dat.append(shell_thickness)
-    shell_dat.append(num_shells)
+
+    descrip.append(shell_thickness)
+    descrip.append(num_shells)
     # This array of arrays will contain the chunk ID for molecules within a shell extending from:
     # dist_from_pka > shell_thickness*n to dist_from_pka<=shell_thickness*(n+1)
     # for n=0 to num_shells
@@ -415,13 +429,16 @@ def find_commsd(run_com, descrip):
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
 
-    run_data.append(runData(shell_dat,steparr,msd))
-    #print run_data.Head, len(run_data.step), len(run_data.data[0])
+    run_data.append(runData(descrip,steparr,msd))
+    #print run_data.descrip, len(run_data.step), len(run_data.data[0])
     return run_data, shell
 
-def createDataframeFromDump(dumpfile, shell, info, tslen):
+def createDataframeFromDump(dumpfile,shell,descrip,tslen):
+    fn = dumpfile.split('/')[-1]
+    fn = fn.strip('.dump')
+
     # create dummy headers for 14 columns. 
-    # Chis is needed because rows are of unequal length.
+    # This is needed because rows are of unequal length.
     # Missing values will be assigned as NaN
     my_cols=string.ascii_uppercase[0:14]
     dataframe = pd.read_table(dumpfile, delimiter=' ', names=my_cols) #, engine='python')
@@ -465,7 +482,7 @@ def createDataframeFromDump(dumpfile, shell, info, tslen):
         gmean=ggroup['c_ke_atom'].mean()
         shellke.append(gmean.values)
 
-    run_data.append(runData(info,ts,shellke))    
+    run_data.append(runData(descrip,ts,shellke))  
     return dataframe, run_data
     
 def createDataframeFromConvDump(convDumpfile):    
@@ -544,10 +561,10 @@ def dump_read(filename, ts):
 
     return dump_data
 
-def find_dumpeng(dump, info):
-    xpka=info[4][0]
-    ypka=info[4][1]
-    zpka=info[4][2]
+def find_dumpeng(dump, descrip):
+    xpka=descrip[4][0]
+    ypka=descrip[4][1]
+    zpka=descrip[4][2]
     shell_thickness=5
     num_shells=3
     shell_dat=[]
@@ -594,5 +611,5 @@ def find_dumpeng(dump, info):
         for j in range(num_shells):
             keng[j].append(np.mean(ke[j]))
     run_data.append(runData(shell_dat,steparr,keng))
-    #print run_data[0].Head, len(run_data[0].step), run_data[0].data[0]
+    #print run_data[0].descrip, len(run_data[0].step), run_data[0].data[0]
     return run_data

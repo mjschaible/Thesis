@@ -124,9 +124,9 @@ def log_plots(runs, row, ft):
             #ax2[-1].set_ylim([kemin-5,kemax+5])
         if ft == 0:
             if kemax_t>kemax:
-                kemax=kemin_t
+                kemax=kemax_t
                 #kemin=kemin_t
-                ax2[-1].set_ylim([kemax-5,kemax+5])
+                ax2[-1].set_ylim([kemin-5,kemax+5])
             if pemin_t > pemin:
                 pemax = pemin_t
                 ax[-1].set_ylim([pemin-5,pemax+5])
@@ -155,7 +155,7 @@ def msd_plots(runs, lbl, nr, c, ft):
         if 'Shell Avg' in lbl:
             ax=fig.add_subplot(nr,2,c)
             for j in range(len(runs[i].data)):
-                #print len(runs[i].step), len(runs[i].data[j])
+                print len(runs[i].step), len(runs[i].data[j])
                 #print runs[i].descrip
                 leglbl = '{} to {} $\AA$'.format(runs[i].descrip[-1]*j,runs[i].descrip[-1]*(j+1))
                 ax.plot(runs[i].step,runs[i].data[j],label = leglbl)

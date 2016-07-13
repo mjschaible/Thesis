@@ -365,7 +365,7 @@ def find_commsd(run_com, descrip):
     ypka=descrip[5][1]
     zpka=descrip[5][2]
     
-    shell_thickness=5
+    shell_thickness=6
     num_shells=3
 
     descrip.append(shell_thickness)
@@ -394,7 +394,7 @@ def find_commsd(run_com, descrip):
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
     # print the molecule ID's that are within shell_thickness of the PKA
-    # print shell[0]
+    #print shell
 
     # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]
@@ -423,6 +423,7 @@ def find_commsd(run_com, descrip):
             tot_disp=xdisp+ydisp+zdisp
             # and add the total displacement to it's occording shell
             for j in range(num_shells):
+                #print shell[j]
                 if run_com[n].Nmolec[i] in shell[j]:
                     dist[j].append(tot_disp)
         # For each cell calculate the mean MSD of all molecules in that shell for this timestep

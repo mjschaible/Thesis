@@ -122,8 +122,13 @@ def read_outfile(fn):
         if 'ERROR' in line:
             continue
         elif 'filename' in line:
-            
+            #print line, line.split('_')[-1]
             filename.append(line.split('_')[-1])
+            #print filename[-1]
+        elif 'filname' in line:
+            ln=line.split()
+            ln=ln[-1].split('_')[-4]+'->'+line.split('_')[-3]
+            filename.append(ln)
             #print filename[-1]
         elif '->' in line and 'eV' in line:
             #print line
@@ -170,9 +175,10 @@ def read_outfile(fn):
         elif counter == len(lines):
             if len(flu_end) < len(flu_start):
                 flu_end.append(counter-1)
-
-        if len(isbv)<len(flu_start):
+        if len(isbv)==0:
             isbv.append('isbv1')
+        elif len(isbv)<len(flu_start):
+            isbv.append(isbv[-1])
 
     try:
         outgass
@@ -181,6 +187,7 @@ def read_outfile(fn):
 
     num_cur=len(flu_end)
     data_vals=['']*num_cur
+    #print num_cur, len(filename)
     for n in range(num_cur):
         data_vals[n]=flulines[flu_start[n]:flu_end[n]]
 
@@ -211,8 +218,8 @@ def read_outfile(fn):
             flu_qumax.append(qumax)
             tot_yld.append(tyld)
             tyld=0
-
-        descrip.append(filename[n])
+        
+        descrip.append(filename[0])
         descrip.append('{}->{}'.format(incion[n],target[n]))
         descrip.append(outgass)
         descrip.append(isbv[n])
@@ -506,9 +513,9 @@ def average(sput):
         if span % 2 ==0:
             span += 1
         for k in range(len(sput[j].Flux)):
-            smflux = useful_funcs.savitzky_golay(np.array(sput[j].Flux[k][1:]), span, 3)
+            smflux = useful_funcs.savitzky_golay(np.array(sput[j].Flux[k][1:]), span, 5)
             iyld.append(smflux)
-        smooth=useful_funcs.savitzky_golay(np.array(sput[j].totYld[1:]), span, 3)
+        smooth=useful_funcs.savitzky_golay(np.array(sput[j].totYld[1:]), span, 5)
         totYld=smooth.tolist()
         sput_data.append(LogData(sput[j].label,sput[j].energy,fs,iyld,totYld))
 
@@ -538,20 +545,22 @@ def comp_yield(out_yld, tar):
     he_iyld=[[0]*len(elemlist) for i in range(len(tar))]
     sw_yld=[]
     sw_iyld=[]
-    Elem_Ratio=[[0]*4 for i in range(len(tar))]
-    nE=[4, 5, 9, 12]
-    #print out_yld[i].label[4]
-    #print out_yld[i].Flux
     #print tar
-    for i in range(len(out_yld)):
-        for j in range(len(out_yld[i])):
+    for i in range(len(out_yld)): # cycle over files
+        for j in range(len(out_yld[i])): # cycle over ion/target combinations
+            for k in range(len(out_yld[i][j].label[4])): # cycle over elements in target
+                #print out_yld[i][j].label[4][k]
+                #print out_yld[i][j].Flux[j]
+                dd = len(out_yld[i][j].Flux[k])
+                #print np.average(out_yld[i][j].Flux[k][dd-10:])
+            
             for k in range(len(tar)):
                 ion = out_yld[i][j].label[1].split('->')[0]
                 target = out_yld[i][j].label[1].split('->')[1]
                 tyld=np.mean(out_yld[i][j].totYld[len(out_yld[i][j].totYld)-navg:])
                 #print ion, target, tar[k]
                 if ion == 'H' and target in tar[k]:
-                    print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
                         #print out_yld[i][j].label[4]
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
@@ -561,7 +570,7 @@ def comp_yield(out_yld, tar):
                             h_iyld[k][y]=yld*relcorr[y]*ifrac
 
                 elif ion == 'He' and target == tar[k]:
-                    print 'The {} yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
                         #print out_yld[i][j].label[4], elem
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
@@ -570,12 +579,28 @@ def comp_yield(out_yld, tar):
                             heyld[k][y]=yld
                             he_iyld[k][y]=yld*relcorr[y]*ifrac
 
+    for j in range(len(tar)): # cycle over targets
+        print tar[j]
+        print out_yld[i][j].label[4]
+        sw_avg=[]
+        for y, elem in enumerate(out_yld[i][j].label[4]):
+            match = [l for l, x in enumerate(elemlist) if x == elem]
+            if match:
+                #print out_yld[i][j].label[4][match[0]]
+                #print out_yld[i][j].label[4][k]
+                #print out_yld[i][j].Flux[j]
+                sw_avg.append('{:.4f}'.format(hyld[j][match[0]]+heyld[j][match[0]]))
+        print sw_avg
+
+    Elem_Ratio=[[0]*4 for i in range(len(tar))]
+#elemlist = ['H', 'He', 'C_g','Na','Mg','Al','Si','S','K','Ca','Ti','Mn','Fe','Ni','O']
+    nE=[4, 5, 9, 12]
     for k in range(len(tar)):
         sw_yld.append(map(add,hyld[k],heyld[k]))
         sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
         for l in range(len(nE)):
-            Elem_Ratio[k][l]=sw_iyld[k][nE[l]]/sw_iyld[k][4]
-        #print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k]))
+            Elem_Ratio[k][l]=sw_iyld[k][nE[l]]/sw_iyld[k][6]
+        print 'The {} total SW yield is {:.3f}'.format(tar[k], np.sum(sw_yld[k][2:]))
         #print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
     
     return Elem_Ratio

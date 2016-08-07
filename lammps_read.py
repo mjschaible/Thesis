@@ -108,15 +108,15 @@ def log_read(filename):
         if 'pair_style' in line:
             pot_full = line
             potential = column[1]
-        if 'timestep' in line and not 'reset' in line and not '$' in line:
+        if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
             timesteps.append(float(column[1]))
         if 'PPPM' in line:
             markers.append(counter)
         if 'Step Temp' in line:
             data_start.append(counter)
             HeadCol = column
-        if 'group gPKA molecule' in line:
-            mol_pka = column[3]        
+        if 'PKA molecule' in line:
+            mol_pka = column[4]        
         if 'PKA position' in line:
             pos_x = column[5]
             pos_y = column[6]
@@ -231,9 +231,7 @@ def data_read(filename, ts, descrip):
 
     num_cur=len(data_start)
     data_vals=['']*num_cur
-    if descrip[0] == fn:
-        print 'Yay'
-
+    
     for n in range(num_cur):
         data_vals[n]=lines[data_start[n]:data_end[n]-1]
         step=[]

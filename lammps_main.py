@@ -79,7 +79,7 @@ def main():
             lammps_plot.msd_plots(run_msd, 'Avg All msd', nrows, 1,ftype)
             #lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)', nrows, 2)
             lammps_plot.msd_plots(msd_com, 'Shell Avg. MSD',nrows,3,ftype)
-            #lammps_plot.msd_plots(dumpeng, 'Shell Avg. KE',nrows,4,ftype)
+            lammps_plot.msd_plots(dumpeng, 'Shell Avg. KE',nrows,4,ftype)
             #    lammps_plot.rdf_plots(run_rdf, run_param)
             plt.show()
 

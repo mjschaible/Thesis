@@ -14,7 +14,7 @@ def log_plots(runs, row, ft):
     # runs is the data object
     # Determine the filename for figure naming
     fn = runs[0].descrip[0]
-    print fn
+    #print fn
 
     kcalToeV = 0.0433641 # convert kcal/mole to eV/atom
 
@@ -155,10 +155,9 @@ def msd_plots(runs, lbl, nr, c, ft):
         if 'Shell Avg' in lbl:
             ax=fig.add_subplot(nr,2,c)
             for j in range(len(runs[i].data)):
-                print len(runs[i].step), len(runs[i].data[j])
                 #print runs[i].descrip
                 leglbl = '{} to {} $\AA$'.format(runs[i].descrip[-1]*j,runs[i].descrip[-1]*(j+1))
-                ax.plot(runs[i].step,runs[i].data[j],label = leglbl)
+                ax.semilogy(runs[i].step,runs[i].data[j],label = leglbl)
             if 'MSD' in lbl:
                 #print runs[i].descrip[0]
                 ax.set_ylabel('{} ($\AA^2$)'.format(lbl))

@@ -72,11 +72,13 @@ def log_read(filename):
     fn = filename.split('/')[-1]
     fn = fn.strip('.log')
     fn = fn.replace("tip4p","")
-
+    #print fn
     nrad=filename.split('/')[-2]
+    #print nrad
     if 'rad' in nrad:
         nrad=nrad.strip('rad')
         fn+=nrad
+    
     counter = 1
     atomline = 0
 
@@ -135,7 +137,9 @@ def log_read(filename):
                 vel_x=float(vel_x)
                 vel_y=float(vel_y)
                 vel_z=float(vel_z)
-                vel_pka = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z)
+                vel_pka = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z) # Ang/fs
+                KE_pka = (6.24e25)*0.5*(18/6.022e23)*vel_pka*vel_pka # eV
+                KE_pka = '{:.0f}'.format(KE_pka)
         if 'Loop time' in line:
             data_end.append(counter)
         if len(data_start) > len(timesteps):
@@ -149,7 +153,8 @@ def log_read(filename):
                 data_end.append(counter)
         
     num_cur=len(data_start)-num_runs
-
+    fn+='_'+KE_pka+'eV'
+    
     data_vals=['']*num_cur
 
     for n in range(num_cur):
@@ -195,7 +200,7 @@ def log_read(filename):
         if 'mol_pka' in locals():
             descrip.append(mol_pka)
             descrip.append(pos_pka)
-            descrip.append(float(vel_pka))
+            descrip.append(float(KE_pka))
         
         run_thermo.append(LogData(descrip,HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
 
@@ -363,19 +368,18 @@ def find_commsd(run_com, descrip):
     ypka=descrip[5][1]
     zpka=descrip[5][2]
     
-    shell_thickness=6
-    num_shells=3
-
+    shell_thickness=5
+    num_shells=4
     descrip.append(shell_thickness)
-    descrip.append(num_shells)
+    
     # This array of arrays will contain the chunk ID for molecules within a shell extending from:
     # dist_from_pka > shell_thickness*n to dist_from_pka<=shell_thickness*(n+1)
     # for n=0 to num_shells
     shell=[[] for y in range(num_shells)] 
 
-    # Define an array that will contain each timestep the COM data is printed out at and
-    # the MSD of each molecule with reference to it's initial position at that timestep
-    # divided into the shells defined above.
+    # Define an array that will contain each timestep the COM data is printed out
+    # at and the MSD of each molecule with reference to it's initial position at
+    # that timestep  divided into the shells defined above.
     #->Could add functionality to group all COMs with radius greater than shell_thickness*num_shells
     run_data = []
 
@@ -388,13 +392,16 @@ def find_commsd(run_com, descrip):
         # Calculate each molecule's distance from the PKA above
         dist_from_pka=np.sqrt((xpka-xcom_init)**2+(ypka-ycom_init)**2+(zpka-zcom_init)**2)
         for n in range(num_shells):
-            # and if that COM is in a given shell it's chunk/molecule ID is added to the appropriate shell array
+            # and if that COM is in a given shell it's chunk/molecule ID
+            # is added to the appropriate shell array
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
     # print the molecule ID's that are within shell_thickness of the PKA
-    #print shell
+    for n in range(num_shells):
+        print n, len(shell[n])
 
-    # Define an array to contain the AVERAGE MSD of all the molecules in a given shell for ALL timesteps
+    # Define an array to contain the AVERAGE MSD of all the molecules in a
+    # given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]
 
     # Define an array of ALL the timesteps
@@ -428,6 +435,8 @@ def find_commsd(run_com, descrip):
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
 
+    descrip.append(shell)
+    
     run_data.append(runData(descrip,steparr,msd))
     #print run_data.descrip, len(run_data.step), len(run_data.data[0])
     return run_data, shell

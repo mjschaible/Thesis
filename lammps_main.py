@@ -33,7 +33,7 @@ def main():
         num_runs, run_thermo = lammps_read.log_read(filename)
         if run_thermo[0].descrip[2] is not None:
             print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[4], run_thermo[0].descrip[5])
-            print 'The molecule velocity is {:.3f}'.format(run_thermo[0].descrip[6])
+            print 'The molecule energy is {:.1f}'.format(run_thermo[0].descrip[6])
         else:
             print 'No excited molecule specified', run_thermo[0].descrip[3]
 
@@ -70,7 +70,7 @@ def main():
             # create DataFrame and save as csv --> converted dump file
             filedump = filepath+'.dump'
             dataframe, dumpeng=lammps_read.createDataframeFromDump(filedump,shell,run_info,steplen)
-            dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
+            #dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
             # comment lines 59 & 60 and use the function call line 63 instead if reading
             # from converted dump file
             #dataframe=createDataframeFromConvDump(sys.argv[1])        

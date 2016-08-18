@@ -60,7 +60,7 @@ def main():
         if ftype==1:
             #----- -----
             nrows=2
-            lammps_plot.log_plots(run_thermo, nrows, ftype)
+            #lammps_plot.log_plots(run_thermo, nrows, ftype)
 
             #----- -----
             filecom = filepath+'.com'

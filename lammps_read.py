@@ -129,11 +129,11 @@ def log_read(filename):
                 pos_z=float(pos_z)
                 pos_pka=[pos_x, pos_y, pos_z]
                 pos_pka = map(prettyfloat,pos_pka)
-        if 'velocity gPKA' in line:
-            vel_x = column[3]
-            vel_y = column[4]
-            vel_z = column[5]
-            if vel_z != '${vz}':
+        if 'PKA velocity' in line:
+            vel_x = column[5]
+            vel_y = column[6]
+            vel_z = column[7]
+            if vel_z != '${yvel}':
                 vel_x=float(vel_x)
                 vel_y=float(vel_y)
                 vel_z=float(vel_z)
@@ -369,7 +369,7 @@ def find_commsd(run_com, descrip):
     zpka=descrip[5][2]
     
     shell_thickness=5
-    num_shells=4
+    num_shells=3
     descrip.append(shell_thickness)
     
     # This array of arrays will contain the chunk ID for molecules within a shell extending from:
@@ -399,7 +399,8 @@ def find_commsd(run_com, descrip):
     # print the molecule ID's that are within shell_thickness of the PKA
     for n in range(num_shells):
         print n, len(shell[n])
-
+        #print shell[n]
+    
     # Define an array to contain the AVERAGE MSD of all the molecules in a
     # given shell for ALL timesteps
     msd=[[0 for x in range(1)] for y in range(num_shells)]

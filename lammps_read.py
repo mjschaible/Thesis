@@ -82,9 +82,7 @@ def log_read(filename):
     counter = 1
     atomline = 0
 
-    mol_pka=0
-    pos_pka=0
-    vel_pka=0    
+    mol_pka=None
     
     data_start=[]
     data_end=[]
@@ -110,8 +108,10 @@ def log_read(filename):
         if 'pair_style' in line:
             pot_full = line
             potential = column[1]
-        if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
-            timesteps.append(float(column[1]))
+        #if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
+        #    timesteps.append(float(column[1]))
+        if ' tt ' in line:
+            timesteps.append(float(column[3]))
         if 'PPPM' in line:
             markers.append(counter)
         if 'Step Temp' in line:
@@ -153,7 +153,7 @@ def log_read(filename):
                 data_end.append(counter)
         
     num_cur=len(data_start)-num_runs
-    fn+='_'+KE_pka+'eV'
+    #fn+='_'+KE_pka+'eV'
     
     data_vals=['']*num_cur
 
@@ -197,8 +197,8 @@ def log_read(filename):
         descrip.append(timesteps[n]) # timestep in femtoseconds
         descrip.append('pot={}'.format(potential)) 
         descrip.append(num_molec)
-        if 'mol_pka' in locals():
-            descrip.append(mol_pka)
+        descrip.append(mol_pka)
+        if mol_pka is not None:
             descrip.append(pos_pka)
             descrip.append(float(KE_pka))
         

@@ -48,7 +48,6 @@ def createDataframeFromDump(dumpfile):
 def createDataframeFromConvDump(convDumpfile):    
     dataframe = pd.read_table(convDumpfile, delimiter=' ')
     return dataframe            
-
                 
 def main():                
     if len(sys.argv) < 2:

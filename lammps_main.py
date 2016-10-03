@@ -31,11 +31,11 @@ def main():
             ftype=0
         
         num_runs, run_thermo = lammps_read.log_read(filename)
-        if run_thermo[0].descrip[2] is not None:
+        if run_thermo[0].descrip[4] is not None:
             print 'The excited molecule is {}, the position is {}'.format(run_thermo[0].descrip[4], run_thermo[0].descrip[5])
             print 'The molecule energy is {:.1f}'.format(run_thermo[0].descrip[6])
         else:
-            print 'No excited molecule specified', run_thermo[0].descrip[3]
+            print 'No excited molecule specified'
 
         steplen = run_thermo[0].descrip[1] # pull out timestep length [fs]
         run_info= run_thermo[0].descrip # pull out entire simulation description
@@ -53,9 +53,9 @@ def main():
             nrows=2
             lammps_plot.log_plots(run_thermo, nrows, ftype)
 
-            nrows=2
-            lammps_plot.msd_plots(run_msd, 'Avg All msd',nrows,1,ftype)
-            lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)',nrows,2,ftype)
+            nrows=1
+            #lammps_plot.msd_plots(run_msd, 'Avg All msd',nrows,1,ftype)
+            lammps_plot.msd_plots(run_dens, 'Density (g/cm^3)',nrows,1,ftype)
 
         if ftype==1:
             #----- -----

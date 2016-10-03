@@ -179,7 +179,7 @@ def msd_plots(runs, lbl, nr, c, ft):
         else:
             ax=fig.add_subplot(nr,1,c)
             #print runs[i].descrip
-            ax.plot(runs[i].step,runs[i].data,label = runs[i].descrip[9])
+            ax.plot(runs[i].step,runs[i].data,label = runs[i].descrip[3])
             ax.set_ylabel(lbl)
             if c==2 and ft==0:
                 ax.set_xlabel('Time [ps]')

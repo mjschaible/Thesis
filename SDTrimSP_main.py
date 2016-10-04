@@ -51,11 +51,11 @@ incl_expt=0
 incl_srim=0
 
 # Specify how to compare the experiments (?)
-expt_comp=2 # 1= SOx, 2=Met
-shift=0
+expt_comp=0 # 1= SOx, 2=Met
+shift=-0.3
 
 # Variable to determine whether or not to plot yields vs. fluence for specified energies
-fyld=1
+fyld=0
 
 root = Tk()
 
@@ -67,9 +67,9 @@ if elem_comp==1:
 if elem_comp==2:
 #    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
     genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
-    tarClass = ["HEDs","Mars","CCs","OCsECs"]
+    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
     color=iter(['blue','red','green','grey','black','purple','orange'])
-    marker=iter(['o', 's', '*', 'v', '^', '<', '>'])
+    marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
     #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
     
 # ----- Import and plot experimental data -----
@@ -104,7 +104,7 @@ root.withdraw()
 path = askdirectory()
 dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
-for cdir in dirs:
+for cdir in genClass:
     ddirs=[d for d in os.listdir(cdir) if os.path.isdir(os.path.join(cdir, d))]
     for adir in ddirs:
         if cdir in genClass and adir in tarClass:
@@ -139,7 +139,7 @@ for cdir in dirs:
 
             # read in the output files which contain the sputtering yield vs. fluence data
             for filename in glob.glob(outfiles):
-                print 'The file is {0}'.format(filename)
+                #print 'The file is {0}'.format(filename)
                 out_yld.append(SDTrimSP_readSput.read_outfile(filename))
             #out_yld=sorted(log_yld, key=lambda x: x.label[0])
             rat=[]
@@ -190,13 +190,14 @@ for cdir in dirs:
                 # ---- Plot relative elemental yield comparisons ----
                 if elem_comp==2:
                     c=next(color)
+                    mk=next(marker)
                     tag='Met'
                     ER,sw_out,ion_out=SDTrimSP_readSput.comp_yield(out_yld,targets)
                     shift+=0.1
                     nf=1
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,genClass)
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
                     nf=2
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,genClass)
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,mk,adir)
                     nf=3
                     #ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class, targets)
                 elif elem_comp==1:
@@ -208,10 +209,10 @@ for cdir in dirs:
             # ---- Plot the species yields vs. fluence ----
             if fyld==1:
                 for out in out_yld:
-                    plot_out=SDTrimSP_plotSput.plot_vflu(out,tag)
+                    plot_out=SDTrimSP_plotSput.plot_vflu(sw_out,tag)
                     #ploty_sput=SDTrimSP_plotSput.plot_out3(out,met_class,tag)
                 if elem_comp==2:
-                    plot_sput=SDTrimSP_plotSput.plot_vflu(ion_out,met_class)
+                    plot_sput=SDTrimSP_plotSput.plot_vflu(ion_out,tag)
 
             #----- Plot total yields derived from the log files -----
             if log_yld:
@@ -221,7 +222,7 @@ for cdir in dirs:
                     nf=nr+1
                     lbl='bar'
                     #plot_log = SDTrimSP_plotSput.plot_log(neut_yld,nf,'-',c,lbl)
-                    plot_log = SDTrimSP_plotSput.plot_log(ion_yld,nf,'-',c,lbl,'//',met_class)
+                    #plot_log = SDTrimSP_plotSput.plot_log(ion_yld,nf,'-',c,lbl,'//',met_class)
                     #ploty_sput=SDTrimSP_plotSput.plot_out3(ion_yld,met_class,tag)
 
             plt.show()

@@ -28,9 +28,7 @@ def plot_sputExpt(log, tar, lbl=None):
                 fig = plt.figure(1)
                 #fig.suptitle("The simulation run is {0}".format(log[0].label[nf]))
                 ax1 = fig.add_subplot(2,2,j+1)
-                #print expt_tar
                 yerr=np.nanmax(log.totYld[i])*0.2
-                #print yerr
                 ax1.scatter(log.energy,log.totYld[i],
                              label=lauth,marker=mk,facecolor=mfc,color='k',s=75)
                 ax1.errorbar(log.energy,log.totYld[i],yerr=yerr,color='k')
@@ -70,12 +68,10 @@ def plot_log(log,nf,ls,c,lbl=None,h=None,mc=None):
     if lbl=='bar':
         color=iter(plt.cm.rainbow(np.linspace(0,1,len(log))))
         ind=np.arange(len(log[0].label[4]))
-        #print len(ind), len(log[0].Flux)
         width = float(1)/(len(log)+1)
         for i in log:
             l=i.label[0]
             c=next(color)
-            #print len(i.Flux), i.label[4]
             if len(i.Flux) > len(log[0].label[4]):
                 ax1.bar(ind+w*width, i.Flux[1:],width,color=c,label=l,log=1, hatch=h)
             else:
@@ -104,7 +100,6 @@ def plot_log(log,nf,ls,c,lbl=None,h=None,mc=None):
             for j in range(len(isbv_pos)):
                 match="isbv={}".format(isbv_pos[j])
                 if match==isbv:
-                    #print log[i].label[0], log[i].label[1]
                     e_sort[j].append(log[i].energy)
                     yld_sort[j].append(log[i].totYld)
 
@@ -231,6 +226,7 @@ def plot_vflu(sput, lbl=None):
             ax.set_xlabel('Fluence (x$10^{16}$)')
         elif ion == 'SW' and lbl=='Met':
             level=1
+            fig1=plt.figure()
             ax=fig1.add_subplot(111)
             ax.set_ylim(1e-6,2e-3)
             ax.set_ylabel('Secondary Ion Sputter Yield (ions/ion)')
@@ -287,15 +283,19 @@ def plot_vflu(sput, lbl=None):
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}_vsF.png'.format(ntar),dpi=600)
     return
 
-def plot_iavg(sput, nf, ct, shift, lbl=None): 
+def plot_iavg(sput, nf, ct, shift, mk, lbl=None): 
     fig1 = plt.figure(nf)
 
-    ni=0
-
+    if nf==1:
+        plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
+    elif nf==2:
+        plotElem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
     # --Calculate elemental averages and variances for each target--
-    elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
-    elem_iyld_var=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
+    #elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
+    elem_iyld=[[0]*len(plotElem) for i in range(len(sput))]
+    elem_iyld_var=[[0]*len(plotElem) for i in range(len(sput))]
     for n,i in enumerate(sput):
+        ni=0
         a=i.label[1].split('->')[0]
         if a =='H':
             level=1
@@ -311,50 +311,48 @@ def plot_iavg(sput, nf, ct, shift, lbl=None):
             level=1
             ax=fig1.add_subplot(111)
             ax.set_yscale('log')
-            ax.set_ylabel('SW Secondary Ion Sputter Yield (ions/ion)')
+            if nf==1:
+                ax.set_ylabel('SW Total Sputter Yield (atoms/ion)')
+            elif nf==2:
+                ax.set_ylabel('SW Secondary Ion Sputter Yield (ions/ion)')
             
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
-        #print len(sw_yld[k]), len(totiyld[k])
         for y,elem in enumerate(i.label[4]):
-            if not isinstance(i.Flux[y], (int,long)) and y>1:
-                #elem_yld= np.mean(sw_yld[k][y][dd[k]-navg:])
-                #tot_yld+=elem_yld
+            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
+                ni=plotElem.index(elem)
                 dd=len(i.Flux[y])
                 navg=10
-                elem_iyld[n][y]=np.mean(i.Flux[y][dd-navg:])
-                elem_iyld_var[n][y]=np.std(i.Flux[y][dd-navg:])
+                elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
+                elem_iyld_var[n][ni]=np.std(i.Flux[y][dd-navg:])
+                    
         tot_iyld=np.sum(elem_iyld)
 
     sw_iavg=np.zeros(len(elem_iyld[0]))
-
     myarray = np.asarray(elem_iyld)
-    #print myarray
     metclass_mean=np.mean(myarray, axis=0)
     metclass_std=np.std(myarray, axis=0)
     #for y, elem in enumerate(i.label[4]):
     #    print elem, metclass_mean[y], metclass_std[y]
     tot_iyld=np.sum(metclass_mean)
-    print  lbl, tot_iyld
     
-    #print len(i.label[4]), len(metclass_mean)
-    pos=np.arange(0+shift,len(metclass_mean)+shift, 1.0)
-    #print i.label[4][2:]
-    #print metclass_mean[2:]
-    ax.plot(pos[2:],metclass_mean[2:],c=ct,marker='o',label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
-    ax.errorbar(pos[2:],metclass_mean[2:],yerr=metclass_std[2:],linestyle='',c=ct)
+    pos=np.arange(shift,len(metclass_mean)+shift,1.0)
+    ax.plot(pos,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+    ax.errorbar(pos,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
     #labels = [item.get_text() for item in ax.get_xticklabels()]
     #labels = i.label[4]
-    ax.set_xticks(np.arange(min(pos)+2, max(pos)+1, 1.0))
-    ax.set_xticklabels(i.label[4][2:])
-    ax.set_xlim(min(pos)+1, max(pos)+2)
+    ax.set_xticks(np.arange(0,len(metclass_mean)+1,1.0))
+    ax.set_xticklabels(plotElem)
+    ax.set_xlim(min(pos)-1, max(pos)+1)
     plt.legend(loc=1,fontsize=12)
     #plt.autoscale(enable=True, axis='x', tight=True)
     if nf==1:
         ax.set_ylim(1e-5,2e-2)
         plt.savefig('/Users/spacebob/Work/Simulations/images/SWtYldComp.png',dpi=600)
+        plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWtYldComp.png',dpi=600)
     if nf==2:
-        ax.set_ylim(1e-6,2e-3)
+        ax.set_ylim(1e-5,1e-3)
         plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
+        plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
     
     '''    for k in range(len(isbv_pos)):
             isbv=i.label[3]

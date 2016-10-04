@@ -17,7 +17,7 @@ import SDTrimSP_plotSput
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['axes.titlesize'] = 'large'
 mpl.rcParams['axes.labelsize'] = 'large'
-mpl.rcParams['axes.labelpad'] = 2.5
+#mpl.rcParams['axes.labelpad'] = 2.5
 mpl.rcParams['xtick.labelsize']='medium'
 mpl.rcParams['ytick.labelsize']='large'
 mpl.rcParams['legend.handlelength']=2.5
@@ -43,15 +43,15 @@ cont = 1
 nr=1
 # Specify which type of target is being analyzed
 # 1 == simple oxides; 2 == meteorites
-elem_comp=1
+elem_comp=2
 
 # Specify whether or not to include experimental and SRIM results
 # 1 == yes; 0 == no
-incl_expt=1
-incl_srim=1
+incl_expt=0
+incl_srim=0
 
 # Specify how to compare the experiments (?)
-expt_comp=1
+expt_comp=2 # 1= SOx, 2=Met
 shift=0
 
 # Variable to determine whether or not to plot yields vs. fluence for specified energies
@@ -69,6 +69,7 @@ if elem_comp==2:
     genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
     tarClass = ["HEDs","Mars","CCs","OCsECs"]
     color=iter(['blue','red','green','grey','black','purple','orange'])
+    marker=iter(['o', 's', '*', 'v', '^', '<', '>'])
     #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
     
 # ----- Import and plot experimental data -----
@@ -138,7 +139,7 @@ for cdir in dirs:
 
             # read in the output files which contain the sputtering yield vs. fluence data
             for filename in glob.glob(outfiles):
-                #print 'The file is {0}'.format(filename)
+                print 'The file is {0}'.format(filename)
                 out_yld.append(SDTrimSP_readSput.read_outfile(filename))
             #out_yld=sorted(log_yld, key=lambda x: x.label[0])
             rat=[]
@@ -193,9 +194,9 @@ for cdir in dirs:
                     ER,sw_out,ion_out=SDTrimSP_readSput.comp_yield(out_yld,targets)
                     shift+=0.1
                     nf=1
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,met_class)
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,genClass)
                     nf=2
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,met_class)
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,genClass)
                     nf=3
                     #ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class, targets)
                 elif elem_comp==1:

@@ -557,12 +557,12 @@ def comp_yield(out_yld, tar):
     nE=[4, 5, 9, 12]
 
     for i in range(len(out_yld)): # cycle over files
+        print len(out_yld[i])
         for j in range(len(out_yld[i])): # cycle over ion/target combinations
-    
             ion = out_yld[i][j].label[1].split('->')[0]
             target = out_yld[i][j].label[1].split('->')[1]
             tyld=np.mean(out_yld[i][j].totYld[len(out_yld[i][j].totYld)-navg:])
-            #print ion, target, tar[k]
+            print ion, target
             dd.append(len(out_yld[i][j].totYld))
             
             for k in range(len(tar)):
@@ -578,7 +578,7 @@ def comp_yield(out_yld, tar):
                             h_iyld[k][y]=yld*relcorr[y]*ifrac
     
                 elif ion == 'He' and target == tar[k]:
-                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
                         #print out_yld[i][j].label[4], elem
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]

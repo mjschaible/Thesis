@@ -353,52 +353,7 @@ def plot_iavg(sput, nf, ct, shift, mk, lbl=None):
         ax.set_ylim(1e-5,1e-3)
         plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
         plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
-    
-    '''    for k in range(len(isbv_pos)):
-            isbv=i.label[3]
-            #print isbv
-            if isbv_pos[k]==isbv and plotly==1:
-                ax.loglog(i.fluence,i.totYld,lw=1,ls='-',label='Tot. yield',c='k')
-                if '65901' in descrip:
-                    ax2.loglog(i.fluence,i.totYld,lw=1,ls='-',label='Tot. yield',c='k')
-                for j in range(1,len(i.Flux)):
-                    c=next(c2)
-                    #print i.label[4][j]
-                    elem='{} yield'.format(i.label[4][j])
-                    if tag=='SOx':
-                        if j>0:
-                            ax.semilogx(i.fluence,i.Flux[j],lw=2,ls='--',label=elem,c=c)
-                    elif tag=='Met':
-                        #print elem
-                        if '65901' in descrip:
-                            ax2.loglog(i.fluence,i.Flux[j],lw=2,label=elem,c=c)
-                            tttar=descrip.replace('->', r'$\rightarrow$')
-                            ax2.set_title(r'{:.0f}eV {}'.format(i.energy[0],tttar))
-                        if 'Si' in elem or 'O' in elem:
-                            ax.loglog(i.fluence,i.Flux[j],lw=2,label=elem,c=c)
-
-                ax.set_xlabel('Fluence (x$10^{16}$)')
-                ax.set_xlim(i.fluence[0],i.fluence[-1])
-                ax.set_title(r'{:.0f}eV {}$\rightarrow${}'.format(i.energy[0],ion,ttar))
-                ax2.set_xlabel('Fluence (x$10^{16}$)')
-                ax2.set_xlim(i.fluence[0],i.fluence[-1])
-                ax2.set_ylim(1e-6,1)
-                if level ==1:    
-                    ax.set_ylabel('Sputter Yield (atoms/ion)')
-                    ax2.set_ylabel('Sputter Yield (atoms/ion)')
-                elif level==2:
-                    ax2.yaxis.set_visible(False)
-                    ax2.legend(bbox_to_anchor=(1,1), loc='best', fontsize=12)
-                    fig2.subplots_adjust(right=0.8)
-
-        ni+=1
-
-    if tag=='SOx':
-        handles, labels = plt.gca().get_legend_handles_labels()
-        plt.legend(handles, labels,loc=1,fontsize=12)#,bbox_to_anchor=(1.2,0.75)
-
-    
-    '''
+        
     return
     
 def plot_ER(ER, c, nf, lbl, targets):

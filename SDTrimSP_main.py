@@ -57,8 +57,6 @@ shift=-0.3
 # Variable to determine whether or not to plot yields vs. fluence for specified energies
 fyld=0
 
-root = Tk()
-
 if elem_comp==1:
     genClass = ["H_SiO2", "H_Al2O3", "He_SiO2", "He_Al2O3"]
     color=[iter(plt.cm.viridis(np.linspace(0,1,6))) for i in genClass]
@@ -100,6 +98,7 @@ if incl_srim==1:
         plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],genClass)
 
 # ---- Begin procedure to read in SDTrimSP output files ----
+root = Tk()
 root.withdraw() 
 path = askdirectory()
 dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]

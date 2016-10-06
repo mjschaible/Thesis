@@ -29,6 +29,12 @@ class runData (object):
         self.step=step
         self.data=data
 
+class datAvg (object):
+
+    def __init__(self,descrip,avg):
+        self.descrip=descrip
+        self.avg=avg
+        
 # Define a class for radial distribution function files
 class runRDF (object):
 
@@ -69,21 +75,9 @@ class prettyfloat(float):
         return "{:0.2f}".format(self)
     
 def log_read(filename):
-    fn = filename.split('/')[-1]
-    fn = fn.strip('.log')
-    fn = fn.replace("tip4p","")
-    #print fn
-    nrad=filename.split('/')[-2]
-    #print nrad
-    if 'rad' in nrad:
-        nrad=nrad.strip('rad')
-        fn+=nrad
-    
     counter = 1
     atomline = 0
-
     mol_pka=None
-    
     data_start=[]
     data_end=[]
     timesteps=[]
@@ -92,7 +86,9 @@ def log_read(filename):
     num_runs=0
     run_param = []
     run_thermo = []
-
+    run_num = filename.split('/')[-2]
+    run_num=run_num.replace("rad", "")
+    
     with open(filename,'r') as logfile:
         contents=logfile.read()
 
@@ -100,6 +96,12 @@ def log_read(filename):
 
     for line in lines:
         column = line.split()
+        if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
+            timesteps.append(float(column[1]))
+        if ' tt ' in line:
+            timesteps.append(float(column[3]))
+        if 'variable name' in line:
+            fn = column[3]
         if '# create groups ###' in line:
             atomline = counter
         if atomline > 0 and counter == atomline+2:
@@ -108,17 +110,13 @@ def log_read(filename):
         if 'pair_style' in line:
             pot_full = line
             potential = column[1]
-        #if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
-        #    timesteps.append(float(column[1]))
-        if ' tt ' in line:
-            timesteps.append(float(column[3]))
         if 'PPPM' in line:
             markers.append(counter)
         if 'Step Temp' in line:
             data_start.append(counter)
             HeadCol = column
-        if 'PKA molecule' in line:
-            mol_pka = column[4]        
+        if 'nrMol equal' in line:
+            mol_pka = column[3]
         if 'PKA position' in line:
             pos_x = column[5]
             pos_y = column[6]
@@ -153,7 +151,7 @@ def log_read(filename):
                 data_end.append(counter)
         
     num_cur=len(data_start)-num_runs
-    #fn+='_'+KE_pka+'eV'
+    fn+='_'+KE_pka+'eV'+run_num
     
     data_vals=['']*num_cur
 
@@ -201,7 +199,14 @@ def log_read(filename):
         if mol_pka is not None:
             descrip.append(pos_pka)
             descrip.append(float(KE_pka))
-        
+            if n==0:
+                print fn
+                print 'The excited molecule is {}, the position is {}'.format(mol_pka, pos_pka)
+                print 'The molecule energy is {} eV'.format(KE_pka)
+                print 'The molecule velocity is {},{},{}'.format(vel_x, vel_y, vel_z)
+        else:
+            print 'No excited molecule specified'        
+
         run_thermo.append(LogData(descrip,HeadCol,steparr,temparr,tempavearr,pearr,peavearr,kearr,keavearr,etotarr,pressarr))
 
     num_runs+=num_cur
@@ -213,10 +218,7 @@ def data_read(filename, ts, descrip):
     fn = fn.strip('.msd')
     fn = fn.strip('.dens')
     counter = 1    
-    data_start=[]
-    data_end=[]
-    run_data = []
-
+    data_end=0
     with open(filename,'r') as logfile:
         contents=logfile.read()
 
@@ -226,29 +228,26 @@ def data_read(filename, ts, descrip):
         column = line.split()
         if 'TimeStep' in line:
             dataHead = column
-            data_start.append(counter+1)
+            data_start=counter+1
         elif '#' in line:
             title = line
         
         counter+=1
-        if counter == len(lines) and len(data_end) < len(data_start):
-            data_end.append(counter)
+        if counter == len(lines) and data_end==0:
+            data_end=counter
 
-    num_cur=len(data_start)
-    data_vals=['']*num_cur
-    
-    for n in range(num_cur):
-        data_vals[n]=lines[data_start[n]:data_end[n]-1]
-        step=[]
-        data_val=[]
 
-        for m in range(len(data_vals[n])):
-            vals=data_vals[n][m].split()
-            step.append(float(vals[0])*float(ts)/1000) # append timesteps converted to picoseconds
-            data_val.append(vals[1]) # append data values (system MSD or density)
-        steparr=np.array(step,dtype='float')
-        dataarr=np.array(data_val,dtype='float')
-        run_data.append(runData(descrip+dataHead,steparr,dataarr))
+    data_vals=lines[data_start:data_end-1]
+    step=[]
+    data_val=[]
+
+    for m in range(len(data_vals)):
+        vals=data_vals[m].split()
+        step.append(float(vals[0])*float(ts)/1000) # append timesteps converted to picoseconds
+        data_val.append(vals[1]) # append data values (system MSD or density)
+    steparr=np.array(step,dtype='float')
+    dataarr=np.array(data_val,dtype='float')
+    run_data=runData(descrip+dataHead,steparr,dataarr)
 
     return run_data
 
@@ -308,12 +307,10 @@ def rdf_read(filename, ts):
     return rdf_data
 
 def com_read(filename, ts):
-    
     counter=1
     timestep=[]
     data_start=[]
     data_end=[]
-
     com_data=[]
 
     with open(filename,'r') as logfile:
@@ -328,7 +325,7 @@ def com_read(filename, ts):
         elif 'TimeStep' in line:
             Header2=column
         elif len(column)==2:
-            timestep.append(float(column[0])*float(ts)/1000) # Read in timestep and convert to picoseconds
+            timestep.append(float(column[0])*float(ts)/1000) # Read in timestep, convert to ps
             data_start.append(counter)
             if len(data_start)>1:
                 data_end.append(counter-1)
@@ -368,9 +365,8 @@ def find_commsd(run_com, descrip):
     ypka=descrip[5][1]
     zpka=descrip[5][2]
     
-    shell_thickness=5
-    num_shells=3
-    descrip.append(shell_thickness)
+    shell_thickness=2.0
+    num_shells=8
     
     # This array of arrays will contain the chunk ID for molecules within a shell extending from:
     # dist_from_pka > shell_thickness*n to dist_from_pka<=shell_thickness*(n+1)
@@ -381,7 +377,7 @@ def find_commsd(run_com, descrip):
     # at and the MSD of each molecule with reference to it's initial position at
     # that timestep  divided into the shells defined above.
     #->Could add functionality to group all COMs with radius greater than shell_thickness*num_shells
-    run_data = []
+    #run_data = []
 
     # Here I loop though all the chunk ID's and record their position at step=0 
     for i in range(len(run_com[0].Nmolec)):
@@ -396,9 +392,9 @@ def find_commsd(run_com, descrip):
             # is added to the appropriate shell array
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
-    # print the molecule ID's that are within shell_thickness of the PKA
-    for n in range(num_shells):
-        print n, len(shell[n])
+    # print the molecule ID's that are within -n*shell_thickness- of the PKA
+    #for n in range(num_shells):
+    #    print '{} molecules in shell {}ang from PKA'.format(len(shell[n]), n*shell_thickness)
         #print shell[n]
     
     # Define an array to contain the AVERAGE MSD of all the molecules in a
@@ -429,19 +425,31 @@ def find_commsd(run_com, descrip):
             tot_disp=xdisp+ydisp+zdisp
             # and add the total displacement to it's occording shell
             for j in range(num_shells):
-                #print shell[j]
                 if run_com[n].Nmolec[i] in shell[j]:
                     dist[j].append(tot_disp)
         # For each cell calculate the mean MSD of all molecules in that shell for this timestep
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
 
+    descrip.append(shell_thickness)
     descrip.append(shell)
     
-    run_data.append(runData(descrip,steparr,msd))
-    #print run_data.descrip, len(run_data.step), len(run_data.data[0])
-    return run_data, shell
+    run_data=runData(descrip,steparr,msd)
+    return run_data
 
+def msd_avgf(run):
+    # Function to average over the final 'ns' timesteps for an excitation
+    # Determines the average equilibrium displacement
+
+    steps= len(run.step)
+    nshell= len(run.data)
+    avgs=[]
+    for j, dat in enumerate(run.data):
+        avgs.append(np.mean(dat[steps-30:]))
+        
+    msd_avg=datAvg(run.descrip, avgs)
+    return msd_avg
+    
 def createDataframeFromDump(dumpfile,shell,descrip,tslen):
     fn = dumpfile.split('/')[-1]
     fn = fn.strip('.dump')
@@ -476,7 +484,6 @@ def createDataframeFromDump(dumpfile,shell,descrip,tslen):
     # Convert entire dataframe to numeric data type
     dataframe=dataframe.apply(pd.to_numeric)
 
-    run_data=[]
     shellke=[]
     for i in range(len(shell)):
         #print shell[i]
@@ -491,7 +498,7 @@ def createDataframeFromDump(dumpfile,shell,descrip,tslen):
         gmean=ggroup['c_ke_atom'].mean()
         shellke.append(gmean.values)
 
-    run_data.append(runData(descrip,ts,shellke))  
+    run_data=runData(descrip,ts,shellke)
     return dataframe, run_data
     
 def createDataframeFromConvDump(convDumpfile):    

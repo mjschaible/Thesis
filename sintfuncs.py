@@ -1,5 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 def fix_coeff(T, Fjkr, rg):
-    import numpy as np
     pi = np.pi
 
     Aij = np.zeros((5,3))
@@ -58,7 +60,6 @@ def fix_coeff(T, Fjkr, rg):
     return Ymod, Prat, Gmod, Rconjkr
 
 def plot_JKR(rg, T, Ymod, Prat, Rcon, fignum):
-    import matplotlib.pyplot as plt
     fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
     ax1.set_title('For {}um water ice grains'.format(rg*1e4))
 
@@ -79,80 +80,114 @@ def plot_JKR(rg, T, Ymod, Prat, Rcon, fignum):
     ax3.legend(loc = 3, prop={'size':14})
 
     plt.savefig('./Hertzian.png',dpi=600)
-
     return
 
-def plot_Diff(T, Dsurf, Dbulk, Dgb, Dvac, Deffsurf, Deffbulk, Deffgb, fignum):
-    import numpy as np
-    import matplotlib.pyplot as plt
+def plot_Diff(T, Dsurf, Dbulk, Dgb, Dvac, Deffsurf, Deffbulk, Deffgb, lineT, fignum):
     fig = plt.figure(fignum)
-
     ax2= fig.add_subplot(1,1,1)
-    #ax2.semilogy(T,DsurfIc, label = 'DsurfIc')
-    ax2.semilogy(1000/T,Dsurf, linewidth=2, color='c', linestyle='-.', label = 'Dtherm, surf')
-    ax2.semilogy(1000/T,Dbulk, linewidth=2, color='m', linestyle='-.', label = 'Dtherm, bulk')
-    ax2.semilogy(1000/T,Dgb, linewidth=2, linestyle='-.', label = 'Dtherm, gb')
-    ax2.semilogy(1000/T,Dvac, linewidth=2, linestyle='-.', label = 'Dtherm, vac')
+    lineT = '-'
+    if lineT == '-':
+        lbl1='Rad. surface'
+        lbl2='Rad. bulk'
+        lbl7='Rad. GB'
+        lbl3='Therm. surface'
+        lbl4='Therm, bulk'
+        lbl5='Therm, GB'
+#        lbl6='Therm, vac'
+    else:
+        lbl1=None
+        lbl2=None
+        lbl3=None
+        lbl4=None
+        lbl7=None
+        lbl5=None
+        lbl6=None
+    lw=3
+    ax2.plot([1000/60,1000/110],[Deffsurf,Deffsurf],label = lbl1,lw=lw, linestyle = lineT, color='r')
+    ax2.plot(1000/T,Deffbulk, linestyle = lineT, label = lbl2,lw=lw, color='g')
+    ax2.semilogy([12.5,12.5],[1e-30,1e-22], color='k', linewidth=1, linestyle = '--')
+    ax2.semilogy(1000/T,Deffgb, linestyle=lineT, label =lbl7,lw=lw, color='c')
+#    ax2.semilogy(T,DsurfIc, label = 'DsurfIc')
+#    
 
-    ax2.semilogy([1000/60,1000/110],[Deffsurf,Deffsurf],label = 'Drad, surf', linestyle='-', color='r')
-    ax2.semilogy(1000/T,Deffbulk, linestyle='-', label = 'Drad, bulk', color='k')
-#    ax2.semilogy(1000/T,Deffgb, linestyle='-', label = 'Drad, gb', color='g')
-
-    ax2.set_xlabel('1000/T,  [1/K]', fontsize = 16)
-    ax2.set_ylabel('Diffusion Coeff. [cm^2/s]', fontsize = 16)
-    ax2.set_xlim([1000/70, 1000/105])
+    ax2.set_xlabel('1000/T,  [$1/K$]', fontsize = 16)
+    ax2.set_ylabel('Diffusion Coeff. [$cm^2/s$]', fontsize = 16)
+    ax2.set_xlim([1000/70, 1000/110])
+#    ax2.text(14.7, 2.2e-25, r'(a)', fontsize=20,color='k')
+#    if lineT == '-':
+    ax2.semilogy(1000/T,Dsurf,lw=lw, linestyle=':', marker='v', color='r',label = lbl3)
+    ax2.semilogy(1000/T,Dbulk,lw=lw, linestyle=':', marker='o', color='g',label = lbl4)
+    ax2.semilogy(1000/T,Dgb,lw=lw, linestyle=':', marker='>', color='c',label = lbl5)
+#        ax2.semilogy(1000/T,Dvac, linewidth=2, linestyle='-.', marker='x',color='m',label = lbl6)
+    ax2.set_ylim([Deffsurf/50,Deffsurf*2])
     ax2.legend(loc = 2, prop={'size':14})
-
+        
     ax3= ax2.twiny()
     ax2Ticks = ax2.get_xticks()
-    ax3Ticks = ax2Ticks
  
-    ax3.set_xticks(ax3Ticks)
+    ax3.set_xticks(ax2Ticks)
     ax3.set_xbound(ax2.get_xbound())
-    upperx = 1000/ax3Ticks
+    upperx = 1000/ax2Ticks
     upx = np.around(upperx)
     ax3.set_xticklabels(upx)
     ax3.set_xlim(ax3.get_xlim()[::-1])
-    ax3.set_xlabel('Temperature, [K]', fontsize = 16)
+    ax3.set_xlabel('Temperature, [$K$]', fontsize = 16)
 
-    if fignum == 2:
-        limit = 'min'
-    else:
-        limit = 'max'
-    plt.savefig('./DiffusionRates{}.png'.format(limit),dpi=600)
-    
+    plt.savefig('./DiffusionRates.png',dpi=600)#.format(limit)
+
     return
 
-def plot_VSR(rg,Rcon_var,dVdtrad_tot,dVdtradsurf,dVdtradlat,dVdtradsput,dVdtradgb,dVdtradbound,dVdtraddloc, fignum, lineT):
+def plot_VSR(Rcon,dVdtrad_tot,dVdtradsurf,dVdtradlat,dVdtradsput,dVdtradgb,dVdtradbound,fignum,lineT,colnum, Rmin,Rmax):
     import numpy as np
     import matplotlib.pyplot as plt
+    stoyear = 3.16888e-8*1e-6 # convert second to Myr
     fig = plt.figure(fignum)
-    ax2 = fig.add_subplot(1,1,1)
-
-#    ax2.semilogy([Rmin2/rg,Rmin2/rg],[1e-36,1e-26], color='k', linewidth=2, linestyle = '-.')
-#    ax2.semilogy([Rmax2/rg,Rmax2/rg],[1e-36,1e-26], color='k', linewidth=2, linestyle = '-.')
-
-    ax2.semilogy(Rcon_var/rg,dVdtrad_tot, linewidth=2,linestyle=lineT, color='b', label = 'Rad. Tot')
-    
-    ax2.semilogy(Rcon_var/rg,dVdtradsurf, linestyle = lineT, label = 'Rad. surface')
-    ax2.semilogy(Rcon_var/rg,dVdtradlat, linestyle = lineT, label = 'Rad. lattice')
-    ax2.semilogy(Rcon_var/rg,dVdtradsput, linestyle = lineT, label = 'Rad. sputter')
-    ax2.semilogy(Rcon_var/rg,dVdtradgb, linestyle = lineT, label = 'Rad. boundary ')
-#    ax2.semilogy(Rcon_var/rg,dVdtradbound, linestyle = lineT, label = 'Rad. lat/bound')
-    ax2.semilogy(Rcon_var/rg,dVdtraddloc, linestyle = lineT, label = 'Rad. dislocation')
-    
-    box = ax2.get_position()
-    ax2.set_xlabel('Contact/Grain radius (Rcon/rg)', fontsize = 16)
-    ax2.set_ylabel('Volumetric Sintering Rate [cm^3/s]', fontsize = 16)
-    ax2.set_xlim([0,0.055])
-    ax2.set_ylim([1e-33,1e-26])
-    ax2.legend(loc = 1, prop={'size':12})
-    
-    if fignum == 4:
-        limit = 'min'
+    ax2 = fig.add_subplot(1,1,colnum)
+    if colnum==1 and lineT == '-':
+        lbl1='Rad. surface'
+        lbl2='Rad. bulk'
+        lbl3='Rad. sputter'
+        lbl4='Rad. Tot'
+        lbl5='Rad. GB'
     else:
-        limit = 'max'
+        lbl1=None
+        lbl2=None
+        lbl3=None
+        lbl4=None
+        lbl5=None
+    lw=2
 
-    plt.savefig('./Rad_Sint_Rates_{}.png'.format(limit),dpi=600)
+    ax2.semilogy(Rcon,dVdtrad_tot*stoyear,lw=4,ls=lineT, c='k', label = lbl4)
+    
+    ax2.semilogy(Rcon,dVdtradsurf*stoyear,lw=lw,ls=lineT, c='r',label = lbl1)#, marker='v')
+    ax2.semilogy(Rcon,dVdtradlat*stoyear,lw=lw,ls=lineT, c='g',label = lbl2)#, marker='o')
+    ax2.semilogy(Rcon,dVdtradsput*stoyear,lw=lw,ls=lineT, c='b',label = lbl3)#, marker='x')
+    ax2.semilogy(Rcon,dVdtradgb*stoyear,lw=lw,ls=lineT, c='c',label = lbl5)
+#    ax2.semilogy(Rcon,dVdtradbound*stoyear,linestyle = lineT,label = 'Rad. lat/bound')
+#    ax2.semilogy(Rcon,dVdtraddloc*stoyear,linestyle = lineT,label = 'Rad. dislocation')
+    
+    ax2.set_xlim([0,0.04])
+#    ax2.xlabel('Contact/Grain radius (Rcon/rg)', fontsize = 16)
+    ax2.semilogy([Rmin,Rmin],[1e-3,1e6], color='k', linewidth=1, linestyle = '--')
+    ax2.text(0.4*Rmin, 2e4, r'$R_{con,min}$', rotation='vertical', fontsize=20,color='k')
+    ax2.semilogy([Rmax,Rmax],[1e-3,1e6], color='k', linewidth=1, linestyle = '--')
+    plt.xticks(np.arange(0,0.041,0.01))
+
+    if colnum==1 and lineT == '-':
+        ax2.set_title('$r_g = 5 \mu m$', fontsize = 16, y=1.03)
+        ax2.set_ylabel('Sintering Timescale $(\\tau_{sint})$ [Myr]', fontsize = 16)
+        plt.suptitle('Contact/Grain radius ($R_{con}/r_g$)', fontsize = 16, y=.05)
+        box = ax2.get_position()
+        ax2.legend(loc = 4, prop={'size':12})
+        ax2.set_ylim([1e-2,1e5])
+        ax2.text(0.9*Rmax, 2e4, r'$R_{con,max}$', rotation='vertical', fontsize=20,color='k')
+#        plt.text(-0.015, 2e5, r'(b)', fontsize=20,color='k')
+    if colnum==2 and lineT == '-':
+        ax2.set_title('$r_g = 25 \mu m$', fontsize = 16, y=1.03)
+        plt.setp(ax2.get_yticklabels(), visible=False)
+        ax2.set_ylim([1e-2,1e5])
+        ax2.text(1.02*Rmax, 0.2, r'$R_{con,max}$', rotation='vertical', fontsize=20,color='k')
+
+    plt.savefig('./Rad_Sint_Rates.png',dpi=600) #.format(limit)
 
     return

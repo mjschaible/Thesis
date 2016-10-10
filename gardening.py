@@ -1,10 +1,18 @@
 '''Program to calculate the gardening rates on the Saturnian satellites''' 
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-matplotlib.rcParams.update({'font.size': 16})
+import itertools
+import matplotlib as mpl
+
+#mpl.use("TkAgg")
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['axes.titlesize'] = 'large'
+mpl.rcParams['axes.labelsize'] = 'large'
+mpl.rcParams['axes.labelpad'] = 2.5
+mpl.rcParams['xtick.labelsize']='large'
+mpl.rcParams['ytick.labelsize']='large'
+mpl.rcParams['legend.handlelength']=2.5
 
 def find_nearest(A,B):
     index = (np.abs(A-B)).argmin()
@@ -12,16 +20,16 @@ def find_nearest(A,B):
 
 # Uniform parameters
 vinf = 9.5E5 # cm/s, interplanetary dust velocity
-phi = 0.6 # approximate regolith porosity
+phi = 0.5 # approximate regolith porosity
 rho_reg = 0.934*(1-phi) # g/cm^3
 stoyear = 3.16888e-8 # year/s, multiply seconds by this to get years
 t0 = 1.7E5 # years, mixing timescale
 
 # Saturn and orbital radii
 rs = 6.03E9 # cm
-rM = 3.2*rs
-rT = 4.4*rs
-rD = 6.6*rs
+rM = 3.08*rs
+rT = 4.89*rs
+rD = 6.26*rs
 #rEu
 #rGa
 
@@ -51,56 +59,78 @@ sigma_Sat_T = 230E-15 #g/cm^2/s
 sigma_Sat_D = 27E-15 #g/cm^2/s
 
 # Define the time scale
-treg = np.logspace(3, 8, base=10, num=100) # years, regolith age
+treg = np.logspace(0.1, 9, base=10, num=100) # years, regolith age
 
-bodies = ['Mimas', 'Tethys', 'Dione']
+bodies = [ 'Mimas', 'Tethys', 'Dione']
+color=iter(plt.cm.brg(np.linspace(0,1,len(bodies))))
+
+Body=0
 for body in bodies:
     if body == 'Mimas':
         rb = rM
         vesc = vescM
-        sigma_Sat = sigma_Sat_M
+        fsigma_Sat = sigma_Sat_M
         Yidp = YidpM
         Yering = YeringM
     if body == 'Tethys':
         rb = rT
         vesc = vescT
-        sigma_Sat = sigma_Sat_M
+        sigma_Sat = sigma_Sat_T
         Yidp = YidpT
-        Yering = YeringM
+        Yering = YeringT
     if body == 'Dione':
         rb = rD
         vesc = vescD
-        sigma_Sat = sigma_Sat_M
+        sigma_Sat = sigma_Sat_D
         Yidp = YidpD
-        Yering = YeringM
+        Yering = YeringD
     sigma_inf = sigma_inf_Sat
 
     fg = 0.5*np.sqrt(1 + (vesc*vesc)/(vinf*vinf))*(np.sqrt(1 + (vesc*vesc)/(vinf*vinf))+np.sqrt(1 + (vesc*vesc)/(vinf*vinf) - (rs*rs)/(rb*rb)*(1 + (vesc*vesc)/(vinf*vinf))))  # Gravitational focussing factor
+
 #    sigma_ej = fg*sigma_inf*Y0*(rb/(1.8*rs))**(-0.8) # g/cm^2/s, Cuzzi and Estrada ejecta flux 
     sigma_ej_idp = fg*sigma_inf*Yidp
     sigma_ej_ering = sigma_Sat*Yering
+#    sigma_ej = sigma_Sat + sigma_ej_idp #
 
-    sigma_ej = sigma_ej_idp# + sigma_ej_ering
+#    g_Er = sigma_ej_ering/rho_reg
+    g_Er = sigma_Sat/rho_reg
+    g_IDP = sigma_ej_idp/rho_reg
+#    g0 = sigma_ej/rho_reg # cm/s, regolith growth rate
+    
+    h_Er=(g_Er/stoyear)*treg#*(1+treg/t0)**(-0.55)
+    h_IDP=(g_IDP/stoyear)*treg*(1+treg/t0)**(-0.55)
+    h_tot=h_Er+h_IDP
+#    h_t = (g0/stoyear)*treg*(1+treg/t0)**(-0.55) # cm
 
-    g0 = sigma_ej/rho_reg # cm/s, regolith growth rate
+    reg_dep = 1 # cm
+    i_Er = find_nearest(h_Er, reg_dep)
+    i_IDP = find_nearest(h_IDP, reg_dep)
+#    index = find_nearest(h_t, reg_dep)
+    t_Er = treg[i_Er]
+    t_IDP = treg[i_IDP]
+#    tovr = treg[index]
 
-    h_t = (g0/stoyear)*treg*(1+treg/t0)**(-0.55) # cm
-
-    index = find_nearest(h_t, 1)
-    tovr = treg[index]
-
-    print 'The idp flux at {} is {:.2e} g/cm^2/s'.format(body, sigma_ej_idp/Yidp)
-    print 'The regolith growth rate is {:.2e} um/year'.format(g0*1E4/stoyear)
-    print 'The overturn timescale at 1cm is {:.2f} Myr'.format(tovr/1E6)
+    print '-------------------------------------------'
+    print 'The IDP flux at {} is {:.2e} g/cm^2/s'.format(body, sigma_ej_idp/Yidp)
+    print 'The IDP overturn timescale at 1cm is {:.4f} Myr'.format(t_IDP/1E6)
+#    print 'The IDP overturn rate is {:.2e} um/year'.format(g_IDP*1E4/stoyear)
+    print 'The E-ring growth rate is {:.2e} um/year'.format(g_Er*1E4/stoyear)
+    print 'The E-ring growth timescale at 1cm is {:.4f} Myr'.format(t_Er/1E6)
+#    print 'The renewal timescale at 1cm is {:.4f} Myr'.format(tovr/1E6)
     fig = plt.figure(1)
     ax2 = fig.add_subplot(1,1,1)
-    ax2.set_title('Gardening depths for the saturnian icy moons')
-    ax2.loglog(treg, h_t, linewidth=2, label = body)
+    ax2.set_title('Gardening and growth rates for the icy Saturnian moons')
+#    ax2.loglog(treg, h_t, linewidth=2, label = body)
+    c=next(color)
+    ax2.loglog(h_IDP, treg, linewidth=2, ls=':', c=c)
+    ax2.loglog(h_Er, treg, linewidth=2, ls='--', c=c)
+    ax2.loglog(h_tot, treg, linewidth=2, ls='-',label = body, c=c)
     box = ax2.get_position()
-    ax2.set_xlabel('Time [years]', fontsize = 16)
-    ax2.set_ylabel('Depth [cm]', fontsize = 16)
-    ax2.legend(loc = 1, prop={'size':12})
-
+    ax2.set_ylabel('Time [Myr]', fontsize = 16)
+    ax2.set_xlabel('Depth [cm]', fontsize = 16)
+    ax2.legend(loc = 2, prop={'size':18})
+    Body+=1
 plt.savefig('./Gardening_depths.png',dpi=600)
 plt.show()
 

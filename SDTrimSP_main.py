@@ -1,226 +1,269 @@
 import numpy as np
+import matplotlib as mpl
+mpl.use("TkAgg")
 import matplotlib.pyplot as plt
+plt.interactive(True)
 import glob
-import re
-import csv
+import itertools
+import os.path
+
 from Tkinter import Tk
 from tkFileDialog import askdirectory
 from tkFileDialog import askopenfilename
 
-from SDTrimSP_readSput import read_sputfile
-from SDTrimSP_readSput import movingaverage
-from SDTrimSP_readSput import read_logfile
-from SDTrimSP_readSput import read_exptfile
-from SDTrimSP_plotSput import plot_sputFile
-from SDTrimSP_plotSput import plot_sputYld
-from SDTrimSP_plotSput import plot_sputExpt
+import SDTrimSP_readSput
+import SDTrimSP_plotSput
 
-class LogData (object):
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['axes.titlesize'] = 'large'
+mpl.rcParams['axes.labelsize'] = 'large'
+#mpl.rcParams['axes.labelpad'] = 2.5
+mpl.rcParams['xtick.labelsize']='medium'
+mpl.rcParams['ytick.labelsize']='large'
+mpl.rcParams['legend.handlelength']=2.5
 
-    def __init__(self, simName, energ, Flux1, Flux2, Flux3, totYld):
-        self.simName=simName
-        self.energ=energ
-        self.Flux1=Flux1
-        self.Flux2=Flux2
-        self.Flux3=Flux3
-        self.totYld=totYld
+def find_between( s, first, last=None ):
+    try:
+        start = s.index( first ) + len( first )
+        return s[start:]
+    except ValueError:
+        return ""
 
-class SputEqData (object):
-
-    def __init__(self, simNameeq, energeq, Flux1eq, Flux2eq, Flux3eq):
-        self.simNameeq=simNameeq
-        self.energeq=energeq
-        self.Flux1eq=Flux1eq
-        self.Flux2eq=Flux2eq
-        self.Flux3eq=Flux3eq
-
-class SputData (object):
-
-    def __init__(self,species,fsteps,Flu1,Flu2,Flu3, totYld):
-        self.species=species
-        self.fsteps=fsteps
-        self.Flu1=Flu1
-        self.Flu2=Flu2
-        self.Flu3=Flu3
-        self.totYld=totYld
-
+def find_name(yld_label, color): 
+    for i in range(len(ion_target_pairs)):
+        if ion_target_pairs[i] in yld_label:
+            nf = i
+            c=next(color[i])
+            return nf, c
+        else:
+            return None
+    
 # ------------ Begin main program ----------
 cont = 1
-num_runs=0
-runs=[]
-numFlu=2
+nr=1
+# Specify which type of target is being analyzed
+# 1 == simple oxides; 2 == meteorites
+elem_comp=2
 
-# ----- Define a default array of simulation energies -----
-defEng = np.linspace(100, 10000, num=100)
-np.savetxt(
-    'output.dat',
-    defEng,
-    fmt='%.0f',
-    delimiter=',',
-    newline='\n',
-    header='energies')
-# These variables take the class type
-SSyld=[]
-LogYld=[]
-EqYld=[]
+# Specify whether or not to include experimental and SRIM results
+# 1 == yes; 0 == no
+incl_expt=0
+incl_srim=0
 
+# Specify how to compare the experiments (?)
+expt_comp=0 # 1= SOx, 2=Met
+shift=-0.3
 
-while cont != 0:
-#    name = raw_input('Enter filename: ')
-#    filename.append(name)
+# Variable to determine whether or not to plot yields vs. fluence for specified energies
+fyld=0
 
-    simCount = 0
+if elem_comp==1:
+    genClass = ["H_SiO2", "H_Al2O3", "He_SiO2", "He_Al2O3"]
+    color=[iter(plt.cm.viridis(np.linspace(0,1,6))) for i in genClass]
+    tarClass = [ "SBEO1eV_nodiff", "SBEO2eV_nodiff", "SBEO3eV_nodiff"]
+    marker=[iter(['v', '^', '<', '>']) for i in genClass]
+if elem_comp==2:
+#    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
+    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
+    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
+    color=iter(['blue','red','green','grey','black','purple','orange'])
+    marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
+    #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
+    
+# ----- Import and plot experimental data -----
+if incl_expt==1:
+    #print "Please identify the experimental data file."
+    # show an "Open" dialog box and return the path to the selected file
+    #root.withdraw() 
+    #efn = askopenfilename()
+    efn='ExpData.csv'
+    expt_yld=SDTrimSP_readSput.read_exptfile(efn)
+    ion_target_pairs=list(set(expt_yld.label[0]))
+    target= list(set(expt_yld.label[2]))
+    plot_expt = SDTrimSP_plotSput.plot_sputExpt(expt_yld, genClass)
 
-    if num_runs==-1:
-        print "Please identify the experimental data file."
-        # show an "Open" dialog box and return the path to the selected file
-        Tk().withdraw() 
-        filename = askopenfilename()
+# ----- Import and plot SRIM data -----
+if incl_srim==1:
+    srim_yld=[]
+    srimfn=[]
+    srimfiles = "./SRIM/*.srim"
+    for filename in glob.glob(srimfiles):
+        if 'Thiel' not in filename:
+            srimfn.append(filename)
+            #print filename
+            srim_yld.append(SDTrimSP_readSput.read_exptfile(filename))
+            met_class='srim'
+    #----- Plot total yields derived from SRIM simulations ----
+    for i in range(len(srim_yld)):
+        plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],genClass)
 
-        exptName, exptEng, exptFlux_HeSiO2 = read_exptfile(filename)
-        b = plot_sputExpt(exptName, exptEng, exptFlux_HeSiO2, simCount)
-        simCount +=1
-    else:
-        Tk().withdraw() 
-        path = askdirectory() 
-#        path = './simple/HeSiO2'
-        scanfiles = path+"/*.dat"                 
-        print scanfiles
-        # Define log file arrays
-        simName=[]
-        energies = []
-        Flux1 = []
-        Flux2 = []
-        Flux3 = []
-        totYld = []
-        
-        #Define sputter data file arrays
-        species=[]
-        fsteps=[]
-        SY1=[]
-        SY2=[]
-        SY3=[]
+# ---- Begin procedure to read in SDTrimSP output files ----
+root = Tk()
+root.withdraw() 
+path = askdirectory()
+dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
-        energeq = []
-        Flux1eq = []
-        Flux2eq = []
-        Flux3eq = [] 
-        
-        e_sort=[None]*len(defEng)
-        yld_sort=[None]*len(defEng)
+for cdir in genClass:
+    ddirs=[d for d in os.listdir(cdir) if os.path.isdir(os.path.join(cdir, d))]
+    for adir in ddirs:
+        if cdir in genClass and adir in tarClass:
+            #print cdir, adir
+            loglist=[]
+            log_yld=[]
+            out_yld=[]
+            ER=[]
+            sput_yld=[]
+            trfile=[]
+            n_eng=0
 
-# First read all log data files to get full simulation description
-# Later can read in sputter.dat files and arrange according to energy
-        for filename in glob.glob(scanfiles):
-        #    if os.path.isfile(fn):
-            # Read the log file
-            if filename.find('E0') == -1:
-#                print 'The file is {0}'.format(filename)
-                sN, fluence, energy, elemName, sputteredF = read_logfile(filename)
+            logfiles = path+'/'+cdir+'/'+adir+"/*.log"
+            outfiles = path+'/'+cdir+'/'+adir+"/*.out"
+            datfiles = path+'/'+cdir+'/'+adir+"/*.dat"
+            path_name=find_between(path, 'data')
+            #print path_name
 
-                simName.append(sN)
-                energies.append(float(energy[0]))
-                Flux1.append(float(sputteredF[0])/float(fluence))
-                Flux2.append(float(sputteredF[1])/float(fluence))
-                Flux3.append(float(sputteredF[2])/float(fluence))
-                yldTot=0
-                for i in range(len(sputteredF)):
-                    yldTot+=sputteredF[i]
-                totYld.append(float(yldTot)/float(fluence))
-            
-# Read in sputter.dat files AFTER log files
-        for filename in glob.glob(scanfiles):
-        #    if os.path.isfile(fn):
-            #Read the sputter data file
-            if 'E0_33' in filename:
-#                print 'The file is {0}'.format(filename)
-                regex = re.compile(r'\d')
-                numbers = [int(s) for s in regex.findall(filename)]
-                energy = ''.join(map(str,numbers[5:(len(numbers)-1)]))
+            # first read log data files to get full simulation description
+            for filename in glob.glob(logfiles):
+                #print 'The file is {0}'.format(filename)
+                loglist.append(filename)
+                log_yld.append(SDTrimSP_readSput.read_logfile(filename))
+                n_eng+=1
+            log_yld=sorted(log_yld, key=lambda x: x.label[0])#, reverse=True)
+            tar=[i.label[0] for i in log_yld]
+            targets=list(set([i.label[0].split('->')[1] for i in log_yld]))
 
-                numEng = len(energies)
-#                print numEng, energies, energy
-                
-                species, fsteps, SY1, SY2, SY3 = read_sputfile(filename)
+            # Print the list of targets used in simulations for the current directory
+            # List is taken from the *.log data files
+            #print targets
 
-                specarr=np.array(species,dtype='string')
-                fstepsarr=np.array(fsteps,dtype='float')
-                specFlu1arr=np.array(SY1,dtype='float')
-                specFlu2arr=np.array(SY2,dtype='float')
-                specFlu3arr=np.array(SY3,dtype='float')
+            # read in the output files which contain the sputtering yield vs. fluence data
+            for filename in glob.glob(outfiles):
+                #print 'The file is {0}'.format(filename)
+                out_yld.append(SDTrimSP_readSput.read_outfile(filename))
+            #out_yld=sorted(log_yld, key=lambda x: x.label[0])
+            rat=[]
 
-#                SSyld.append(SputData(specarr, fstepsarr, specFlu1arr, specFlu2arr, specFlu3arr))
-                
-                numave = 20 # specify number of points over which to average equilibrium yield
-                avYld0, av0 = movingaverage(SY1,numave)
-                avYld1, av1 = movingaverage(SY2,numave)
-                avYld2, av2 = movingaverage(SY3,numave)       
+            for i in range(len(out_yld)):
+                out_yld[i]=sorted(out_yld[i], key=lambda x: x.label[1])
+                for j in range(len(out_yld[i])):
+                    ctar = out_yld[i][j].label[1]
+                    for n, t in enumerate(tar):
+                        if t == ctar:
+                            index=n
+                    rat.append(out_yld[i][j].label[1])
+                    if len(out_yld[i][j].Flux) == len(log_yld[index].label[4]):
+                        out_yld[i][j].label.append(log_yld[index].label[4]) # append element names
+                        out_yld[i][j].label.append(log_yld[index].label[5]) # append atomic masses
+                        out_yld[i][j].label.append(log_yld[index].label[6]) # append SBE
+                    else:
+                        print "the number of elements does not match"
+                        print len(out_yld[i][j].Flux)
+                        print len(log_yld[nlog].label[4])
+                    met_class=out_yld[i][j].label[0]
 
-                energeq.append(energy)
-                Flux1eq.append(avYld0)
-                Flux2eq.append(avYld1)
-                Flux3eq.append(avYld2)
+#----- Plot total yields derived from the *.out files -----
+            if out_yld:
+                for out in out_yld:
+                    # Determine average yield
+                    out_yld_avg=SDTrimSP_readSput.average(out)
+                nsim = out_yld[0][0].label[0]
 
-#                a = plot_sputFile(energy, species, fsteps, SY1, SY2, SY3, av0, av1, av2, numFlu)
-
-        # After all files in a folder are read, sort the yields from the log and sputter data files
-        # by energy. But the energy should be in the default list np.linspace(100,10000)
- 
-        simName_sorted = [x for (y,x) in sorted(zip(energies,simName), key=lambda pair:pair[0])]
-        Flux1_sorted = [x for (y,x) in sorted(zip(energies,Flux1), key=lambda pair:pair[0])]
-        Flux2_sorted = [x for (y,x) in sorted(zip(energies,Flux2), key=lambda pair:pair[0])]
-        Flux3_sorted = [x for (y,x) in sorted(zip(energies,Flux3), key=lambda pair:pair[0])]
-        totYld_sorted =  [x for (y,x) in sorted(zip(energies,totYld), key=lambda pair:pair[0])]
-        energies_sorted=energies.sort()        
-
-#        print totYld
-#        print totYld_sorted
-
-        for j in range(len(energies)):
-            for i in range(len(defEng)):
-                if energies[j]==defEng[i]:
-                    e_sort[i]=energies[j]
-                    yld_sort[i]=totYld_sorted[j]
-                elif e_sort[i] != None:
-                    continue
+                if expt_comp==1:
+                    for j, k  in enumerate(genClass):
+                        k=k.replace('_', '->', 1)
+                        if k in nsim:
+                            nf = j+1
+                            c=next(color[j])
+                            mk=next(marker[j])
+                            lbl=path_name
+                    # plot_out1 is the total yield vs. energy for SDTrimSP simulations
+                            plot_sput=SDTrimSP_plotSput.plot_out1(out_yld,nf,c,mk)
+                        else:
+                            nf=-1
                 else:
-                    e_sort[i]=''
-                    yld_sort[i]='--'
+                    nf=-1
+                    
+                # plot log plots...
+                #plot_log = SDTrimSP_plotSput.plot_log(log_yld,nr,'-',c,lbl)
 
-        for i in range(len(simName)):
-            print ' '.join(simName_sorted[i]), 'Yield=',totYld_sorted[i]
+                # ---- Plot relative elemental yield comparisons ----
+                if elem_comp==2:
+                    c=next(color)
+                    mk=next(marker)
+                    tag='Met'
+                    ER,sw_out,ion_out=SDTrimSP_readSput.comp_yield(out_yld,targets)
+                    shift+=0.1
+                    nf=1
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
+                    nf=2
+                    ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,mk,adir)
+                    nf=3
+                    #ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class, targets)
+                elif elem_comp==1:
+                    tag='SOx'
+                    nf=nr+10
+                    #ploty_sput=SDTrimSP_plotSput.plot_iavg(out_yld,nf,c,shift,met_class)
 
 
-        Flux1eq_sorted = [x for (y,x) in sorted(zip(energeq,Flux1eq), key=lambda pair:pair[0])]
-        Flux2eq_sorted = [x for (y,x) in sorted(zip(energeq,Flux2eq), key=lambda pair:pair[0])]
-        Flux3eq_sorted = [x for (y,x) in sorted(zip(energeq,Flux3eq), key=lambda pair:pair[0])]
-        energeq_check=energeq.sort()
-        energeq_sorted=energies
+            # ---- Plot the species yields vs. fluence ----
+            if fyld==1:
+                for out in out_yld:
+                    plot_out=SDTrimSP_plotSput.plot_vflu(sw_out,tag)
+                    #ploty_sput=SDTrimSP_plotSput.plot_out3(out,met_class,tag)
+                if elem_comp==2:
+                    plot_sput=SDTrimSP_plotSput.plot_vflu(ion_out,tag)
+
+            #----- Plot total yields derived from the log files -----
+            if log_yld:
+                if expt_comp==2:
+                    neut_yld, ion_yld=SDTrimSP_readSput.log_comp(log_yld,targets)
+                    nsim = log_yld[0].label[0]
+                    nf=nr+1
+                    lbl='bar'
+                    #plot_log = SDTrimSP_plotSput.plot_log(neut_yld,nf,'-',c,lbl)
+                    #plot_log = SDTrimSP_plotSput.plot_log(ion_yld,nf,'-',c,lbl,'//',met_class)
+                    #ploty_sput=SDTrimSP_plotSput.plot_out3(ion_yld,met_class,tag)
+
+            plt.show()
+            nr+=1
+cont = input('Enter 0 to end: ')
+
+'''
+# Call read functions for each data file type 
+    for filename in glob.glob(datfiles):
+        if 'E0_31'in filename:
+#            print 'The file is {0}'.format(filename)
+            continue
+           # File with variation in elemental concentration vs. timestep(+?)
+        elif 'E0_33' in filename:
+            # File with variation in elemetal sputter yield vs. timestep
+            #print filename
+            sput_yld.append(SDTrimSP_readSput.read_sputfile(filename))
+        elif 'E0_34'in filename:
+#            print 'The file is {0}'.format(filename)
+            continue
+            # File with energy loss moments?
+        elif 'EngAn' in filename:
+#            print 'The file is {0}'.format(filename)
+            continue
+            # File with analysis of how energy of projectile and target atoms is lost/partitioned
+        elif 'layer' in filename:
+#            print 'The file is {0}'.format(filename)
+            continue
+            # File with final(?) elemental variation as a function of depth
+        elif 'tr_all' in filename:
+            trfile.append(filename)
+#            projectr.append(read the trajectory file)
+#            print 'The file is {0}'.format(filename)
+            # Trajectories for a number of projectiles and excited particles
+        elif 'tr' in filename:
+#            print 'The file is {0}'.format(filename)
+            continue
+            # Trajectories for primary and secondary knock-on atoms
+        else:
+            #print 'The file {} does not have an analysis function written for it'.format(filename)
+            continue
         
-        # Convert log file data to arrays
-        simNamearr =np.array(simName_sorted,dtype='string')
-        energiesarr =np.array(energies_sorted,dtype='float')
-        Flux1arr =np.array(Flux1_sorted,dtype='float')
-        Flux2arr =np.array(Flux2_sorted,dtype='float')
-        Flux3arr =np.array(Flux3_sorted,dtype='float')
-        totYldarr =np.array(totYld_sorted,dtype='float')
-        # Append log data to the class and plot
-        LogYld.append(LogData(simNamearr, energiesarr, Flux1arr, Flux2arr, Flux3arr, totYldarr))
-
-#        plog_yld = plot_sputYld(simName_sorted, energies, Flux1_sorted, Flux2_sorted, Flux3_sorted, simCount)
-        simCount +=1 
-
-        # Convert equilibrium sputter file data to arrays
-        energeqarr =np.array(energeq_sorted,dtype='float')
-        Flux1eqarr =np.array(Flux1eq_sorted,dtype='float')
-        Flux2eqarr =np.array(Flux2eq_sorted,dtype='float')
-        Flux3eqarr =np.array(Flux3eq_sorted,dtype='float')
-        # Append equilibrium sputter data to class and plot
-        EqYld.append(SputEqData(simNamearr, energeqarr, Flux1eqarr, Flux2eqarr, Flux3eqarr))
-#        peq_yld = plot_sputYld(simName_sorted, energeq, Flux1eq_sorted, Flux2eq_sorted, Flux3eq_sorted, simCount)
-        simCount +=1
-        numFlu +=1
-
     row0=[]
     allr=[]
     with open('output.dat', 'r') as csvinput:
@@ -237,11 +280,7 @@ while cont != 0:
         w = csv.writer(csvoutput, lineterminator='\n')
         w.writerows(allr)
 
-    num_runs+=1
-    cont = input('Enter 0 to end: ')
-
-
-#plt.show()
+'''
 
 
 

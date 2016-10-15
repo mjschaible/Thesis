@@ -38,7 +38,8 @@ class datAvg (object):
 # Define a class for radial distribution function files
 class runRDF (object):
 
-    def __init__(self,timestep,Nbin,pos,RDF,coordN):
+    def __init__(self,descrip,timestep,Nbin,pos,RDF,coordN):
+        self.descrip=descrip
         self.timestep=timestep
         self.Nbin=Nbin
         self.pos=pos
@@ -96,10 +97,10 @@ def log_read(filename):
 
     for line in lines:
         column = line.split()
-        if 'timestep' in line and not 'reset' in line and not 'Performance' in line:
-            timesteps.append(float(column[1]))
-        if ' tt ' in line:
+        if ' tt ' in line and not '{' in line:
             timesteps.append(float(column[3]))
+        if 'timestep' in line and not 'reset' in line and not 'Performance' in line and not '{' in line:
+            timesteps.append(float(column[1]))
         if 'variable name' in line:
             fn = column[3]
         if '# create groups ###' in line:
@@ -138,8 +139,10 @@ def log_read(filename):
                 vel_pka = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z) # Ang/fs
                 KE_pka = (6.24e25)*0.5*(18/6.022e23)*vel_pka*vel_pka # eV
                 KE_pka = '{:.0f}'.format(KE_pka)
-        if 'Loop time' in line:
+        if 'Loop time' in line and not ' 0 steps' in line:
             data_end.append(counter)
+        elif 'Loop time' in line:
+            del data_start[-1]
         if len(data_start) > len(timesteps):
             if len(timesteps)==0:
                 timesteps.append(0)
@@ -151,7 +154,8 @@ def log_read(filename):
                 data_end.append(counter)
         
     num_cur=len(data_start)-num_runs
-    fn+='_'+KE_pka+'eV'+run_num
+    if mol_pka is not None:
+        fn+='_'+KE_pka+'eV'+run_num
     
     data_vals=['']*num_cur
 
@@ -211,7 +215,7 @@ def log_read(filename):
 
     num_runs+=num_cur
 
-    return num_runs, run_thermo
+    return run_thermo
 
 def data_read(filename, ts, descrip):
     fn = filename.split('/')[-1]
@@ -251,7 +255,7 @@ def data_read(filename, ts, descrip):
 
     return run_data
 
-def rdf_read(filename, ts):
+def rdf_read(filename, ts, descrip):
     counter=1
     timestep=[]
     data_start=[]
@@ -302,7 +306,7 @@ def rdf_read(filename, ts):
         rdfarr=np.array(rdf,dtype='float')
         coordnarr=np.array(coordn,dtype='float')
         
-        rdf_data.append(runRDF(timestep,nbinarr,posarr,rdfarr,coordnarr))
+        rdf_data.append(runRDF(descrip,timestep,nbinarr,posarr,rdfarr,coordnarr))
 
     return rdf_data
 

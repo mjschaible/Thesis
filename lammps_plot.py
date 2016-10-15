@@ -1,26 +1,29 @@
 import numpy as np
 import scipy
-import matplotlib
-matplotlib.use("TkAgg")
+
 import matplotlib.pyplot as plt
 from scipy import interpolate
 import itertools
 import re
 import os
 
-def log_plots(runs, row, ft, fignum):
+def log_plots(runs, row, ft, fignum=None):
     kcalToeV = 0.0433641 # convert kcal/mole to eV/atom
     # ft is the 'filetype', either rad or eq or...
     # row is the number of rows
     # runs is the data object
     # Determine the filename for figure naming
     fn = runs[0].descrip[0]
-    exE= runs[0].descrip[6]
+    fn = fn.replace('tip4p','')
+    nMolec = runs[0].descrip[3]
+    if ft==1:
+        exE= runs[0].descrip[6]/nMolec
+    else:
+        exE=1
     col = len(runs) #num columns
     if ft==0:
         fig=plt.figure(fignum, figsize=(col+1,col/row))
     elif ft==1:
-        col = col-1
         fig=plt.figure(fignum, figsize=(3*col,3*row))
         
     pemin=0
@@ -32,26 +35,21 @@ def log_plots(runs, row, ft, fignum):
     if row>2:
         ax3=[]
 
-    for i in range(ft,len(runs)):
+    for i,run in enumerate(runs):
         time = (runs[i].step-runs[0].step[0])*runs[i].descrip[1]/1000
-        num_molec = runs[i].descrip[3]
         label1=runs[i].thermoCol[3]
-        peng=runs[i].pe*kcalToeV
+        peng=runs[i].peave*kcalToeV
         if ft == 1:
-            keng=runs[i].ke*kcalToeV
+            keng=runs[i].keave*kcalToeV
             label2='Sys. {} (eV)'.format(runs[i].thermoCol[5])
-            kemin_t=min(keng)
-            kemax_t=max(keng)
-            units='Kin. Energy ($eV$)'
-            ncol=i-1
+            units='Avg. Kin. Energy ($eV$/molec)'
         elif ft == 0:
-            keng=runs[i].temp
-            label2='Sys. {} (K)'.format(runs[i].thermoCol[1])
-            kemin_t=min(keng)
-            kemax_t=max(keng)
+            keng=runs[i].tempave
+            label2='Avg. Sys. {} (K)'.format(runs[i].thermoCol[1])
             units='Temperature (K)'
-            ncol=i
-            
+        ncol=i
+        kemin_t=min(keng)
+        kemax_t=max(keng)
         pemin_t=min(peng)
         if pemin_t < pemin:
             pemin = pemin_t
@@ -73,19 +71,23 @@ def log_plots(runs, row, ft, fignum):
         plt.setp(ax2[-1].get_xticklabels(), visible=False)
         plt.setp(ax2[-1].get_yticklabels(), visible=False)
 
-        if i>ft:
+        if i>0:
             plt.setp(ax[-1].get_yticklabels(), visible=False)
             for ac in ax:
                 ac.get_shared_y_axes().join(ac,ax[-1])
             for ac in ax2:
                 ac.get_shared_y_axes().join(ac,ax2[-1])
-            ax[-1].set_ylim([pemin-1,pemin+exE+3])
-            ax2[-1].set_ylim([kemax-exE-3,kemax+1])
+            if ft==1:
+                ax[-1].set_ylim([pemin-1/nMolec,pemin+exE+3/nMolec])
+                ax2[-1].set_ylim([kemax-exE-3/nMolec,kemax+1/nMolec])
+            else:
+                ax[-1].set_ylim([pemin,pemax])
+                ax2[-1].set_ylim([kemin,kemax])
             
         if ncol==col-1:
             #print 'PE {}'.format(pemin+exE+3-pemin+1)
             #print 'KE {}'.format(kemax+1-kemax+exE+3)
-            ax[0].set_ylabel('Pot. Energy ($eV$)')
+            ax[0].set_ylabel('Avg. Pot. Energy ($eV$/molec)')
             ax2[-1].set_ylabel(units)
             h1,l1=ax[-1].get_legend_handles_labels()
             h2,l2=ax2[-1].get_legend_handles_labels()
@@ -96,7 +98,7 @@ def log_plots(runs, row, ft, fignum):
             ax3
             if i==ft:
                 ax3.append(plt.subplot(row,col,ncol+1+col))
-                ax3[-1].set_ylabel('{} (eV)'.format(runs[i].thermoCol[7]))
+                ax3[-1].set_ylabel('{} [eV]'.format(runs[i].thermoCol[7]))
             else:
                 ax3.append(plt.subplot(row,col,ncol+1+col, sharey=ax3[-1]))
             ax3[-1].plot(time,runs[i].etot*kcalToeV,label = runs[i].thermoCol[7])
@@ -116,28 +118,30 @@ def log_plots(runs, row, ft, fignum):
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}energy.png'.format(fn), dpi=600)
     return
 
-def msd_plots(runs, lbl, nr, nsp, ft, fignum):
+def msd_plots(runs, lbl, nr, ft, fignum=None):
     # Determine the filename for figure naming
     fn = runs.descrip[0]
-    #print fn
+    fn = fn.replace('tip4p','')
     fig = plt.figure(fignum)
 
     numshells=len(runs.descrip[-1])
     shell_t=runs.descrip[-2]
 
     #time = (runs[i].step-runs[i].step[0])*param[i].timesteps/1000
-    if 'Shell Avg' in lbl:
-        ax=fig.add_subplot(nr,1,nsp)
+    if 'Shell avg.' in lbl:
+        ax=fig.add_subplot(nr,1,2)
         for j in range(len(runs.data)):
             ns = len(runs.descrip[-1][j])
             leglbl = '{} to {} $\AA$ (N={})'.format(shell_t*j,shell_t*(j+1),ns)
             ax.semilogy(runs.step,runs.data[j],label = leglbl)
         if 'MSD' in lbl:
-            ax.set_ylabel('{} ($\AA^2$)'.format(lbl))
+            ax.set_ylabel('{} [$\AA^2$]'.format(lbl))
             ax.locator_params(axis='x', tight=True, nbins=4)
+            tp='disp'
         elif 'KE' in lbl:
-            ax.set_ylabel('{} ($eV$)'.format(lbl))
+            ax.set_ylabel('{} [$eV$]'.format(lbl))
             ax.locator_params(axis='x', tight=True, nbins=4)
+            tp='eng'
             #ax.set_ylim([0,100])
 
         # Shrink current axis by 20%
@@ -146,11 +150,13 @@ def msd_plots(runs, lbl, nr, nsp, ft, fignum):
         # Put a legend to the right of the current axis
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=10)
         ax.set_xlabel('Time [ps]')
+        plt.savefig('/Users/spacebob/Work/Simulations/images/{}{}.png'.format(fn,tp),dpi=600)
     else:
+        nsp=2
         ax=fig.add_subplot(nr,1,nsp)
         #print runs[i].descrip
         ax.plot(runs.step,runs.data,label = runs.descrip[3])
-        ax.set_ylabel(lbl)
+        ax.set_ylabel(r'{} [$\AA^2$]'.format(lbl))
         ax.locator_params(axis='x', tight=True, nbins=6)
         if nsp==2 and ft==0:
             ax.set_xlabel('Time [ps]')
@@ -164,25 +170,28 @@ def msd_plots(runs, lbl, nr, nsp, ft, fignum):
 
         ax.ticklabel_format(axis='x', style = 'sci')
 
-    #plt.tight_layout(h_pad=0.05, w_pad=0.05)
-    #plt.figtext(0.5,0.95,'The sim is {}'.format(runs[i].descrip),ha='center')
-    #plt.savefig('/Users/spacebob/Work/Simulations/images/{}dens.png'.format(fn),dpi=600)
     return
 
-def rdf_plots(runs):
+def rdf_plots(runs, nf):
+    fn = runs[0].descrip[0]
+    fn = fn[:-3]
+    fn = fn.replace('tip4p','')
+
     for i in range(len(runs)):
         fig, axs = plt.subplots(2,1, sharex='col')
         axs[0].plot(runs[i].pos,runs[i].RDF)
-        axs[0].set_ylabel('$g_{OO}$(r)')
+        axs[0].set_ylabel('Radial dist. fct. $g_{OO}$(r)')
         axs[1].plot(runs[i].pos,runs[i].coordN)
-        axs[1].set_ylabel('Coordination Number')
-        axs[1].set_xlabel('Distance [A]')
-        
+        axs[1].set_ylabel('Coordination number')
+        axs[1].set_xlabel(r'Distance [$\AA$]')
+        #plt.savefig('/Users/spacebob/Work/Simulations/images/{}rdf.png'.format(fn),dpi=600)
         return
 
 def com_plots(msd):
     plt.figure()
-    
+    fn=msd[0].descrip[0]
+    fn = fn[:-3]
+    fn = fn.replace('tip4p','')
     shell_avg=[]
     
     for i, run in enumerate(msd):
@@ -198,6 +207,7 @@ def com_plots(msd):
     plt.plot(dist_arr,shells_avg,marker='o',markersize=10,linestyle='')
     plt.errorbar(dist_arr,shells_avg,yerr=shell_stdev,linestyle='')
     plt.yscale('log')
-    plt.ylabel('Distance from PKA[A]')
-    plt.xlabel(r'Mean MSD [$\AA^2$]')
+    plt.xlabel(r'Distance from PKA[$\AA$]')
+    plt.ylabel(r'Mean MSD [$\AA^2$]')
+    plt.savefig('/Users/spacebob/Work/Simulations/images/{}MSDvDist.png'.format(fn),dpi=600)
     return

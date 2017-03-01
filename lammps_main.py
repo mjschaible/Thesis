@@ -78,11 +78,11 @@ def plot_files(run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng, ftype, 
         if ftype==1:
             #----- -----
             nrows=2
-            lammps_plot.msd_plots(run_msd, 'System avg. MSD', nrows, 1,ftype, nf)
-            lammps_plot.msd_plots(msd_com, 'Shell avg. MSD',nrows,2,ftype, nf)
+            lammps_plot.msd_plots(run_msd, 'System avg. MSD', nrows,ftype, nf)
+            lammps_plot.msd_plots(msd_com, 'Shell avg. MSD',nrows,ftype, nf)
 
             lammps_plot.log_plots(run_thermo, nrows, ftype, nf+1)
-            lammps_plot.msd_plots(dumpeng, 'Shell avg. KE',nrows,2,ftype, nf+1)
+            lammps_plot.msd_plots(dumpeng, 'Shell avg. KE',nrows,ftype, nf+1)
             nf+=2
 
     return nf
@@ -115,6 +115,7 @@ def main():
 
         run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng = open_files(logfile,ftype)
         if ftype == 1:
+            #ke_max.append(lamms_read.kemaxf(dumpeng))
             msd_avg.append(lammps_read.msd_avgf(msd_com))
         
         nf = plot_files(run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng, ftype, nf)

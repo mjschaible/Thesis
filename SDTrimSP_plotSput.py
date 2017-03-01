@@ -283,13 +283,13 @@ def plot_vflu(sput, lbl=None):
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}_vsF.png'.format(ntar),dpi=600)
     return
 
-def plot_iavg(sput, nf, ct, shift, mk, lbl=None): 
+def plot_iavg(sput, nf, ct,shift, mk, lbl=None): 
     fig1 = plt.figure(nf)
 
     if nf==1:
         plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
     elif nf==2:
-        plotElem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
+        plotElem=['Mg', 'Al', 'Si', 'Ca', 'Fe']
     # --Calculate elemental averages and variances for each target--
     #elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
     elem_iyld=[[0]*len(plotElem) for i in range(len(sput))]
@@ -315,7 +315,7 @@ def plot_iavg(sput, nf, ct, shift, mk, lbl=None):
                 ax.set_ylabel('SW Total Sputter Yield (atoms/ion)')
             elif nf==2:
                 ax.set_ylabel('SW Secondary Ion Sputter Yield (ions/ion)')
-            
+
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
         for y,elem in enumerate(i.label[4]):
             if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
@@ -336,29 +336,33 @@ def plot_iavg(sput, nf, ct, shift, mk, lbl=None):
     tot_iyld=np.sum(metclass_mean)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)
-    ax.plot(pos,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
-    ax.errorbar(pos,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
+    ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+    ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
     #labels = [item.get_text() for item in ax.get_xticklabels()]
     #labels = i.label[4]
-    ax.set_xticks(np.arange(0,len(metclass_mean)+1,1.0))
-    ax.set_xticklabels(plotElem)
-    ax.set_xlim(min(pos)-1, max(pos)+1)
+    ax.set_xlim(min(pos)-0.5, max(pos)+0.2)
+    ax.set_xticks(pos+0.5,minor=True)
+    ax.xaxis.set(ticks=pos,ticklabels=plotElem)
+    # Turn on the grid for the minor ticks
+    ax.xaxis.grid(True, which='minor')
+    gridlines = ax.get_ygridlines()
+    for line in gridlines:
+        line.set_linestyle('--')
+        
     plt.legend(loc=1,fontsize=12)
     #plt.autoscale(enable=True, axis='x', tight=True)
     if nf==1:
         ax.set_ylim(1e-5,2e-2)
-        plt.savefig('/Users/spacebob/Work/Simulations/images/SWtYldComp.png',dpi=600)
-        plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWtYldComp.png',dpi=600)
+        #plt.savefig('/Users/spacebob/Work/Simulations/images/SWtYldComp.png',dpi=600)
+        #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWtYldComp.png',dpi=600)
     if nf==2:
-        ax.set_ylim(1e-5,1e-3)
-        plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
-        plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
+        ax.set_ylim(3e-6,1e-3)
+        #plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
+        #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
         
     return
     
-def plot_ER(ER, c, nf, lbl, targets):
-    #print ER
-    #print lbl
+def plot_ER(ER,c,lbl,targets,nf,mk):
     xlabels=['Mg/Si', 'Mg/Si', 'Mg/Si', 'Al/Si', 'Al/Si', 'Ca/Si']
     x_index=[0, 0, 0, 1, 1, 2] 
     ylabels=['Al/Si', 'Ca/Si', 'Fe/Si', 'Ca/Si', 'Fe/Si', 'Fe/Si']
@@ -376,23 +380,23 @@ def plot_ER(ER, c, nf, lbl, targets):
                 
         for j, ratio in enumerate(ER):
             if j==0:
-                ax.scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,label=lbl,s=100)
-                axs[i].scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,label=lbl,s=100)
+                ax.scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,label=lbl,s=100,marker=mk)
+                axs[i].scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,label=lbl,s=100,marker=mk)
             else:
-                ax.scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,s=100)
-                axs[i].scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,s=100)
+                ax.scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,s=100,marker=mk)
+                axs[i].scatter(ratio[x_index[i]],ratio[y_index[i]],color=c,s=100,marker=mk)
             ax.set_xlabel(xlabels[i])
             ax.set_ylabel(ylabels[i])
             axs[i].set_xlabel(xlabels[i])
             axs[i].set_ylabel(ylabels[i])
-            axs[i].legend(bbox_to_anchor=(1.25,1.0), loc='best', fontsize=12)
-            figs[i].subplots_adjust(right=0.8)
+            axs[i].legend(loc='best', fontsize=12) #bbox_to_anchor=(1.25,1.0), 
+#            figs[i].subplots_adjust(right=0.8)
             
-            if lbl=='CCs':
-                ax.set_xlim(left=0)
-                ax.set_ylim(bottom=0)
-                axs[i].set_xlim(left=0)
-                axs[i].set_ylim(bottom=0)
+        if lbl=='CCs':
+            ax.set_xlim(left=0)
+            ax.set_ylim(bottom=0)
+            axs[i].set_xlim(left=0)
+            axs[i].set_ylim(bottom=0)
 
                 #print targets
                 #print ER[y_index[i]]

@@ -130,10 +130,6 @@ def msd_plots(runs, lbl, nr, ft, fignum=None):
     #time = (runs[i].step-runs[i].step[0])*param[i].timesteps/1000
     if 'Shell avg.' in lbl:
         ax=fig.add_subplot(nr,1,2)
-        for j in range(len(runs.data)):
-            ns = len(runs.descrip[-1][j])
-            leglbl = '{} to {} $\AA$ (N={})'.format(shell_t*j,shell_t*(j+1),ns)
-            ax.semilogy(runs.step,runs.data[j],label = leglbl)
         if 'MSD' in lbl:
             ax.set_ylabel('{} [$\AA^2$]'.format(lbl))
             ax.locator_params(axis='x', tight=True, nbins=4)
@@ -143,6 +139,11 @@ def msd_plots(runs, lbl, nr, ft, fignum=None):
             ax.locator_params(axis='x', tight=True, nbins=4)
             tp='eng'
             #ax.set_ylim([0,100])
+
+        for j in range(len(runs.data)):
+            ns = len(runs.descrip[-1][j])
+            leglbl = '{} to {} $\AA$ (N={})'.format(shell_t*j,shell_t*(j+1),ns)
+            ax.semilogy(runs.step,runs.data[j],label = leglbl)
 
         # Shrink current axis by 20%
         box = ax.get_position()

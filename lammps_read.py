@@ -368,7 +368,8 @@ def find_commsd(run_com, descrip):
     xpka=descrip[5][0]
     ypka=descrip[5][1]
     zpka=descrip[5][2]
-    
+    npka=descrip[4]
+
     shell_thickness=2.0
     num_shells=8
     
@@ -388,9 +389,10 @@ def find_commsd(run_com, descrip):
         xcom_init=run_com[0].xpos[i]
         ycom_init=run_com[0].ypos[i]
         zcom_init=run_com[0].zpos[i]
-        #print xcom, ycom, zcom
+        
         # Calculate each molecule's distance from the PKA above
         dist_from_pka=np.sqrt((xpka-xcom_init)**2+(ypka-ycom_init)**2+(zpka-zcom_init)**2)
+            
         for n in range(num_shells):
             # and if that COM is in a given shell it's chunk/molecule ID
             # is added to the appropriate shell array

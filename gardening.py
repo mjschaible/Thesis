@@ -59,7 +59,7 @@ sigma_Sat_T = 230E-15 #g/cm^2/s
 sigma_Sat_D = 27E-15 #g/cm^2/s
 
 # Define the time scale
-treg = np.logspace(0.1, 9, base=10, num=100) # years, regolith age
+treg = np.logspace(4, 7, base=10, num=100) # years, regolith age
 
 bodies = [ 'Mimas', 'Tethys', 'Dione']
 color=iter(plt.cm.brg(np.linspace(0,1,len(bodies))))
@@ -69,7 +69,7 @@ for body in bodies:
     if body == 'Mimas':
         rb = rM
         vesc = vescM
-        fsigma_Sat = sigma_Sat_M
+        sigma_Sat = sigma_Sat_M
         Yidp = YidpM
         Yering = YeringM
     if body == 'Tethys':
@@ -123,12 +123,13 @@ for body in bodies:
     ax2.set_title('Gardening and growth rates for the icy Saturnian moons')
 #    ax2.loglog(treg, h_t, linewidth=2, label = body)
     c=next(color)
-    ax2.loglog(h_IDP, treg, linewidth=2, ls=':', c=c)
-    ax2.loglog(h_Er, treg, linewidth=2, ls='--', c=c)
-    ax2.loglog(h_tot, treg, linewidth=2, ls='-',label = body, c=c)
+    ax2.loglog( treg*1e-6,h_IDP, linewidth=2, ls=':', c=c)
+    ax2.loglog( treg*1e-6,h_Er, linewidth=2, ls='--', c=c)
+    ax2.loglog( treg*1e-6,h_tot, linewidth=2, ls='-',label = body, c=c)
     box = ax2.get_position()
-    ax2.set_ylabel('Time [Myr]', fontsize = 16)
-    ax2.set_xlabel('Depth [cm]', fontsize = 16)
+    ax2.set_xlabel('Time [Myr]', fontsize = 16)
+    ax2.set_ylabel('Depth [cm]', fontsize = 16)
+    ax2.set_ylim([.01,100])
     ax2.legend(loc = 2, prop={'size':18})
     Body+=1
 plt.savefig('./Gardening_depths.png',dpi=600)

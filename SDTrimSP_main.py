@@ -51,7 +51,7 @@ incl_expt=0
 incl_srim=0
 
 # Specify how to compare the experiments (?)
-expt_comp=0 # 1= SOx, 2=Met
+expt_comp=2 # 1= SOx, 2=Met
 shift=-0.3
 
 # Variable to determine whether or not to plot yields vs. fluence for specified energies
@@ -64,9 +64,9 @@ if elem_comp==1:
     marker=[iter(['v', '^', '<', '>']) for i in genClass]
 if elem_comp==2:
 #    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
-    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
-    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"]
-    color=iter(['blue','red','green','grey','black','purple','orange'])
+    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
+    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
+    color=iter(['grey','blue','red','green','purple','orange','black'])
     marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
     #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
     
@@ -107,7 +107,6 @@ for cdir in genClass:
     ddirs=[d for d in os.listdir(cdir) if os.path.isdir(os.path.join(cdir, d))]
     for adir in ddirs:
         if cdir in genClass and adir in tarClass:
-            #print cdir, adir
             loglist=[]
             log_yld=[]
             out_yld=[]
@@ -176,15 +175,12 @@ for cdir in genClass:
                             c=next(color[j])
                             mk=next(marker[j])
                             lbl=path_name
-                    # plot_out1 is the total yield vs. energy for SDTrimSP simulations
+                            # plot_out1 is the total yield vs. energy for SDTrimSP simulations
                             plot_sput=SDTrimSP_plotSput.plot_out1(out_yld,nf,c,mk)
                         else:
                             nf=-1
                 else:
                     nf=-1
-                    
-                # plot log plots...
-                #plot_log = SDTrimSP_plotSput.plot_log(log_yld,nr,'-',c,lbl)
 
                 # ---- Plot relative elemental yield comparisons ----
                 if elem_comp==2:
@@ -194,16 +190,15 @@ for cdir in genClass:
                     ER,sw_out,ion_out=SDTrimSP_readSput.comp_yield(out_yld,targets)
                     shift+=0.1
                     nf=1
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
+                    #ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
                     nf=2
                     ploty_sput=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,mk,adir)
                     nf=3
-                    #ER_plot=SDTrimSP_plotSput.plot_ER(ER, c, nf, met_class, targets)
+                    ER_plot=SDTrimSP_plotSput.plot_ER(ER,c,met_class,adir,nf,mk)
                 elif elem_comp==1:
                     tag='SOx'
                     nf=nr+10
                     #ploty_sput=SDTrimSP_plotSput.plot_iavg(out_yld,nf,c,shift,met_class)
-
 
             # ---- Plot the species yields vs. fluence ----
             if fyld==1:

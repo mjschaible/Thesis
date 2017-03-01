@@ -57,7 +57,6 @@ def read_exptfile(fn):
                 ion.append(ion_tar[0])
                 target.append(ion_tar[1])
                 exptName.append(col[i+1])
-            #print exptName
             totYld= [[] for i in range(len(exptName))]
         elif 'Authors' in line:
             for i in range(len(Header)-1):
@@ -122,16 +121,12 @@ def read_outfile(fn):
         if 'ERROR' in line:
             continue
         elif 'filename' in line:
-            #print line, line.split('_')[-1]
             filename.append(line.split('_')[-1])
-            #print filename[-1]
         elif 'filname' in line:
             ln=line.split()
             ln=ln[-1].split('_')[-4]+'->'+line.split('_')[-3]
             filename.append(ln)
-            #print filename[-1]
         elif '->' in line and 'eV' in line:
-            #print line
             ncp=0
             simeng.append(columns[0])
             incion.append(columns[1])
@@ -145,7 +140,6 @@ def read_outfile(fn):
             outgass = '{} diffusion ON'.format(diff[1].rstrip())
             print line
         elif 'INFO' in line and 'flc' in line:
-            #print line
             totflu=columns[3]
         elif 'Fluence step' in line:
             flu_step=columns[3] 
@@ -187,7 +181,7 @@ def read_outfile(fn):
 
     num_cur=len(flu_end)
     data_vals=['']*num_cur
-    #print num_cur, len(filename)
+
     for n in range(num_cur):
         data_vals[n]=flulines[flu_start[n]:flu_end[n]]
 
@@ -662,7 +656,7 @@ def log_comp(yld, tar):
     #print tar
     neut_data=[]
     ion_data=[]
-    print tar
+
     for i in range(len(yld)):
         for k in range(len(tar)):
             ion = yld[i].label[0].split('->')[0]
@@ -693,7 +687,7 @@ def log_comp(yld, tar):
         sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
         neut_data.append(LogData(yld[k].label,yld[k].energy,yld[k].fluence,sw_yld[k],np.sum(sw_yld[k])))
         ion_data.append(LogData(yld[k].label,yld[k].energy,yld[k].fluence,sw_iyld[k],np.sum(sw_iyld[k])))
-        npR=1
+        npR=0
         if npR==1:
             print 'H Yield'
             for l in range(len(yld[0].label[4])):

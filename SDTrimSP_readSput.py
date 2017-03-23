@@ -21,7 +21,7 @@ class LogData (object):
 elemlist = ['H', 'He', 'C_g','Na','Mg','Al','Si','S','K','Ca','Ti','Mn','Fe','Ni','O']
 ifrac = 0.01
 relcorr = [0.00,0.00,0.01,51.222,8.340,4.667,1.000,0.01,229.488,9.299,3.846,7.128,1.893,2.886,0.01]
-navg=10
+navg=100
 
 def f4(seq): 
    # order preserving
@@ -138,7 +138,6 @@ def read_outfile(fn):
         elif 'outgasing' in line:
             diff = line.split(':')
             outgass = '{} diffusion ON'.format(diff[1].rstrip())
-            print line
         elif 'INFO' in line and 'flc' in line:
             totflu=columns[3]
         elif 'Fluence step' in line:
@@ -575,6 +574,7 @@ def comp_yield(out_yld, tar):
                             he_iyld[k][y]=yld*relcorr[y]*ifrac
 
     for k in range(len(tar)):
+        print tar[k]
         for y, elem in enumerate(elemlist):
             if isinstance(hyld[k][y], (int,long)) or isinstance(heyld[k][y], (int,long)):
                 if y<2:
@@ -592,15 +592,13 @@ def comp_yield(out_yld, tar):
                 heavg=np.mean(heyld[k][y][dd[k]-navg:])
                 sw_avg[k][y]=havg+heavg
                 sw_iavg[k][y]=sw_avg[k][y]*relcorr[y]*ifrac
-                #print 'Y^tot({})={:.5f}, Y^i({})={:.6f}'.format(elem,sw_avg[k][y],elem,sw_iavg[k][y])
+                print 'Y^tot({})={:.5f}, Y^i({})={:.6f}'.format(elem,sw_avg[k][y],elem,sw_iavg[k][y])
         ttot=np.sum(sw_avg[k][2:])
         itot=np.sum(sw_iavg[k][2:])
-        #print 'Y^tot({})={:.4f}, Y^i_({})={:.6f}'.format(tar[k],ttot ,tar[k],itot)
+        print 'Y^tot({})={:.4f}, Y^i_({})={:.6f}'.format(tar[k],ttot ,tar[k],itot)
         
         for l in range(len(nE)):
             Elem_Ratio[k][l]=sw_iavg[k][nE[l]]/sw_iavg[k][6]
-        
-        #print 'The {} total SW ion yield is {:.5f}'.format(tar[k], np.sum(sw_iyld[k]))
 
         sw_yld.append(map(add,hyld[k],heyld[k]))
         sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
@@ -617,7 +615,6 @@ def comp_yield(out_yld, tar):
         tot_iyld=0
         tot_yld=0
         sw_iavg_c=0
-        #print len(sw_yld[k]), len(totiyld[k])
         for y,elem in enumerate(elemlist):
             if not isinstance(sw_iyld[k][y], (int,long)) and y>1:
                 havg=np.mean(hyld[k][y][dd[k]-navg:])

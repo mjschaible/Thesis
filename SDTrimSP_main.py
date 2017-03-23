@@ -15,12 +15,14 @@ import SDTrimSP_readSput
 import SDTrimSP_plotSput
 
 mpl.rcParams['lines.linewidth'] = 3
-mpl.rcParams['axes.titlesize'] = 'large'
-mpl.rcParams['axes.labelsize'] = 'large'
+mpl.rcParams['axes.titlesize'] = 'x-large'
+mpl.rcParams['axes.labelsize'] = 'x-large'
 #mpl.rcParams['axes.labelpad'] = 2.5
-mpl.rcParams['xtick.labelsize']='medium'
+mpl.rcParams['xtick.labelsize']='large'
 mpl.rcParams['ytick.labelsize']='large'
+mpl.rcParams['legend.fontsize']='large'
 mpl.rcParams['legend.handlelength']=2.5
+mpl.rcParams['lines.markersize']=8
 
 def find_between( s, first, last=None ):
     try:
@@ -59,12 +61,13 @@ fyld=0
 
 if elem_comp==1:
     genClass = ["H_SiO2", "H_Al2O3", "He_SiO2", "He_Al2O3"]
-    color=[iter(plt.cm.viridis(np.linspace(0,1,6))) for i in genClass]
+    color=[iter(plt.cm.viridis(np.linspace(.2,.8,3))) for i in genClass]
     tarClass = [ "SBEO1eV_nodiff", "SBEO2eV_nodiff", "SBEO3eV_nodiff"]
-    marker=[iter(['v', '^', '<', '>']) for i in genClass]
+    marker=[iter(['v','^','<','>','v','^','<','>']) for i in genClass]
+    mfac=[iter([None,None,None,None,'None','None','None','None']) for i in genClass]
 if elem_comp==2:
 #    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
-    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
+    genClass = ["Lunar","Mars","Urelites","OCsECs","CCs"]
     tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
     color=iter(['grey','blue','red','green','purple','orange','black'])
     marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
@@ -104,7 +107,9 @@ path = askdirectory()
 dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
 for cdir in genClass:
+    print cdir
     ddirs=[d for d in os.listdir(cdir) if os.path.isdir(os.path.join(cdir, d))]
+    ddirs.sort()
     for adir in ddirs:
         if cdir in genClass and adir in tarClass:
             loglist=[]
@@ -154,11 +159,14 @@ for cdir in genClass:
                         out_yld[i][j].label.append(log_yld[index].label[4]) # append element names
                         out_yld[i][j].label.append(log_yld[index].label[5]) # append atomic masses
                         out_yld[i][j].label.append(log_yld[index].label[6]) # append SBE
+                        #if out_yld[i][j].label[6][-1]==2.0:
+                        #print out_yld[i][j].label[6][-1]
                     else:
                         print "the number of elements does not match"
                         print len(out_yld[i][j].Flux)
                         print len(log_yld[nlog].label[4])
                     met_class=out_yld[i][j].label[0]
+                    #print met_class
 
 #----- Plot total yields derived from the *.out files -----
             if out_yld:
@@ -174,9 +182,10 @@ for cdir in genClass:
                             nf = j+1
                             c=next(color[j])
                             mk=next(marker[j])
+                            mfc=next(mfac[j])
                             lbl=path_name
                             # plot_out1 is the total yield vs. energy for SDTrimSP simulations
-                            plot_sput=SDTrimSP_plotSput.plot_out1(out_yld,nf,c,mk)
+                            plot_sput=SDTrimSP_plotSput.plot_out1(out_yld,nf,c,mk,mfc)
                         else:
                             nf=-1
                 else:
@@ -202,11 +211,13 @@ for cdir in genClass:
 
             # ---- Plot the species yields vs. fluence ----
             if fyld==1:
-                for out in out_yld:
-                    plot_out=SDTrimSP_plotSput.plot_vflu(sw_out,tag)
-                    #ploty_sput=SDTrimSP_plotSput.plot_out3(out,met_class,tag)
-                if elem_comp==2:
+                if elem_comp==1:
+                    for out in out_yld:
+                        ploty_sput=SDTrimSP_plotSput.plot_vflu(out,tag)
+                elif elem_comp==2:
                     plot_sput=SDTrimSP_plotSput.plot_vflu(ion_out,tag)
+                    for out in out_yld:
+                        plot_out=SDTrimSP_plotSput.plot_vflu(sw_out,tag)
 
             #----- Plot total yields derived from the log files -----
             if log_yld:

@@ -14,9 +14,11 @@ def plot_sputExpt(log, tar, lbl=None):
         if auth=='Roth_1979':
             mfc='k'
             lauth = 'Roth et al., 1979'
+            yerr=np.nanmax(log.totYld[i])*0.2
         elif 'Ken' in auth:
             lauth = 'Wehner and KenKnight, 1967'
             mfc='none'
+            yerr=np.nanmax(log.totYld[i])*0.5
         else:
             mfc='None'
  
@@ -28,9 +30,8 @@ def plot_sputExpt(log, tar, lbl=None):
                 fig = plt.figure(1)
                 #fig.suptitle("The simulation run is {0}".format(log[0].label[nf]))
                 ax1 = fig.add_subplot(2,2,j+1)
-                yerr=np.nanmax(log.totYld[i])*0.2
                 ax1.scatter(log.energy,log.totYld[i],
-                             label=lauth,marker=mk,facecolor=mfc,color='k',s=75)
+                             label=lauth,marker=mk,facecolor=mfc,color='k',s=80)
                 ax1.errorbar(log.energy,log.totYld[i],yerr=yerr,color='k')
                 
                 #plt.savefig('/Users/spacebob/Work/Simulations/images/{}expt.png'.format(ntar),dpi=600)
@@ -42,14 +43,17 @@ def plot_srim(log,tar,lbl=None):
         ion=log.label[1][i]
         SBEO=log.label[4][i]
         SBEX=log.label[5][i]
-
         if 'Al' in expt_tar:
             metal='Al'
         elif 'Si' in expt_tar:
             metal='Si'
+            c='m'
+        if SBEO =='2.00':
+            mfc=None
+            c='c'
+        else:
+            mfc='None'
         lbl = 'SRIM, $E_{}$({})={} eV, $E_{}$(O)={} eV'.format('{SBE}',metal,SBEX,'{SBE}',SBEO)
-        mk='o'
-        
         for j, nsim in enumerate(tar):
             nsim=nsim.replace('_', '->', 1)
             if expt_tar in nsim:
@@ -57,7 +61,7 @@ def plot_srim(log,tar,lbl=None):
                 ntar=tar[j].replace('->', '_')
                 fig = plt.figure(1)
                 ax1 = fig.add_subplot(2,2,j+1)
-                ax1.plot(log.energy,log.totYld[i], label = lbl, linestyle='--',marker=mk)
+                ax1.plot(log.energy,log.totYld[i],c=c,label = lbl,linestyle='--',marker='o',markerfacecolor=mfc,markeredgewidth=2,markeredgecolor=c)
                 #plt.savefig('/Users/spacebob/Work/Simulations/images/{}srim.png'.format(ntar),dpi=600)
     return
 
@@ -117,7 +121,7 @@ def plot_log(log,nf,ls,c,lbl=None,h=None,mc=None):
             leg = ax1.legend()
     return
 
-def plot_out1(sput, nf, c, mk, lbl=None):
+def plot_out1(sput, nf, c, mk,mfc, lbl=None):
     isbv_pos=['isbv1']#,'isbv3','isbv5']
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(2,2,nf)
@@ -140,6 +144,7 @@ def plot_out1(sput, nf, c, mk, lbl=None):
             isbv=sputy[i].label[3]
 
             energy = np.mean(sputy[i].energy)
+
             totYld = np.mean(sputy[i].totYld[len(sputy[i].totYld)-10:])
             totYld_yerr = np.std(sputy[i].totYld[len(sputy[i].totYld)-10:])
             for j in range(len(isbv_pos)):
@@ -161,28 +166,28 @@ def plot_out1(sput, nf, c, mk, lbl=None):
             lbl=r'SDTrimSP{}'.format(lblSBE)
         else:
             lbl=None
-        ax1.plot(e_sort[j],yld_sort[j],label=lbl,marker=mk)
+        ax1.plot(e_sort[j],yld_sort[j],label=lbl,color=c,marker=mk,markerfacecolor=mfc,markeredgewidth=2,markeredgecolor=c)
         #ax1.errorbar(e_sort[j],yld_sort[j],yerr=yld_yerr[j])
 
     if nf==1:
         ax1.set_zorder(100)
-        leg = ax1.legend(prop={'size':11}, bbox_to_anchor=(1.15, 1.05)) #handles=[ax1], loc=1, 
+        leg = ax1.legend(prop={'size':11},bbox_to_anchor=(0.35, 1)) #handles=[ax1], loc=1, 
     #ax1.set_yscale('log')
     #ax1.set_xscale('symlog')
-    ax1.set_xlim([0,10000])
+    ax1.set_xlim([0,9900])
     
     if ion == 'H':
         ax1.set_ylim([0,0.1])
     elif ion == 'He':
         ax1.set_ylim([0,0.65])
     if nf==1 or nf==3:
-        ax1.set_ylabel('Yield (atom/ion)', fontsize=18)
+        ax1.set_ylabel('Yield (atom/ion)')
     if nf==2 or nf==4:
         ax1.yaxis.set_ticklabels([])
     if nf<3:
         ax1.xaxis.set_ticklabels([])
     if nf>2:
-        ax1.set_xlabel('Energy (eV)', fontsize=18)
+        ax1.set_xlabel('Energy (eV)')
     if nf==4:
         plt.tight_layout()
 
@@ -199,7 +204,6 @@ def plot_vflu(sput, lbl=None):
         tar=i.label[1].split('->')[1]
         ttar= r'{}$\rightarrow${}'.format(ion,tar)
         ntar='{}_{}'.format(ion,tar)
-        
         if ion =='H' and energy== 1000 and Esbe_O==2.0:
             if 'Al2O3' in ntar and Esbe_O==2.0:
                 fig1 = plt.figure(4)
@@ -207,8 +211,8 @@ def plot_vflu(sput, lbl=None):
                 fig1 = plt.figure(5)
             level=1
             ax = fig1.add_subplot(1,2,level)
-            ax.set_ylim(3e-3,.1)
-            ax.set_ylabel('Total Sputter Yield (atoms/ion)')
+            ax.set_ylim(0,.04)
+            ax.set_ylabel('Sputter Yield (atoms/ion)')
             ax.set_title(ttar)
             ax.set_xlim(i.fluence[1],i.fluence[-1])
             ax.set_xlabel('Fluence (x$10^{16}$)')
@@ -219,7 +223,7 @@ def plot_vflu(sput, lbl=None):
                 fig1 = plt.figure(5)
             level=2
             ax = fig1.add_subplot(1,2,level)
-            ax.set_ylim(3e-2,1)
+            ax.set_ylim(0,0.4)
             #ax.get_yaxis().set_visible(False)
             ax.set_title(ttar)
             ax.set_xlim(i.fluence[1],i.fluence[-1])
@@ -232,41 +236,43 @@ def plot_vflu(sput, lbl=None):
             ax.set_ylabel('Secondary Ion Sputter Yield (ions/ion)')
 
         # -- Plot the yield summed over all species --
-        tlbl = 'Tot Yld'
+        tlbl = 'Tot Yield, $Y^{tot}$'
         p=0
         if ion == 'H' and energy== 1000 and Esbe_O==2.0:
-            ax.loglog(i.fluence,i.totYld,c='k',lw=1,ls='-',label=tlbl)
+            ax.semilogx(i.fluence,i.totYld,c='k',ls='-',label=tlbl)
             p=1
         elif ion == 'He' and energy== 4000 and Esbe_O==2.0:
-            ax.loglog(i.fluence,i.totYld,c='k',lw=1,ls='-',label=tlbl)
+            ax.semilogx(i.fluence,i.totYld,c='k',ls='-',label=tlbl)
             p=1
         elif ion =='SW':
-            ax.loglog(i.fluence,i.totYld,c='k',lw=1,ls='-',label=tlbl)
+            ax.loglog(i.fluence,i.totYld,c='k',ls='-',label=tlbl)
             
         
         # -- Plot the individual species yields -- 
-        c2=iter(plt.cm.rainbow(np.linspace(0,1,5)))
+        c2=iter(plt.cm.viridis(np.linspace(0.2,0.8,2)))
         for y,elem in enumerate(i.label[4]):
             if elem=='O' or elem=='Al' or elem=='Si' or elem=='Fe' or elem=='Mn':
                 ce=next(c2)
                 if not isinstance(i.Flux[y], (int,long)) and y>0:
                     if p==1:
-                        elbl=elem
+                        elbl=r'{} Yield, $Y_{{{}}}$'.format(elem, elem)
                     else:
                         elbl=None
                     
                     if ion == 'H' and energy== 1000 and Esbe_O==2.0:
-                        ax.loglog(i.fluence,i.Flux[y],c=ce,lw=2,ls='--',label=elbl)
+                        ax.semilogx(i.fluence,i.Flux[y],c=ce,ls='--',label=elbl)
                     elif ion == 'He' and energy== 4000 and Esbe_O==2.0:
-                        ax.loglog(i.fluence,i.Flux[y],c=ce,lw=2,ls='--',label=elbl)
+                        ax.semilogx(i.fluence,i.Flux[y],c=ce,ls='--',label=elbl)
                     elif ion =='SW':
-                        ax.loglog(i.fluence,i.Flux[y],c=ce,lw=2,ls='--',label=elbl)
+                        ax.loglog(i.fluence,i.Flux[y],c=ce,ls='--',label=elbl)
                         
             handles, labels = plt.gca().get_legend_handles_labels()
 
     if lbl=='SOx':
         if level==2:
-            plt.legend(loc=1,fontsize=14)
+            handles = [handles[0], handles[2], handles[1]]
+            labels = [labels[0], labels[2], labels[1]]
+            plt.legend(handles, labels, loc=1)
             
     if lbl=='Met':
         i =1
@@ -277,7 +283,7 @@ def plot_vflu(sput, lbl=None):
             else:
                 i +=1
         if level==1:
-            plt.legend(handles, labels,loc=2,fontsize=12)
+            plt.legend(handles, labels,loc=2)
         if level==2:
             plt.tight_layout()
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}_vsF.png'.format(ntar),dpi=600)
@@ -324,15 +330,16 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
                 navg=10
                 elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
                 elem_iyld_var[n][ni]=np.std(i.Flux[y][dd-navg:])
-                    
+        
         tot_iyld=np.sum(elem_iyld)
 
     sw_iavg=np.zeros(len(elem_iyld[0]))
     myarray = np.asarray(elem_iyld)
     metclass_mean=np.mean(myarray, axis=0)
     metclass_std=np.std(myarray, axis=0)
-    #for y, elem in enumerate(i.label[4]):
-    #    print elem, metclass_mean[y], metclass_std[y]
+    print 'Class Averages'
+    for y, elem in enumerate(plotElem):
+        print elem, metclass_mean[y], metclass_std[y]
     tot_iyld=np.sum(metclass_mean)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)

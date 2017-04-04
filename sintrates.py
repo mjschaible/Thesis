@@ -1,4 +1,4 @@
-'''Program to calculate the volumetric/radial sintering rate as a function of time in order to determine the time scale at which the radiation induced sintering can increase the contact radius between grains from some initial (Hertzian, or calculated from TC outside the anomalous region) to the contact radius inside the anomalous region calculated from the Wood theory and the measured thermal inertia of the regolith'''
+'''Program to calculate the volumetric/radial sintering rate as a function of time in order to determine the time scale at which the radiation induced sintering can increase the contact radius between grains from some initial (Hertzian, or calculated from TC outside the anomalous region) to the contact radius inside the anomalous region calculated from Sirono and Yamamoto theory and the measured thermal inertia of the regolith'''
 
 from decimal import Decimal
 from decimal import getcontext
@@ -89,8 +89,7 @@ stoyear = 3.16888e-8 # year/sec
 ev2erg = 1.602e-12 # erg/eV
 invkb = 1/kb
 
-# For now assume an average energy loss for all depths
-# Should eventually use Penelope results to give vs. depth
+#This is the part of the program where you would use the dose rates from the particle tracing programs
 dEdz = (1e6)*ev2erg # (eV)erg/cm, energy deposition rate at Mimas
 
 # Define water ice parameters
@@ -264,30 +263,15 @@ for body in Bodies:
                 #afig = plot_JKR(rg_jkr, T, Ymod, Prat, Rconjkr, hfig)
                 print "Rconjkr = {:.3f} um".format(Rconjkr[20]*1e4)
 
-                # ------ Define Wood model structural parameters -----
-                Ysc = 0.22 # Obtained from curve fitting experimental data
-                Zsc1 = 1 # Contact radius dependence (linear vs. quadratic), TBD....
-                Zsc2 = 2 
                 # Calculate Nc = Neighbor contacts, depends on the porosity from curve fitting  [Yang et al, 2000]
                 Nc = 2.02*((1+87.38*(1-phi)**4)/(1+25.81*(1-phi)**4))
-                Rconminlin = 0 # Minimum contact radius calculated with Wood theory
-                Rconminquad = 0 # 'lin' and 'quad' assume linear and quadratic dependence 
-                #Determine the Wood TC eqn pre-factor
-                Apflin = (1/(Ysc*Nc))*(2*np.sqrt(Nc-1)*rg/Nc)**(Zsc1)
-                Apfquad = (1/(Ysc*Nc))*(2*np.sqrt(Nc-1)*rg/Nc)**(Zsc2)
-
-                # ----- Calculate linear and quadratic minimum contact radius from the Wood model -----
-                Rconminlin = (Apflin*kout*(1+0.5*phi)/(kice*(1-phi)))
-                Rconmaxlin = (Apflin*kin*(1+0.5*phi)/(kice*(1-phi)))
-                Rconminquad = np.sqrt(Apfquad*kout*(1+0.5*phi)/(kice*(1-phi)))
-                Rconmaxquad = np.sqrt(Apfquad*kin*(1+0.5*phi)/(kice*(1-phi)))
 
                 # ------ Define Sirono and Yamamoto model parameters ------
                 g = 1
                 pc = 1/3
                 p = 6*(1-phi)/pi
                 SYpf = ((1-pc)/(p-pc))*g*rg*rg/pi
-            #    SYpf_lin = ((1-pc)/(p-pc))*g*rg/pi
+
                 # ----- Calculate linear and quadratic minimum contact radius from the Sirono and Yamamoto model -----
                 RconminSY = np.sqrt((kout/kice)*SYpf)
                 RminSYerr_m = RconminSY-np.sqrt(((kout-kouterr_m)/kice)*SYpf)

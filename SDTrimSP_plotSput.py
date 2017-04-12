@@ -294,8 +294,10 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
 
     if nf==1:
         plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
+        t = 'Neutral'
     elif nf==2:
         plotElem=['Mg', 'Al', 'Si', 'Ca', 'Fe']
+        t= 'Ion'
     # --Calculate elemental averages and variances for each target--
     #elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
     elem_iyld=[[0]*len(plotElem) for i in range(len(sput))]
@@ -315,12 +317,17 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
             ax.get_yaxis().set_visible(False)
         elif a == 'SW':
             level=1
-            ax=fig1.add_subplot(111)
+            ax=fig1.add_subplot(1,2,1)
+            ax2=fig1.add_subplot(1,2,2)
             ax.set_yscale('log')
+            ax2.set_yscale('log')
+
             if nf==1:
                 ax.set_ylabel('SW Total Sputter Yield (atoms/ion)')
+                ax2.set_ylabel('Elemental yield / Si yield')
             elif nf==2:
                 ax.set_ylabel('SW Secondary Ion Sputter Yield (ions/ion)')
+                ax2.set_ylabel('Secondary ion yield / Si ion yield')
 
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
         for y,elem in enumerate(i.label[4]):
@@ -330,33 +337,50 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
                 navg=10
                 elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
                 elem_iyld_var[n][ni]=np.std(i.Flux[y][dd-navg:])
-        
         tot_iyld=np.sum(elem_iyld)
 
     sw_iavg=np.zeros(len(elem_iyld[0]))
     myarray = np.asarray(elem_iyld)
     metclass_mean=np.mean(myarray, axis=0)
     metclass_std=np.std(myarray, axis=0)
-    print 'Class Averages'
+    print 'Class Averages, {}'.format(t)
     for y, elem in enumerate(plotElem):
-        print elem, metclass_mean[y], metclass_std[y]
+        print '{}, {}$\pm${}'.format(elem, metclass_mean[y], metclass_std[y])
+
+    if nf==1:
+        elem_vsSi_mean=metclass_mean/metclass_mean[5]
+        elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
+    elif nf==2:
+        elem_vsSi_mean=metclass_mean/metclass_mean[2]
+        elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[2]/metclass_mean[2])**2)**0.5
+
     tot_iyld=np.sum(metclass_mean)
+    print 'Total {} yield = {:.3}'.format(t, tot_iyld)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)
     ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
     ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
+    ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+    ax2.errorbar(pos+0.4,elem_vsSi_mean,yerr=elem_vsSi_std,linestyle='',c=ct)
     #labels = [item.get_text() for item in ax.get_xticklabels()]
     #labels = i.label[4]
     ax.set_xlim(min(pos)-0.5, max(pos)+0.2)
     ax.set_xticks(pos+0.5,minor=True)
     ax.xaxis.set(ticks=pos,ticklabels=plotElem)
+    ax2.set_xlim(min(pos)-0.5, max(pos)+0.2)
+    ax2.set_xticks(pos+0.5,minor=True)
+    ax2.xaxis.set(ticks=pos,ticklabels=plotElem)
     # Turn on the grid for the minor ticks
     ax.xaxis.grid(True, which='minor')
+    ax2.xaxis.grid(True, which='minor')
     gridlines = ax.get_ygridlines()
+    gridlines2 = ax2.get_ygridlines()
     for line in gridlines:
         line.set_linestyle('--')
-        
-    plt.legend(loc=1,fontsize=12)
+    for line in gridlines2:
+        line.set_linestyle('--')
+    
+    ax.legend(loc=1,fontsize=10)
     #plt.autoscale(enable=True, axis='x', tight=True)
     if nf==1:
         ax.set_ylim(1e-5,2e-2)
@@ -364,10 +388,11 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
         #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWtYldComp.png',dpi=600)
     if nf==2:
         ax.set_ylim(3e-6,1e-3)
+        ax2.set_ylim(0.05,15)
         #plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
         #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
         
-    return
+    return metclass_mean, metclass_std
     
 def plot_ER(ER,c,lbl,targets,nf,mk):
     xlabels=['Mg/Si', 'Mg/Si', 'Mg/Si', 'Al/Si', 'Al/Si', 'Ca/Si']
@@ -404,20 +429,51 @@ def plot_ER(ER,c,lbl,targets,nf,mk):
             ax.set_ylim(bottom=0)
             axs[i].set_xlim(left=0)
             axs[i].set_ylim(bottom=0)
-
-                #print targets
-                #print ER[y_index[i]]
-                #print ER[x_index[i]]
-                #if lbl=='MetStds':
-                #    ax1.annotate(
-                #        targets[j], 
-                #        xy = (ratio[x_index[i]],ratio[y_index[i]]), xytext = (-20, 20),
-                #        textcoords = 'offset points', ha = 'right', va = 'bottom',
-                #        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
-                #bbox = dict(boxstyle = 'round,pad=0.5', fc = 'blue', alpha = 0.5),
                 
     handles, labels = fig.gca().get_legend_handles_labels()
     #print handles, labels
     fig.legend(handles, labels, bbox_to_anchor=(0.1,.95),loc='center left',ncol=10,fontsize=12)
     plt.subplots_adjust(top=0.9, wspace=0.25, hspace=0.35)
+    return
+
+def plot_flux(mean_yld,tld_std,c,met,nf,mk):
+    if met=='Mars':
+        ttl=met
+        col=1
+    elif met=='CCs':
+        ttl = 'Carboneceous Chondrites'
+        col = 2
+    elif met=='Aubrites':
+        ttl=met
+        col=3
+    else:
+        col=0
+    if col>0:
+        fig = plt.figure(nf)
+        ax = fig.add_subplot(1,3,col)
+        ax.set_title(ttl)
+        if col==1:
+            ax.set_ylabel('Sputtered Ion Flux (ions $cm^{-2}s^{-1}$)')
+        if col==2:
+            ax.set_xlabel('Distance above $r_{sb}$=10 km object (km)')
+
+        elem=['Mg', 'Al', 'Si', 'Ca', 'Fe']
+
+        phiSW=1e8 # solar wind flux, ion/cm^2/s
+        P=1./3 # porosity reduction factor
+        theta=0.707 # accounting for cosine distribution of incident ion angles
+        r_sb = 10 # radius of small body, km
+        dist = np.arange(100.)
+        dist_fac=(1-(1-(r_sb/(r_sb+dist))**2)**0.5)
+
+        for i, yld in enumerate(mean_yld):
+            surf_flux=phiSW*yld*P*theta
+            dist_flux=surf_flux*dist_fac
+            ax.semilogy(dist,dist_flux,label=elem[i])
+
+        ax.set_ylim(1,2e4)
+        if col ==3:
+            ax.legend(loc=1,fontsize=12)
+        if col>1:
+            ax.yaxis.set_ticklabels([])
     return

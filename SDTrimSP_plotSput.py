@@ -291,7 +291,7 @@ def plot_vflu(sput, lbl=None):
 
 def plot_iavg(sput, nf, ct,shift, mk, lbl=None): 
     fig1 = plt.figure(nf)
-
+    allElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
     if nf==1:
         plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
         t = 'Neutral'
@@ -331,8 +331,8 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
 
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
         for y,elem in enumerate(i.label[4]):
-            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
-                ni=plotElem.index(elem)
+            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in allElem:
+                ni=allElem.index(elem)
                 dd=len(i.Flux[y])
                 navg=10
                 elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
@@ -344,24 +344,22 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     metclass_mean=np.mean(myarray, axis=0)
     metclass_std=np.std(myarray, axis=0)
     print 'Class Averages, {}'.format(t)
-    for y, elem in enumerate(plotElem):
+    for y, elem in enumerate(allElem):
         print '{}, {}$\pm${}'.format(elem, metclass_mean[y], metclass_std[y])
 
-    if nf==1:
-        elem_vsSi_mean=metclass_mean/metclass_mean[5]
-        elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
-    elif nf==2:
-        elem_vsSi_mean=metclass_mean/metclass_mean[2]
-        elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[2]/metclass_mean[2])**2)**0.5
+    elem_vsSi_mean=metclass_mean/metclass_mean[5]
+    elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
 
     tot_iyld=np.sum(metclass_mean)
     print 'Total {} yield = {:.3}'.format(t, tot_iyld)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)
-    ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
-    ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
-    ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
-    ax2.errorbar(pos+0.4,elem_vsSi_mean,yerr=elem_vsSi_std,linestyle='',c=ct)
+    for y,elem in enumerate(i.label[4]):
+        if elem in plotElem:
+            ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+            ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
+            ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+            ax2.errorbar(pos+0.4,elem_vsSi_mean,yerr=elem_vsSi_std,linestyle='',c=ct)
     #labels = [item.get_text() for item in ax.get_xticklabels()]
     #labels = i.label[4]
     ax.set_xlim(min(pos)-0.5, max(pos)+0.2)

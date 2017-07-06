@@ -199,13 +199,13 @@ for cdir in genClass:
                     ER,sw_out,ion_out=SDTrimSP_readSput.comp_yield(out_yld,targets)
                     shift+=0.1
                     nf=1
-                    ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
+                    #ploty_sput=SDTrimSP_plotSput.plot_iavg(sw_out,nf,c,shift,mk,adir)
                     nf=2
                     mean, std=SDTrimSP_plotSput.plot_iavg(ion_out,nf,c,shift,mk,adir)
                     nf=3
                     #ER_plot=SDTrimSP_plotSput.plot_ER(ER,c,met_class,adir,nf,mk)
                     nf=4
-                    flux_plot=SDTrimSP_plotSput.plot_flux(mean,std,c,adir,nf,mk)
+                    flux_plot=SDTrimSP_plotSput.plot_flux(mean,std,adir,nf)
                 elif elem_comp==1:
                     tag='SOx'
                     nf=nr+10

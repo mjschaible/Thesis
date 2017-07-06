@@ -293,7 +293,7 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     fig1 = plt.figure(nf)
     allElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
     if nf==1:
-        plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
+        plotElem=allElem
         t = 'Neutral'
         nSi=5
     elif nf==2:
@@ -438,47 +438,53 @@ def plot_ER(ER,c,lbl,targets,nf,mk):
     plt.subplots_adjust(top=0.9, wspace=0.25, hspace=0.35)
     return
 
-def plot_flux(mean_yld,tld_std,c,met,nf,mk):
-
-    if met=='Mars':
+def plot_flux(mean_yld,tld_std,met,nf):
+    color=iter(plt.cm.viridis(np.linspace(0,0.9,6)))
+    marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
+    if met=='Lunar':
         ttl=met
         col = 1
+    elif met=='Mars':
+        ttl=met
+        col=2
     elif met=='CCs':
         ttl = 'Carboneceous Chondrites'
-        col=2
-    elif met=='Lunar':
-        ttl=met
         col=3
     else:
         col=0
     if col>0:
-        fig = plt.figure(nf)
+        fig = plt.figure(nf,figsize=(15.0, 8.5))
         #fig2=plt.figure(nf+1)
         ax = fig.add_subplot(1,3,col)
         ax.set_title(ttl)
         if col==1:
             ax.set_ylabel('Sputtered Ion Flux (ions $cm^{-2}s^{-1}$)')
         if col==2:
-            ax.set_xlabel('Distance above $r_{sb}$=10 km object (km)')
+            ax.set_xlabel('Distance above ~20 km diameter object (km)')
 
         elem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
 
         phiSW=1e8 # solar wind flux, ion/cm^2/s
         P=1./3 # porosity reduction factor
         theta=3.78 # accounting for cosine distribution of incident ion angle
-        theta_p=0.68404 # accounting for flux ejected 20deg from surface normal
+        theta_p=0.68404 # accounting for flux ejected within 20deg from surface normal
         r_sb = 10 # radius of small body, km
         dist = np.arange(5.,100.,5)
         dist_fac=(1-(1-(r_sb/(r_sb+dist))**2)**0.5)
 
         for i, yld in enumerate(mean_yld):
-            surf_flux=phiSW*yld*P*theta#*theta_p
+            c=next(color)
+            mk=next(marker)
+            surf_flux=phiSW*yld*P*theta*theta_p
             dist_flux=surf_flux*dist_fac
-            ax.semilogy(dist,dist_flux,label=elem[i])
+            ax.semilogy(dist,dist_flux,label=elem[i],color=c,marker=mk)
             print 'The {} flux at {} km is {} and at {} km is {}'.format(elem[i], dist[0], dist_flux[0], dist[7], dist_flux[7])
         ax.set_ylim(10,1e4)
         if col ==2:
             ax.legend(loc=1,fontsize=12)
         if col>1:
             ax.yaxis.set_ticklabels([])
+
+        if col==3:
+            plt.savefig('/home/mikey/Work/Simulations/images/FluxVsDist.png',dpi=600, bbox_inches='tight')
     return

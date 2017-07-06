@@ -295,9 +295,11 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     if nf==1:
         plotElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
         t = 'Neutral'
+        nSi=5
     elif nf==2:
-        plotElem=['Mg', 'Al', 'Si', 'Ca', 'Fe']
+        plotElem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
         t= 'Ion'
+        nSi=2
     # --Calculate elemental averages and variances for each target--
     #elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
     elem_iyld=[[0]*len(plotElem) for i in range(len(sput))]
@@ -331,8 +333,8 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
 
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
         for y,elem in enumerate(i.label[4]):
-            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in allElem:
-                ni=allElem.index(elem)
+            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
+                ni=plotElem.index(elem)
                 dd=len(i.Flux[y])
                 navg=10
                 elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
@@ -343,25 +345,27 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     myarray = np.asarray(elem_iyld)
     metclass_mean=np.mean(myarray, axis=0)
     metclass_std=np.std(myarray, axis=0)
+    elem_vsSi_mean=metclass_mean/metclass_mean[nSi]
+    #elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
+    
     print 'Class Averages, {}'.format(t)
-    for y, elem in enumerate(allElem):
-        print '{}, {}$\pm${}'.format(elem, metclass_mean[y], metclass_std[y])
+    for y, elem in enumerate(plotElem):
+        print '{}, {}$\pm${}: vs. Si = {}'.format(elem, metclass_mean[y], metclass_std[y], elem_vsSi_mean[y])
 
-    elem_vsSi_mean=metclass_mean/metclass_mean[5]
-    elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
+
 
     tot_iyld=np.sum(metclass_mean)
     print 'Total {} yield = {:.3}'.format(t, tot_iyld)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)
     for y,elem in enumerate(i.label[4]):
+        if y>1:
+            lbl=None
         if elem in plotElem:
             ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
             ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
             ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
-            ax2.errorbar(pos+0.4,elem_vsSi_mean,yerr=elem_vsSi_std,linestyle='',c=ct)
-    #labels = [item.get_text() for item in ax.get_xticklabels()]
-    #labels = i.label[4]
+
     ax.set_xlim(min(pos)-0.5, max(pos)+0.2)
     ax.set_xticks(pos+0.5,minor=True)
     ax.xaxis.set(ticks=pos,ticklabels=plotElem)
@@ -435,19 +439,21 @@ def plot_ER(ER,c,lbl,targets,nf,mk):
     return
 
 def plot_flux(mean_yld,tld_std,c,met,nf,mk):
+
     if met=='Mars':
         ttl=met
-        col=1
+        col = 1
     elif met=='CCs':
         ttl = 'Carboneceous Chondrites'
-        col = 2
-    elif met=='Aubrites':
+        col=2
+    elif met=='Lunar':
         ttl=met
         col=3
     else:
         col=0
     if col>0:
         fig = plt.figure(nf)
+        #fig2=plt.figure(nf+1)
         ax = fig.add_subplot(1,3,col)
         ax.set_title(ttl)
         if col==1:
@@ -455,22 +461,23 @@ def plot_flux(mean_yld,tld_std,c,met,nf,mk):
         if col==2:
             ax.set_xlabel('Distance above $r_{sb}$=10 km object (km)')
 
-        elem=['Mg', 'Al', 'Si', 'Ca', 'Fe']
+        elem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
 
         phiSW=1e8 # solar wind flux, ion/cm^2/s
         P=1./3 # porosity reduction factor
-        theta=0.707 # accounting for cosine distribution of incident ion angles
+        theta=3.78 # accounting for cosine distribution of incident ion angle
+        theta_p=0.68404 # accounting for flux ejected 20deg from surface normal
         r_sb = 10 # radius of small body, km
-        dist = np.arange(100.)
+        dist = np.arange(5.,100.,5)
         dist_fac=(1-(1-(r_sb/(r_sb+dist))**2)**0.5)
 
         for i, yld in enumerate(mean_yld):
-            surf_flux=phiSW*yld*P*theta
+            surf_flux=phiSW*yld*P*theta#*theta_p
             dist_flux=surf_flux*dist_fac
             ax.semilogy(dist,dist_flux,label=elem[i])
-
-        ax.set_ylim(1,2e4)
-        if col ==3:
+            print 'The {} flux at {} km is {} and at {} km is {}'.format(elem[i], dist[0], dist_flux[0], dist[7], dist_flux[7])
+        ax.set_ylim(10,1e4)
+        if col ==2:
             ax.legend(loc=1,fontsize=12)
         if col>1:
             ax.yaxis.set_ticklabels([])

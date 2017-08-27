@@ -453,7 +453,7 @@ def plot_flux(mean_yld,tld_std,met,nf):
     else:
         col=0
     if col>0:
-        fig = plt.figure(nf,figsize=(15.0, 8.5))
+        fig = plt.figure(nf,figsize=(12.0, 7))
         #fig2=plt.figure(nf+1)
         ax = fig.add_subplot(1,3,col)
         ax.set_title(ttl)

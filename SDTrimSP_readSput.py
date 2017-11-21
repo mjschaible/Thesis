@@ -563,7 +563,7 @@ def comp_yield(out_yld, tar):
                             hyld[k][y]=yld
                             h_iyld[k][y]=yld*relcorr[y]*ifrac
     
-                elif ion == 'He' and target == tar[k]:
+                elif ion == 'He' and target in tar[k]:
                     #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
                     for y, elem in enumerate(elemlist):
                         match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
@@ -578,6 +578,7 @@ def comp_yield(out_yld, tar):
         for y, elem in enumerate(elemlist):
             if isinstance(hyld[k][y], (int,long)) or isinstance(heyld[k][y], (int,long)):
                 if y<2:
+                    #print elem
                     havg=np.mean(hyld[k][0][dd[k]-navg:])
                     heavg=np.mean(heyld[k][1][dd[k]-navg:])
                 else:

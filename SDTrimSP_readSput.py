@@ -12,7 +12,7 @@ class LogData (object):
         self.label=label # Simulation details (single string)
         self.energy=energy # Simulation energy (single integer)
         self.fluence=fluence # Array of fluence (n) steps in a simulation 
-        self.Flux=Flux # Flux of each species  (m) at a given fluence step (n by m array)
+        self.Flux=Flux # Flux of each species (m) at a given fluence step (n by m array)
         self.totYld=totYld # Total yield at each fluence step
     def __repr__(seld):
         return repr((self.label, self.energy, self.fluence, self,Flux, self.totYld))
@@ -89,6 +89,7 @@ def read_outfile(fn):
     counter = 0
 
     filename=[]
+    sN=[]
     simeng=[]
     incion=[]
     target=[]
@@ -126,15 +127,13 @@ def read_outfile(fn):
             ln=line.split()
             ln=ln[-1].split('_')[-4]+'->'+line.split('_')[-3]
             filename.append(ln)
-        elif '->' in line and 'eV' in line:
-            ncp=0
+        elif '->' in line:
+            sN.append(line) # The full simulation description (energy + ion -> target)
             simeng.append(columns[0])
             incion.append(columns[1])
             target.append(columns[3])
         elif 'isbv model' in line:
             isbv.append(columns[5])
-        elif 'use inelastic' in line:
-            ncp+=1
         elif 'outgasing' in line:
             diff = line.split(':')
             outgass = '{} diffusion ON'.format(diff[1].rstrip())
@@ -148,14 +147,10 @@ def read_outfile(fn):
                 flu_start.append(len(flulines)-1)
                 iYsum=columns.index('Ysum:')
                 iqumax=columns.index('qumax')
-                nYsum=iqumax-iYsum-1
+                ncp=iqumax-iYsum-1
                 nqumax=len(columns)-iqumax-1
-                if nYsum == nqumax and nYsum == ncp:
-                    nelem.append(nYsum)
-                    #print 'The number of elements is {}'.format(nYsum)
-                else:
-                    print "The number of elements does not match"
-                    print 'nYsum = {}, nqumax = {}, ncp = {}'.format(nYsum, nqumax, ncp)
+                nelem.append(ncp)
+                #print 'The number of elements is {}'.format(nYsum)
                     
             if float(columns[2])==float(totflu):
                 flu_end.append(len(flulines))
@@ -180,7 +175,6 @@ def read_outfile(fn):
 
     num_cur=len(flu_end)
     data_vals=['']*num_cur
-
     for n in range(num_cur):
         data_vals[n]=flulines[flu_start[n]:flu_end[n]]
 
@@ -211,9 +205,7 @@ def read_outfile(fn):
             flu_qumax.append(qumax)
             tot_yld.append(tyld)
             tyld=0
-        
-        descrip.append(filename[0])
-        descrip.append('{}->{}'.format(incion[n],target[n]))
+        descrip.append(sN[n])
         descrip.append(outgass)
         descrip.append(isbv[n])
         arr_step=np.array(flustep,dtype='float')
@@ -230,17 +222,6 @@ def read_logfile(fn):
         contents = logfile.read()
     logfile.close()
 
-    regex = re.compile(r'\d')
-    stuff = fn.split('_')
-    for i in range(len(stuff)):
-        if 'eV' in stuff[i]:
-            numbers = [int(s) for s in regex.findall(stuff[i])]
-            energy = ''.join(map(str,numbers[:]))
-    
-    numbers = [int(s) for s in regex.findall(fn)]
-    isbv = numbers[len(numbers)-1]
-    descrip = "The energy={} and isbv={}".format(energy, isbv)
-    #print descrip
     lines = contents.split('\n')
     count = 1
     nE = 0
@@ -298,7 +279,10 @@ def read_logfile(fn):
         if 'SDTrimSP' in line:
             version = line # Read in the version of SDTrimSP being used
         if '->' in line and len(columns)>3:
-            target = columns[3]
+            incident = columns[:2] # The incident ion [1] and energy [0]
+            target = columns[3] # The simulation target
+            sN=line # The full description (incident -> target)
+            sN=sN.strip()
         if line.strip()!='' and sysLine > 0:
             elemName.append(columns[1])
             Amass.append(columns[3])
@@ -384,12 +368,13 @@ def read_logfile(fn):
             depositedF.append(float(columns[5]))
 
         count +=1
+
     #print DNS0
     #print Q0
     #tardensity=np.sum()
     totYld = np.sum(sputteredF[1:])
-    simName.append('{}->{}'.format(elemName[0],target))
-    simName.append('isbv={}'.format(isbv))
+    simName.append(sN)
+    simName.append('isbv={}'.format(1))
     simName.append('ipot={}'.format(ipot))
     simName.append(target)
     #print elemName
@@ -527,6 +512,66 @@ def find_sputvar(sput, i):
 
     return sput_data
 
+def yld_comp(out_yld, tar):
+    # Array of neut and ion yields vs. fluence for all elements
+    nfyld=[[0]*len(elemlist) for i in range(len(tar))] 
+    ifyld=[[0]*len(elemlist) for i in range(len(tar))]
+    # Array of average neut and ion yields at steady state for all elements
+    avg_nyld=[[0]*len(elemlist) for i in range(len(tar))]
+    avg_iyld=[[0]*len(elemlist) for i in range(len(tar))]
+    # Arrays for returned LogData objects
+    tot_nyld=[] 
+    tot_iyld=[]
+    dd = [] 
+      
+    k=-1
+    # out_yld = files
+    # cycle over ion/target combinations
+    for i in range(len(out_yld)):
+        print out_yld[i].label[0]
+        ion = out_yld[i].label[0].split('->')[0]
+        target = out_yld[i].label[0].split('->')[1]
+        tyld=np.mean(out_yld[i].totYld[len(out_yld[i].totYld)-navg:])
+        dd.append(len(out_yld[i].totYld)) # number of fluence steps
+
+        k+=1
+        for y, elem in enumerate(elemlist):
+            match = [l for l, x in enumerate(out_yld[i].label[3]) if x == elem]
+            if match:
+                yld=out_yld[i].Flux[match[0]]
+                #print k, y
+                nfyld[k][y]=yld
+                ifyld[k][y]=yld*relcorr[y]*ifrac
+
+        for y, elem in enumerate(elemlist):
+            if isinstance(nfyld[k][y], (int,long)):
+                pass
+            else:
+                avg=np.mean(nfyld[k][y][dd[k]-navg:])
+                if avg>1: avg-=1
+                avg_nyld[k][y]=avg
+                avg_iyld[k][y]=avg_nyld[k][y]*relcorr[y]*ifrac
+                print '{}: Y^tot={:.5f}, Y^i={:.6f}'.format(elem,avg_nyld[k][y],avg_iyld[k][y])
+        ttot=np.sum(avg_nyld[k])
+        itot=np.sum(avg_iyld[k])
+        print '{}: Y^tot={:.4f}, Y^i={:.6f}'.format(tar[k],ttot,itot)
+
+        tyld=np.zeros(len(nfyld[k][-1]))
+        iyld=np.zeros(len(ifyld[k][-1]))
+        # Determine the total SW yield as a function of fluence
+        # len(swtyld) = len(fluence)
+        for y, elem in enumerate(elemlist):
+            if not isinstance(nfyld[k][y],(int,long)) and y>1:
+                tyld=map(add,nfyld[k][y],tyld) 
+                iyld=map(add,ifyld[k][y],iyld)
+
+        lbl=out_yld[i].label[:]
+        lbl[3]=elemlist
+        tot_nyld.append(LogData(lbl,out_yld[i].energy,out_yld[i].fluence,nfyld[k],tyld))
+        tot_iyld.append(LogData(lbl,out_yld[i].energy,out_yld[i].fluence,ifyld[k],iyld))
+        
+    return tot_nyld, tot_iyld
+        
 def comp_yield(out_yld, tar):
     hyld=[[0]*len(elemlist) for i in range(len(tar))]
     h_iyld=[[0]*len(elemlist) for i in range(len(tar))]
@@ -547,28 +592,27 @@ def comp_yield(out_yld, tar):
 
     for i in range(len(out_yld)): # cycle over files
         for j in range(len(out_yld[i])): # cycle over ion/target combinations
-            ion = out_yld[i][j].label[1].split('->')[0]
-            target = out_yld[i][j].label[1].split('->')[1]
+            ion = out_yld[i][j].label[0].split()[1]
+            target = out_yld[i][j].label[0].split()[3]
+            #print ion, target
             tyld=np.mean(out_yld[i][j].totYld[len(out_yld[i][j].totYld)-navg:])
             dd.append(len(out_yld[i][j].totYld))
             
             for k in range(len(tar)):
                 if ion == 'H' and target in tar[k]:
-                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[0], tyld)
                     for y, elem in enumerate(elemlist):
-                        match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
+                        match = [l for l, x in enumerate(out_yld[i][j].label[3]) if x == elem]
                         if match:
-                            #yld=np.mean(0.95*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])
                             yld=0.95*out_yld[i][j].Flux[match[0]]
                             hyld[k][y]=yld
                             h_iyld[k][y]=yld*relcorr[y]*ifrac
     
                 elif ion == 'He' and target in tar[k]:
-                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[1], tyld)
+                    #print 'The {} total yield is {}'.format(out_yld[i][j].label[0], tyld)
                     for y, elem in enumerate(elemlist):
-                        match = [l for l, x in enumerate(out_yld[i][j].label[4]) if x == elem]
+                        match = [l for l, x in enumerate(out_yld[i][j].label[3]) if x == elem]
                         if match:
-                            #yld=np.mean(0.05*out_yld[i][j].Flux[match[0]][len(out_yld[i][j].totYld)-navg:])
                             yld=0.05*out_yld[i][j].Flux[match[0]]
                             heyld[k][y]=yld
                             he_iyld[k][y]=yld*relcorr[y]*ifrac
@@ -578,13 +622,12 @@ def comp_yield(out_yld, tar):
         for y, elem in enumerate(elemlist):
             if isinstance(hyld[k][y], (int,long)) or isinstance(heyld[k][y], (int,long)):
                 if y<2:
-                    #print elem
                     havg=np.mean(hyld[k][0][dd[k]-navg:])
                     heavg=np.mean(heyld[k][1][dd[k]-navg:])
                 else:
                     havg=0
                     heavg=0
-                #print 'The Y{}={} and Y{}={}'.format(elem, havg, elem, heavg)
+                #print 'Y{}={} and Y{}={}'.format(elem, havg, elem, heavg)
             else:
                 #print elemlist[match[0]], elem
                 #print match[0]
@@ -605,13 +648,15 @@ def comp_yield(out_yld, tar):
         sw_iyld.append(map(add,h_iyld[k],he_iyld[k]))
         swtyld=np.zeros(len(sw_iyld[k][0]))
         swiyld=np.zeros(len(sw_iyld[k][0]))
+        # Determine the total SW yield as a function of fluence
+        # len(swtyld) = len(fluence)
         for y, elem in enumerate(elemlist):
             if not isinstance(sw_iyld[k][y], (int,long)) and y>1:
-                swtyld=map(add,sw_yld[k][y],swtyld)
+                swtyld=map(add,sw_yld[k][y],swtyld) 
                 swiyld=map(add,sw_iyld[k][y],swiyld)
         totyld.append(swtyld)
         totiyld.append(swiyld)
-
+        
     for k, ttar in enumerate(tar):
         tot_iyld=0
         tot_yld=0

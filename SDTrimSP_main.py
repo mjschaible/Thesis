@@ -43,40 +43,11 @@ def find_name(yld_label, color):
 # ------------ Begin main program ----------
 cont = 1
 nr=1
-# Specify which type of target is being analyzed
-# 0 == single system; 1 == simple oxides; 2 == meteorites
-elem_comp=2
-
-if elem_comp==1:
-    genClass = ["Mars","Aubrites"]
-    tarClass = ["Mars","Aubrites"]
-    color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
-elif elem_comp==1:
-    genClass = ["H_SiO2", "H_Al2O3", "He_SiO2", "He_Al2O3"]
-    color=[iter(plt.cm.viridis(np.linspace(.2,.8,3))) for i in genClass]
-    tarClass = [ "SBEO1eV_nodiff", "SBEO2eV_nodiff", "SBEO3eV_nodiff"]
-    marker=[iter(['v','^','<','>','v','^','<','>']) for i in genClass]
-    mfac=[iter([None,None,None,None,'None','None','None','None']) for i in genClass]
-elif elem_comp==2:
-#    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
-    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
-    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
-    color=iter(['grey','blue','red','green','purple','orange','black'])
-    marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
-    #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
 
 # Specify whether or not to include experimental and SRIM results
 # 1 == yes; 0 == no
 incl_expt=0
 incl_srim=0
-
-# Specify how to compare the experiments (?)
-expt_comp=2 # 1= SOx, 2=Met
-shift=-0.3
-
-# Variable to determine whether or not to plot yields vs. fluence for specified energies
-# no == 0, yes == 1
-fyld=0
 
 # ----- Import and plot experimental data -----
 if incl_expt==1:
@@ -105,11 +76,44 @@ if incl_srim==1:
     for i in range(len(srim_yld)):
         plot_srim = SDTrimSP_plotSput.plot_srim(srim_yld[i],genClass)
 
+# Specify which type of target is being analyzed
+# 0 == single system; 1 == simple oxides; 2 == meteorites
+elem_comp=0
+
+if elem_comp==0:
+    genClass = ["Mars","Aubrites"]
+    tarClass = ["Lobe_O"]
+    color=iter(plt.cm.Set1(np.linspace(0,1,len(tarClass))))
+elif elem_comp==1:
+    genClass = ["H_SiO2", "H_Al2O3", "He_SiO2", "He_Al2O3"]
+    color=[iter(plt.cm.viridis(np.linspace(.2,.8,3))) for i in genClass]
+    tarClass = [ "SBEO1eV_nodiff", "SBEO2eV_nodiff", "SBEO3eV_nodiff"]
+    marker=[iter(['v','^','<','>','v','^','<','>']) for i in genClass]
+    mfac=[iter([None,None,None,None,'None','None','None','None']) for i in genClass]
+elif elem_comp==2:
+#    MetClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","CCs","OCsECs"] #"LunarAnalog"
+    genClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
+    tarClass = ["Lunar","HEDs","Mars","Aubrites","Urelites","OCsECs","CCs"]
+    color=iter(['grey','blue','red','green','purple','orange','black'])
+    marker=iter(['o', 's', 'D', '^', 'v', '<', '>'])
+    #color=iter(plt.cm.Set1(np.linspace(0,1,len(MetClass))))
+    
+# Specify how to compare the experiments (?)
+# 1= SOx, 2=Met
+expt_comp=2 
+shift=-0.3
+
+# Variable to determine whether or not to plot yields vs. fluence for specified energies
+# no == 0, yes == 1
+fyld=0
+
 # ---- Begin procedure to read in SDTrimSP output files ----
+dir_num=0
 root = Tk()
 root.withdraw() 
 path = askdirectory()
 dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+#print dirs
 
 for cdir in genClass:
     print cdir
@@ -117,7 +121,7 @@ for cdir in genClass:
     ddirs.sort()
     for adir in ddirs:
         if cdir in genClass and adir in tarClass:
-            loglist=[]
+            print cdir
             log_yld=[]
             out_yld=[]
             ER=[]
@@ -129,12 +133,11 @@ for cdir in genClass:
             outfiles = path+'/'+cdir+'/'+adir+"/*.out"
             datfiles = path+'/'+cdir+'/'+adir+"/*.dat"
             path_name=find_between(path, 'data')
-            print path_name
+            #print path_name
 
             # first read log data files to get full simulation description
             for filename in glob.glob(logfiles):
                 print 'The file is {0}'.format(filename)
-                loglist.append(filename)
                 log_yld.append(SDTrimSP_readSput.read_logfile(filename))
                 n_eng+=1
             log_yld=sorted(log_yld, key=lambda x: x.label[0])#, reverse=True)

@@ -289,7 +289,8 @@ def plot_vflu(sput, lbl=None):
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}_vsF.png'.format(ntar),dpi=600)
     return
 
-def plot_iavg(sput, nf, ct,shift, mk, lbl=None): 
+def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
+    print lbl
     fig1 = plt.figure(nf)
     allElem=['C_g','O','Na','Mg','Al','Si','S','K','Ca','Mn','Fe']
     if nf==1:
@@ -299,25 +300,26 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     elif nf==2:
         plotElem=['Na', 'Mg', 'Al', 'Si', 'Ca', 'Fe']
         t= 'Ion'
-        nSi=2
+        nSi=3
     # --Calculate elemental averages and variances for each target--
     #elem_iyld=[[0]*len(sput[0].label[4]) for i in range(len(sput))]
     elem_iyld=[[0]*len(plotElem) for i in range(len(sput))]
     elem_iyld_var=[[0]*len(plotElem) for i in range(len(sput))]
     for n,i in enumerate(sput):
         ni=0
-        a=i.label[1].split('->')[0]
-        if a =='H':
+        eng=i.label[0].split()[0] #variable for the incident energy
+        ion=i.label[0].split()[1] # variable for the incident ion
+        if ion =='H':
             level=1
             ax = fig1.add_subplot(1,2,level)
             ax.set_ylim(5e-5,1)
             ax.set_ylabel('Sputter Yield (atoms/ion)')
-        elif a == 'He':
+        elif ion == 'He':
             level=2
             ax = fig1.add_subplot(1,2,level)
             ax.set_ylim(5e-5,1)
             ax.get_yaxis().set_visible(False)
-        elif a == 'SW':
+        else:
             level=1
             ax=fig1.add_subplot(1,2,1)
             ax2=fig1.add_subplot(1,2,2)
@@ -325,15 +327,15 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
             ax2.set_yscale('log')
 
             if nf==1:
-                ax.set_ylabel('SW Total Sputter Yield (atoms/ion)')
-                ax2.set_ylabel('Elemental yield / Si yield')
+                ax.set_ylabel('Total Sputter Yield (atoms/ion)')
+                ax2.set_ylabel('Elemental Yield / Si yield')
             elif nf==2:
-                ax.set_ylabel('SW Secondary Ion Sputter Yield (ions/ion)')
-                ax2.set_ylabel('Secondary ion yield / Si ion yield')
+                ax.set_ylabel('Secondary Ion Sputter Yield (ions/ion)')
+                ax2.set_ylabel('Secondary Ion Yield / Si Ion Yield')
 
         c2=iter(plt.cm.rainbow(np.linspace(0,1,len(i.Flux))))
-        for y,elem in enumerate(i.label[4]):
-            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
+        for y,elem in enumerate(i.label[3]):
+            if not isinstance(i.Flux[y], (int,long)) and elem in plotElem:
                 ni=plotElem.index(elem)
                 dd=len(i.Flux[y])
                 navg=10
@@ -352,19 +354,20 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
     for y, elem in enumerate(plotElem):
         print '{}, {}$\pm${}: vs. Si = {}'.format(elem, metclass_mean[y], metclass_std[y], elem_vsSi_mean[y])
 
-
-
     tot_iyld=np.sum(metclass_mean)
     print 'Total {} yield = {:.3}'.format(t, tot_iyld)
     
     pos=np.arange(shift,len(metclass_mean)+shift,1.0)
-    for y,elem in enumerate(i.label[4]):
-        if y>1:
-            lbl=None
+    for y,elem in enumerate(i.label[3]):
         if elem in plotElem:
-            ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+            if elem != 'Si':
+                llbl=None
+            else:
+                llbl=lbl
+
+            ax.plot(pos+0.4,metclass_mean,c=ct,marker=mk,label=llbl,markersize=10,markeredgewidth=0.0,linestyle='')
             ax.errorbar(pos+0.4,metclass_mean,yerr=metclass_std,linestyle='',c=ct)
-            ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=lbl,markersize=10,markeredgewidth=0.0,linestyle='')
+            ax2.plot(pos+0.4,elem_vsSi_mean,c=ct,marker=mk,label=llbl,markersize=10,markeredgewidth=0.0,linestyle='')
 
     ax.set_xlim(min(pos)-0.5, max(pos)+0.2)
     ax.set_xticks(pos+0.5,minor=True)
@@ -383,14 +386,15 @@ def plot_iavg(sput, nf, ct,shift, mk, lbl=None):
         line.set_linestyle('--')
     
     ax.legend(loc=1,fontsize=10)
+    ax2.legend(loc=1,fontsize=10)
     #plt.autoscale(enable=True, axis='x', tight=True)
     if nf==1:
-        ax.set_ylim(1e-5,2e-2)
+        ax.set_ylim(1e-5,5e-2)
         #plt.savefig('/Users/spacebob/Work/Simulations/images/SWtYldComp.png',dpi=600)
         #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWtYldComp.png',dpi=600)
     if nf==2:
-        ax.set_ylim(3e-6,1e-3)
-        ax2.set_ylim(0.05,15)
+        ax.set_ylim(3e-6,5e-3)
+        ax2.set_ylim(0.01,15)
         #plt.savefig('/Users/spacebob/Work/Simulations/images/SWiYldComp.png',dpi=600)
         #plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/SWiYldComp.png',dpi=600)
         

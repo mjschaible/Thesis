@@ -23,44 +23,7 @@ mpl.rcParams['xtick.labelsize']='large'
 mpl.rcParams['ytick.labelsize']='large'
 mpl.rcParams['legend.handlelength']=2.5
 
-## --- Define several functions ---
-def open_files(logfile,ftype):
-    run_thermo = lammps_read.log_read(logfile)
-    run_info= run_thermo[0].descrip # pull out entire simulation description
-    steplen=run_thermo[0].descrip[1] # pull out timestep length [fs]
-    cpath = '/'.join(logfile.split('/')[0:-1])
-    
-    pdens = cpath+"/*.dens"
-    for filedens in glob.glob(pdens): 
-        run_dens = lammps_read.data_read(filedens, steplen, run_info)
-        
-    pmsd = cpath+"/*.msd"
-    for filemsd in glob.glob(pmsd): 
-        run_msd = lammps_read.data_read(filemsd, steplen, run_info)
-
-    prdf = cpath+"/*.rdf"
-    for filerdf in glob.glob(prdf): 
-        run_rdf=lammps_read.rdf_read(filerdf, steplen, run_info)
-
-    pcom = cpath+"/*.com"
-    for filecom in glob.glob(pcom): 
-        run_com = lammps_read.com_read(filecom, steplen) # read the center of mass file
-
-    # create DataFrame and save as csv --> converted dump file
-    pdump = cpath+"/*.dump"
-    if ftype == 1:
-        msd_com = lammps_read.find_commsd(run_com, run_info) # find <MSD> for shells around the PKA
-        for filedump in glob.glob(pdump):
-            shell = msd_com.descrip[8]
-            dataframe, dumpeng=lammps_read.createDataframeFromDump(filedump,shell,run_info,steplen)
-            #dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
-            # if reading from converted dump file
-            #dataframe=createDataframeFromConvDump(sys.argv[1])
-    else:
-        msd_com=[]
-        dumpeng=[]
-
-    return run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng
+## --- Define functions ---
 
 def plot_files(run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng, ftype, nf):
     if nf==1:
@@ -91,40 +54,82 @@ def plot_files(run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng, ftype, 
 def main():
     cont = 1
     nf=1
-    root = Tk()
-    root.withdraw() 
-    path = askdirectory()
-    # show an "Open" dialog box and return the path to the selected file
-    #Tk().withdraw()
-    #filename = askopenfilename()
-    #filepath = filename.split(".")[0]
-    all_dir = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    print all_dir
-    if 'rad00' in all_dir[0]:
-        my_dir = [x for x in all_dir if 'rad00' in x]
-    elif 'EQ' in all_dir[0]:
-        my_dir = [x for x in all_dir if 'EQ' in x]
-        
-    msd_avg=[]
-    for cur_dir in my_dir:
-        logfile = path+'/'+cur_dir+'/log.lammps'
-        if 'rad' in cur_dir:
-            ftype=1
-        else:
-            ftype=0
 
-        run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng = open_files(logfile,ftype)
+    outfile=[]
+    logfile=[]
+    ftype=[]
+    dumpfile=[]
+    msdfile=[]
+    comfile=[]
+    densfile=[]
+    rdffile=[]
+    for root, dirs, files in os.walk("."):
+        for filename in [f for f in files if f.endswith(".out")]:
+            fn_out = os.path.join(root, filename)
+            outfile.append(fn_out)
+        for filename in [f for f in files if f.endswith(".log")]:
+            fn_log = os.path.join(root, filename)
+            if 'rad' in fn_log:
+                ftype.append(1)
+            else:
+                ftype.append(0)
+            logfile.append(fn_log)
+        for filename in [f for f in files if f.endswith(".dump")]:
+            fn_dump = os.path.join(root, filename)
+            dumpfile.append(fn_dump)
+            #print fn_dump
+        for filename in [f for f in files if f.endswith(".rdf")]:
+            fn_rdf = os.path.join(root, filename)
+            rdffile.append(fn_rdf)
+        for filename in [f for f in files if f.endswith(".msd")]:
+            fn_msd = os.path.join(root, filename)
+            msdfile.append(fn_msd)
+        for filename in [f for f in files if f.endswith(".com")]:
+            fn_com = os.path.join(root, filename)
+            comfile.append(fn_com)
+        for filename in [f for f in files if f.endswith(".dens")]:
+            fn_dens = os.path.join(root, filename)
+            densfile.append(fn_dens)
+
+    #print logfile
+    #print dumpfile
+    #print ftype
+    msd_avg=[]
+    for n,lf in enumerate(logfile):
+        run_thermo = lammps_read.log_read(lf)
+        run_info=run_thermo[0].descrip # pull out entire simulation description
+        steplen=run_thermo[0].descrip[1] # pull out timestep length [fs]
+        run_dens = lammps_read.data_read(densfile[n], steplen, run_info)
+        run_msd = lammps_read.data_read(msdfile[n], steplen, run_info)
+        run_rdf=lammps_read.rdf_read(rdffile[n], steplen, run_info)
+        run_com = lammps_read.com_read(comfile[n], steplen)
+        print "{} [fs] step length".format(steplen)
+
+        # create DataFrame and save as csv --> converted dump file
+        if ftype[n] == 1:
+            msd_com = lammps_read.find_commsd(run_com, run_info) # find <MSD> for shells around the PKA
+
+            shell = msd_com.descrip[8]
+            dataframe, dumpeng=lammps_read.createDataframeFromDump(dumpfile[n],shell,run_info,steplen)
+            #dataframe.to_csv(filedump+'_conv',sep=' ', index=False)
+            # if reading from converted dump file
+            #dataframe=createDataframeFromConvDump(sys.argv[1])
+        else:
+            msd_com=[]
+            dumpeng=[]
+
+        # Create function to calculate permanent displacements based on analysis of first and last dump files
+        
+            
         if ftype == 1:
             #ke_max.append(lamms_read.kemaxf(dumpeng))
             msd_avg.append(lammps_read.msd_avgf(msd_com))
         
         nf = plot_files(run_thermo, run_dens, run_msd, run_rdf, msd_com, dumpeng, ftype, nf)
 
-        #plt.show()
-        #cont = input('Enter 0 to end: ')
-
     if ftype == 1:
         lammps_plot.com_plots(msd_avg)
+    plt.show()
     cont = input('Enter 0 to end: ')
 
 if __name__ == "__main__":

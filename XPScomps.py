@@ -16,9 +16,11 @@ import itertools
 
 dirs_c=[] # array for 'comp' files containing position and FWHM
 dirs_a=[] # array for 'area' files containing component areas
+element='o1s'
 samples='cramp'
+#samples='grblank'
 for root, dirs, files in os.walk("."):
-    dirs_c[:]=[d for d in files if 'comps' in d and samples in d]
+    dirs_c[:]=[d for d in files if element in d and samples in d]
     dirs_a[:]=[d for d in files if 'areas' in d and samples in d]
 
 print dirs_c

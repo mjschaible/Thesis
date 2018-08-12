@@ -5,6 +5,8 @@ import csv
 import sys
 import string
 
+n_avg = 50
+
 # Define a class for the standard lammps log output file
 class LogData (object):
 
@@ -364,25 +366,28 @@ def com_read(filename, ts):
     return com_data
 
 def find_commsd(run_com, descrip):
-    # Read the PKA position from the log data file
+    sln=descrip[1] # length of timestep in fs
+    
+    # Read the PKA position from run_thermo.descrip
     xpka=descrip[5][0]
     ypka=descrip[5][1]
     zpka=descrip[5][2]
     npka=descrip[4]
 
-    shell_thickness=2.0
+    shell_thickness=2 # 0.32nm ~ intermolecular distance in water
+    # Shell thickness for shells of increasing radius centered on the initial PKA position [nm]
     num_shells=8
+    # Number of shells to include in calculations
     
-    # This array of arrays will contain the chunk ID for molecules within a shell extending from:
+    # shell = array of arrays containing the chunk ID for molecules within a shell extending from:
     # dist_from_pka > shell_thickness*n to dist_from_pka<=shell_thickness*(n+1)
-    # for n=0 to num_shells
+    # for n=0 to num_shells (n=0 = PKA)
     shell=[[] for y in range(num_shells)] 
 
     # Define an array that will contain each timestep the COM data is printed out
     # at and the MSD of each molecule with reference to it's initial position at
     # that timestep  divided into the shells defined above.
     #->Could add functionality to group all COMs with radius greater than shell_thickness*num_shells
-    #run_data = []
 
     # Here I loop though all the chunk ID's and record their position at step=0 
     for i in range(len(run_com[0].Nmolec)):
@@ -399,8 +404,8 @@ def find_commsd(run_com, descrip):
             if dist_from_pka > shell_thickness*n and dist_from_pka<=shell_thickness*(n+1):
                 shell[n].append(run_com[0].Nmolec[i])
     # print the molecule ID's that are within -n*shell_thickness- of the PKA
-    #for n in range(num_shells):
-    #    print '{} molecules in shell {}ang from PKA'.format(len(shell[n]), n*shell_thickness)
+    for n in range(num_shells):
+        print '{} molecules in shell {}ang from PKA'.format(len(shell[n]), n*shell_thickness)
         #print shell[n]
     
     # Define an array to contain the AVERAGE MSD of all the molecules in a
@@ -410,9 +415,11 @@ def find_commsd(run_com, descrip):
     # Define an array of ALL the timesteps
     step=[run_com[x].timestep for x in range(len(run_com))]
     steparr=np.array(step,dtype='float')
-
-    # For each timestep
-    for n in range(1,len(run_com)):
+    
+    n_ts=len(run_com)
+    print "The timestep is {}ps, and the total length of the simulation is {}ps".format(sln/1000, n_ts*sln/1000)
+    # For each timestep.....    
+    for n in range(1,n_ts):
         # define an array that will have the msd of all molecules in a given shell
         dist=[[] for y in range(num_shells)]
         # loop through all molecules (which should be constant...)
@@ -429,33 +436,34 @@ def find_commsd(run_com, descrip):
             ydisp=(ycom_cur-ycom_init)**2
             zdisp=(zcom_cur-zcom_init)**2
             tot_disp=xdisp+ydisp+zdisp
-            # and add the total displacement to it's occording shell
+            # and add the total displacement to it's according shell
             for j in range(num_shells):
                 if run_com[n].Nmolec[i] in shell[j]:
                     dist[j].append(tot_disp)
-        # For each cell calculate the mean MSD of all molecules in that shell for this timestep
+        # For each cell calculate the average MSD of all molecules in that shell for this timestep
         for j in range(num_shells):
             msd[j].append(np.mean(dist[j]))
 
+    print "Computed the {} average <MSD> for {} shells of width {}nm around the PKA".format(descrip[0],num_shells, shell_thickness)
     descrip.append(shell_thickness)
     descrip.append(shell)
-    
     run_data=runData(descrip,steparr,msd)
     return run_data
 
 def msd_avgf(run):
-    # Function to average over the final 'ns' timesteps for an excitation
-    # Determines the average equilibrium displacement
-
+    # Function to average over the final n_avg timesteps for an excitation
+    # Determines the average equilibrium displacement at the end of excitation event
+    # len(avgs)=nshells where avgs[n] is a single value representing the MSD for the corresponding shell
+    # *note that there is currently no error calculation
     steps= len(run.step)
     nshell= len(run.data)
     avgs=[]
     for j, dat in enumerate(run.data):
-        avgs.append(np.mean(dat[steps-30:]))
+        avgs.append(np.mean(dat[steps-n_avg:]))
         
     msd_avg=datAvg(run.descrip, avgs)
     return msd_avg
-    
+
 def createDataframeFromDump(dumpfile,shell,descrip,tslen):
     fn = dumpfile.split('/')[-1]
     fn = fn.strip('.dump')
@@ -490,7 +498,8 @@ def createDataframeFromDump(dumpfile,shell,descrip,tslen):
     # Convert entire dataframe to numeric data type
     dataframe=dataframe.apply(pd.to_numeric)
 
-    shellke=[]
+    shellke_avg=[]
+    shellke_max=[]
     for i in range(len(shell)):
         #print shell[i]
         selectMol=shell[i] # select molecules in shell 'i'
@@ -502,10 +511,23 @@ def createDataframeFromDump(dumpfile,shell,descrip,tslen):
         ggroup=df.groupby(['timestep'])
         gsum=ggroup['c_ke_atom'].sum()
         gmean=ggroup['c_ke_atom'].mean()
-        shellke.append(gmean.values)
+        gmax=ggroup['c_ke_atom'].max()
+        egroup=groups['c_ke_atom'].apply(lambda x: x>0.5)
+        #gexcite=df.groupby('timestep')['c_ke_atom'].apply(lambda g: g>1.5)
+        #print 'This is the excited group....thing'
+        print(egroup.describe())
+        #print(gexcite.describe())
 
-    run_data=runData(descrip,ts,shellke)
-    return dataframe, run_data
+        shellke_avg.append(gmean.values)
+        shellke_max.append(gmax.values)
+
+        #shellke_nea.append(egroup.values)
+
+    print len(ts), len(shellke_avg), len(shellke_max)
+
+    shell_avgke_arrays=runData(descrip,ts,shellke_avg)
+    shell_kemax_arrays=runData(descrip,ts,shellke_max)
+    return dataframe, shell_avgke_arrays, shell_kemax_arrays
     
 def createDataframeFromConvDump(convDumpfile):    
     dataframe = pd.read_table(convDumpfile, delimiter=' ')

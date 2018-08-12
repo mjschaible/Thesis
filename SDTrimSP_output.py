@@ -1,3 +1,92 @@
+import csv
+import os
+
+def appendmeta(log_yld, out_yld):
+    #tar=[i.label[0].split('->')[1] for i in log_yld]
+    tar=[i.label[0] for i in log_yld]
+    #print tar
+    #print tcount
+
+    for i in range(len(out_yld)):
+        for j in range(len(out_yld[i])):
+            #ctar = out_yld[i][j].label[1].split('->')[1]
+            ctar = out_yld[i][j].label[0]
+            for n, t in enumerate(tar):
+                if t == ctar:
+                    index=n
+            if len(out_yld[i][j].Flux) == len(log_yld[index].label[4]):
+                out_yld[i][j].label.append(log_yld[index].label[4]) # append element names
+                out_yld[i][j].label.append(log_yld[index].label[5]) # append atomic masses
+                out_yld[i][j].label.append(log_yld[index].label[6]) # append SBE
+            else:
+                print "the number of elements does not match"
+                print len(out_yld[i][j].Flux), len(log_yld[nlog].label[4])
+
+    return out_yld
+
+def write_sputvfluence(out,met_dir):
+    for n, met_comp in enumerate(out):
+        # Obtain arrays for the meteorite composition elements (+masses and surface binding energies)
+        ion_met=met_comp.label[0]
+        ion=ion_met.split()[0]+ion_met.split()[1]
+        met=ion_met.split()[3]
+        comp_elems = met_comp.label[1]
+        comp_masses = met_comp.label[2]
+        comp_Esbe = met_comp.label[3]
+        indv_met = (ion+'_'+met+'.csv')
+        Header1 = ('energy', 'fluence', comp_elems, 'TotYld')
+        #Header2 = ('', '', 'masses', '')
+        #Header3 = ('', '', 'Esbe', '')
+        #        return repr((self.label, self.energy, self.fluence, self,Flux, self.totYld))
+        #print indv_met
+        with open(os.path.join(met_dir,indv_met), "w+") as output:
+            output.truncate
+            writer = csv.writer(output)
+            writer.writerow(Header1)
+
+            for i, flu in enumerate(met_comp.fluence):
+                row=[]
+                row.append(met_comp.energy[i])
+                row.append(met_comp.fluence[i])
+                for j,val in enumerate(met_comp.Flux):
+                    row.append(met_comp.Flux[j][i])
+                row.append(met_comp.totYld[i])
+                writer.writerow(row)
+    return
+
+def write_indvAvgs(mets,met_dir):
+    situation=met_dir.split('/')
+    met_class=situation[1]
+    ion=situation[-1]
+    indv_met = (met_class+'_'+ion+'.csv')
+    with open(os.path.join(met_class,indv_met), "w+") as output:
+        output.truncate
+        #writer = csv.writer(output)
+        met_l=list(mets[0][0])
+        comp_elems = ','.join(met_l[1])
+        comp_masses = met_l[2]
+        comp_Esbe = met_l[3]
+        Header1 = 'Met Comp,' + comp_elems + ',TotYld,'+ comp_elems + ',TotIYld' + '\n'
+        output.write(Header1)
+
+        for n, met in enumerate(mets):
+            # Obtain arrays for the meteorite composition elements (+masses and surface binding energies)
+            met_l=list(met[0])
+            ion_met=met_l[0]
+            neut_ylds=','.join(str(val) for val in met[1])
+            ion_ylds=','.join(str(val) for val in met[2])
+            row = ion_met+','+neut_ylds+','+ion_ylds+'\n'
+            #print row
+            #print ion_met
+            output.write(row)
+
+    return
+
+
+def write_iavg(sput, lbl=None):
+
+    return
+
 def plot_log(log,nf,ls,c,lbl=None,h=None,mc=None):
     e_sort = [[] for i in range(len(isbv_pos))]
     yld_sort = [[] for i in range(len(isbv_pos))]
@@ -44,35 +133,7 @@ def plot_out1(sput, nf, c, mk,mfc, lbl=None):
     return 
 
 
-def plot_iavg(sput, nf, ct,shift, mk, lbl=None): 
-    for n,i in enumerate(sput):
-        for y,elem in enumerate(i.label[4]):
-            if not isinstance(i.Flux[y], (int,long)) and y>1 and elem in plotElem:
-                ni=plotElem.index(elem)
-                dd=len(i.Flux[y])
-                navg=10
-                elem_iyld[n][ni]=np.mean(i.Flux[y][dd-navg:])
-                elem_iyld_var[n][ni]=np.std(i.Flux[y][dd-navg:])
-        tot_iyld=np.sum(elem_iyld)
-
-    sw_iavg=np.zeros(len(elem_iyld[0]))
-    myarray = np.asarray(elem_iyld)
-    metclass_mean=np.mean(myarray, axis=0)
-    metclass_std=np.std(myarray, axis=0)
-    elem_vsSi_mean=metclass_mean/metclass_mean[nSi]
-    #elem_vsSi_std=elem_vsSi_mean*((metclass_std/metclass_mean)**2+(metclass_std[5]/metclass_mean[5])**2)**0.5
-    
-    print 'Class Averages, {}'.format(t)
-    for y, elem in enumerate(plotElem):
-        print '{}, {}$\pm${}: vs. Si = {}'.format(elem, metclass_mean[y], metclass_std[y], elem_vsSi_mean[y])
-
-    tot_iyld=np.sum(metclass_mean)
-    print 'Total {} yield = {:.3}'.format(t, tot_iyld)
-
-    return
-
-
-def plot_flux(mean_yld,tld_std,met,nf)
+def plot_flux(mean_yld,tld_std,met,nf):
 
         phiSW=1e8 # solar wind flux, ion/cm^2/s
         P=1./3 # porosity reduction factor

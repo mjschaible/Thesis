@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+import csv
 
 import matplotlib.pyplot as plt
 from scipy import interpolate
@@ -7,7 +8,8 @@ import itertools
 import re
 import os
 
-def log_plots(runs, row, ft, fignum=None):
+def log_plots(runs, ft, fignum=None):
+    row=2 #number of rows to show in image
     kcalToeV = 0.0433641 # convert kcal/mole to eV/atom
     # ft is the 'filetype', either rad or eq or...
     # row is the number of rows
@@ -20,6 +22,7 @@ def log_plots(runs, row, ft, fignum=None):
         exE= runs[0].descrip[6]/nMolec
     else:
         exE=1
+
     col = len(runs) #num columns
     if ft==0:
         fig=plt.figure(fignum, figsize=(col+1,col/row))
@@ -36,7 +39,8 @@ def log_plots(runs, row, ft, fignum=None):
         ax3=[]
 
     for i,run in enumerate(runs):
-        time = (runs[i].step-runs[0].step[0])*runs[i].descrip[1]/1000
+        ts=runs[i].descrip[1] #timestep for current run
+        time = (runs[i].step-runs[0].step[0])*ts/1000
         label1=runs[i].thermoCol[3]
         peng=runs[i].peave*kcalToeV
         if ft == 1:
@@ -114,11 +118,13 @@ def log_plots(runs, row, ft, fignum=None):
             #print 'Only one axis defned'
 
     plt.subplots_adjust(wspace=0.001)
+    plt.show()
     #fig.text(0.5,0.04,'Time [ps]', ha='center')
     #plt.savefig('/Users/spacebob/Work/Simulations/images/{}energy.png'.format(fn), dpi=600)
+    #plt.savefig('/home/mikey/Work/Sinmulations/images/{}energy.png'.format(fn), dpi=600)
     return
 
-def msd_plots(runs, lbl, nr, ft, fignum=None):
+def msd_plots(runs, lbl, ft, fignum=None):
     # Determine the filename for figure naming
     fn = runs.descrip[0]
     fn = fn.replace('tip4p','')
@@ -129,7 +135,7 @@ def msd_plots(runs, lbl, nr, ft, fignum=None):
 
     #time = (runs[i].step-runs[i].step[0])*param[i].timesteps/1000
     if 'Shell avg.' in lbl:
-        ax=fig.add_subplot(nr,1,2)
+        ax=fig.add_subplot(111)
         if 'MSD' in lbl:
             ax.set_ylabel('{} [$\AA^2$]'.format(lbl))
             ax.locator_params(axis='x', tight=True, nbins=4)
@@ -151,11 +157,11 @@ def msd_plots(runs, lbl, nr, ft, fignum=None):
         # Put a legend to the right of the current axis
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=10)
         ax.set_xlabel('Time [ps]')
-        plt.savefig('/Users/spacebob/Work/Simulations/images/{}{}.png'.format(fn,tp),dpi=600)
+        #plt.savefig('/Users/spacebob/Work/Simulations/images/{}{}.png'.format(fn,tp),dpi=600)
+        #plt.savefig('/home/mikey/Work/Sinmulations/images/{}{}.png'.format(fn,tp),dpi=600)
     else:
         nsp=2
-        ax=fig.add_subplot(nr,1,nsp)
-        #print runs[i].descrip
+        ax=fig.add_subplot(2,1,nsp)
         ax.plot(runs.step,runs.data,label = runs.descrip[3])
         ax.set_ylabel(r'{} [$\AA^2$]'.format(lbl))
         ax.locator_params(axis='x', tight=True, nbins=6)
@@ -173,7 +179,7 @@ def msd_plots(runs, lbl, nr, ft, fignum=None):
 
     return
 
-def rdf_plots(runs, nf):
+def rdf_plots(runs):
     fn = runs[0].descrip[0]
     fn = fn[:-3]
     fn = fn.replace('tip4p','')
@@ -186,7 +192,8 @@ def rdf_plots(runs, nf):
         axs[1].set_ylabel('Coordination number')
         axs[1].set_xlabel(r'Distance [$\AA$]')
         #plt.savefig('/Users/spacebob/Work/Simulations/images/{}rdf.png'.format(fn),dpi=600)
-        return
+        #plt.savefig('/home/mikey/Work/Sinmulations/images/{}rdf.png'.format(fn),dpi=600)
+    return fn
 
 def com_plots(msd):
     plt.figure()
@@ -210,5 +217,23 @@ def com_plots(msd):
     plt.yscale('log')
     plt.xlabel(r'Distance from PKA[$\AA$]')
     plt.ylabel(r'Mean MSD [$\AA^2$]')
-    plt.savefig('/Users/spacebob/Work/Simulations/images/{}MSDvDist.png'.format(fn),dpi=600)
+    #plt.savefig('/Users/spacebob/Work/Simulations/images/{}MSDvDist.png'.format(fn),dpi=600)
+
+    a = [dist_arr,shells_avg,shell_stdev]
+    print 'This is being written to text'
+    print dist_arr
+    print 'then'
+    print shells_avg
+    print 'and combined'
+    print a
+    
+    np.savetxt('{}_MSD_runAvgs.res'.format(fn), a, delimiter=",")
+
+    with open('{}_MSD_runAvgs.csv'.format(fn), 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        header = ["Shell Distance, Average, StDev"]
+        writer.writerow(header)
+        for n in range(len(dist_arr)):
+            line = [dist_arr[n],shells_avg[n],shell_stdev[n]]
+            writer.writerow(line)
     return

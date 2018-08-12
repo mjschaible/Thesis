@@ -1,27 +1,64 @@
-def fix_coeff(T):
-    import numpy as np
+''' Simple script to convert stiffness coefficients C(T) to compliance S(T). Stiffness values are taken from Proctor (1966) via. Hobbs (1974) for hexagonal water ice. They were measured to be valid from 60-110K. After computing the stiffness, Young's modulus and Poisson's ratio for an isotropic material are created. Finally, the Hertzian contact radius for 25um grains is calculated.'''
 
+import math
+import numpy as np
+import matplotlib as mpl
+mpl.use("TkAgg")
+import matplotlib.pyplot as plt
+pi = math.pi
+scale = 1E6 # Convert bar to erg/cm^3
+
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['axes.titlesize'] = 'large'
+mpl.rcParams['axes.labelsize'] = 'large'
+#mpl.rcParams['axes.labelpad'] = 2.5
+mpl.rcParams['xtick.labelsize']='medium'
+mpl.rcParams['ytick.labelsize']='large'
+mpl.rcParams['legend.handlelength']=2.5
+
+def fix_coeff(T):
     Aij = np.zeros((5,3))
 
-    Aij[0,0] = 17.1E4
-    Aij[0,1] = -47
-    Aij[0,2] = -29.2E-2
+    if min(T) < 0:
+        Aij[0,0] = 12.904E4
+        Aij[0,1] = -1.489E-3*Aij[0,0]
+        Aij[0,2] = -1.85E-6*Aij[0,0]
     
-    Aij[1,0] = 18.21E4
-    Aij[1,1] = -42
-    Aij[1,2] = -32.2E-2
+        Aij[1,0] = 14.075E4
+        Aij[1,1] = -1.629E-3*Aij[1,0]
+        Aij[1,2] = -2.93E-6*Aij[1,0]
     
-    Aij[2,0] = 3.62E4
-    Aij[2,1] = 9
-    Aij[2,2] = -15.5E-2
+        Aij[2,0] = 2.819E4
+        Aij[2,1] = -1.601E-3*Aij[2,0]
+        Aij[2,2] = -3.62E-6*Aij[2,0]
     
-    Aij[3,0] = 8.51E4
-    Aij[3,1] = 21
-    Aij[3,2] = -39E-2
+        Aij[3,0] = 6.487E4
+        Aij[3,1] = -2.072E-3*Aij[3,0]
+        Aij[3,2] = -3.62E-6*Aij[3,0]
     
-    Aij[4,0] = 7.13E4
-    Aij[4,1] = -43
-    Aij[4,2] = 3E-2
+        Aij[4,0] = 5.622E4
+        Aij[4,1] = -1.874E-3*Aij[4,0]
+        Aij[4,2] = 0
+    else:
+        Aij[0,0] = 17.1E4
+        Aij[0,1] = -47
+        Aij[0,2] = -29.2E-2
+    
+        Aij[1,0] = 18.21E4
+        Aij[1,1] = -42
+        Aij[1,2] = -32.2E-2
+    
+        Aij[2,0] = 3.62E4
+        Aij[2,1] = 9
+        Aij[2,2] = -15.5E-2
+    
+        Aij[3,0] = 8.51E4
+        Aij[3,1] = 21
+        Aij[3,2] = -39E-2
+    
+        Aij[4,0] = 7.13E4
+        Aij[4,1] = -43
+        Aij[4,2] = 3E-2
     
     C11 = Aij[0,0] + Aij[0,1]*T + Aij[0,2]*T*T
     C33 = Aij[1,0] + Aij[1,1]*T + Aij[1,2]*T*T
@@ -40,20 +77,83 @@ def fix_coeff(T):
 
     return tempSij
 
-'''
-# ----- Determine the compliance coefficients -----
-ltSij = np.zeros((6,6,len(T)))
-ltSij = fix_coeff(T) # Make call to calculate mechanical coefficients
-# ----- Calculate Young's modulus, Poisson's ratio, and Hertzian radius
-Ymod = np.zeros_like(T)
-Prat = np.zeros_like(T)
-Rconjkr = np.zeros_like(T)
-jkrpow = float(1)/3
-# Determine the JKR contact force (var der Waals)
-Fjkr = 3*pi*gamma_ss*rg 
-# Calculate Young's modulus in erg/cm^3 from compliance coefficients
-for i in range(len(T)):
-    Ymod[i] = 1/ltSij[0,0,i]*Escale 
-    Prat[i] = -ltSij[0,1,i]/ltSij[0,0,i]
-    Rconjkr[i] = ((0.75*(1-Prat[i]*Prat[i])*rg*Fjkr)/Ymod[i])**(jkrpow)
-'''
+# --- Begin main program ---
+def main():
+    T = np.linspace(130,273,num=144) # Temp in Kelvin
+    TdC = T - 273 # Temp in Celcius
+
+    Sij = np.zeros((6,6,len(T)))
+    Sij = fix_coeff(TdC)
+
+    Ymod = np.zeros_like(T)
+    Prat = np.zeros_like(T)
+
+    for i in range(len(T)):
+        # Calculate Young's modulus in erg/cm^3 from compliance coefficients
+        Ymod[i] = 1/Sij[0,0,i]*scale 
+        Prat[i] = -Sij[0,1,i]/Sij[0,0,i]
+
+    print
+    print "Poisson's ratio at ", T[139]-273, "C is", Prat[139]
+    print "Young's modulus at ", T[139], "K is %.2e" % Ymod[139], "erg/cm^3"
+
+    TT = T
+    T = 0
+    T = np.linspace(60,110,num=81)
+    TT = np.concatenate((T,TT))
+
+    ltSij = np.zeros((6,6,len(T)))
+    ltSij = fix_coeff(T)
+
+    ltYmod = np.zeros_like(T)
+    ltPrat = np.zeros_like(T)
+
+    for i in range(len(T)):
+        # Calculate Young's modulus in erg/cm^3 from compliance coefficients
+        ltYmod[i] = 1/ltSij[0,0,i]*scale
+        ltPrat[i] = -ltSij[0,1,i]/ltSij[0,0,i]
+
+    Ymod = np.concatenate((ltYmod,Ymod))
+    Prat = np.concatenate((ltPrat,Prat))
+
+    print 
+    print "Poisson's ratio at ", T[40], "K is", Prat[40]
+    print "Young's modulus at ", T[40], "K is %.2e" % Ymod[40], "erg/cm^3"
+
+    #Determine the Hertzian contact radius
+    rg = 25E-4 # cm, grain radius (25um)
+    gamma_surf = 65 # erg/cm^2, ice/ice (grain boundary) surface energy
+    #poissonH2O = 0.33 # Poissons ratio at -5C
+    #youngs = 9E7 # erg/cm^3, Young's modulus
+    Fjkr = 3*pi*gamma_surf*rg # Determine the JKR contact force (var der Waals)
+    print "The jkr contact force is %.2f" % Fjkr, " dyne [g cm/s^2]"
+
+    # Calculate the JKR (Hertzian, ver der Waals) contact radius
+    inbetween = np.zeros_like(T)
+    inbetween2 = np.zeros_like(T)
+    Rconjkr = np.zeros_like(T)
+
+    for i in range(len(T)):
+        inbetween[i] = (1-ltPrat[i]*ltPrat[i])*rg*Fjkr
+        inbetween2[i] = (0.75*inbetween[i])/ltYmod[i]
+        jkrpow = float(1)/3
+        Rconjkr[i] = inbetween2[i]**(jkrpow)
+
+    print "The Hertzian contact radius at {}K is {:.3e} um".format(T[40], Rconjkr[40]*1E4)
+
+    fig, axs = plt.subplots(3,1, sharex=True)
+    axs[0].plot(T,ltYmod)
+    axs[0].set_ylabel("Young's modulus \n"r" $\times10^{11}\:erg/cm^3$")
+    axs[1].plot(T,ltPrat)
+    axs[1].set_ylabel("Poisson's Ratio")
+    axs[2].plot(T,Rconjkr*1E4, label = 'Rcon,jkr')
+    axs[2].set_ylabel(r'Contact Radius, $\mu m$')
+    axs[2].set_xlabel('Temperature[k]')
+    plt.legend(loc=4)
+    plt.savefig('/Users/spacebob/Box Sync/Thesis/phd/images/Hertzian.png', dpi=600)
+    plt.show()
+
+    #cont = input('press 1 to continue: ')
+
+if __name__ == "__main__":
+    main()
